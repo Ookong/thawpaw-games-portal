@@ -8,6 +8,14 @@
       "icon": "moonstone",
       "description": "Descend 10 floors to find the Moonstone!",
       "color": "#4488ff"
+    },
+    {
+      "id": "snake",
+      "name": "Snake",
+      "file": "games/snake.html",
+      "icon": "snake",
+      "description": "Classic snake! Eat, grow, survive!",
+      "color": "#44cc44"
     }
   ]
 }
