@@ -665,7 +665,7 @@ function drawTile(x,y,ch,bg,fg){
   if(ch){
     ctx.fillStyle=fg||'#ccc';
     const isEmoji=ch.length>1||/\p{Emoji}/u.test(ch);
-    ctx.font=`${isEmoji?TILE-2:TILE-6}px ${isEmoji?'sans-serif':'monospace'}`;
+    ctx.font=`${isEmoji?TILE-8:TILE-6}px ${isEmoji?'sans-serif':'monospace'}`;
     ctx.textAlign='center';ctx.textBaseline='middle';
     ctx.fillText(ch,px+TILE/2,py+TILE/2+1);
   }
@@ -749,7 +749,7 @@ function renderMap(){
           drawTile(x,y,null,'#1a1a2e');
           const d=EDATA[en.type];
           ctx.fillStyle=en.stunned?'#666':d.col;
-          ctx.font=`${TILE-4}px sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';
+          ctx.font=`${TILE-8}px sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';
           ctx.fillText(en.stunned?'💤':d.ch,x*TILE+TILE/2,y*TILE+TILE/2+1);
           // hp bar
           if(en.hp<en.maxHp){
