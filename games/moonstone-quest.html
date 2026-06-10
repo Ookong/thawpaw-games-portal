@@ -51,8 +51,10 @@ canvas { image-rendering:pixelated; display:block; }
   #sidebar { width:100%; max-height:30vh; flex-shrink:0; flex-direction:row; flex-wrap:wrap; border-left:none; border-top:1px solid #222; padding:6px; }
   #sidebar h2 { width:100%; }
   #msgLog { max-height:60px; }
-  #controls { display:block; text-align:center; }
 }
+/* Touch device detection */
+touch-device #controls { display:block; text-align:center; }
+#controls.touch-active { display:block; text-align:center; }
 </style>
 </head>
 <body>
@@ -557,6 +559,26 @@ function doHeal(){initAudio();useHealHerb();}
 function doExpHerb(){initAudio();useExpHerb();}
 function doShop(){initAudio();if(G.state==='shop')closeShop();else if(G.state==='playing')openShop();}
 function doDescend(){initAudio();tryDescend();}
+
+// ─── Touch device detection ───
+(function detectTouch(){
+  function showControls(){
+    document.getElementById('controls').classList.add('touch-active');
+    // also apply mobile layout on narrow screens
+    if(window.innerWidth<=700){
+      document.getElementById('wrap').style.flexDirection='column';
+    }
+    window.removeEventListener('touchstart',showControls);
+    window.removeEventListener('touchmove',showControls);
+  }
+  // Show on first touch event
+  window.addEventListener('touchstart',showControls,{passive:true});
+  window.addEventListener('touchmove',showControls,{passive:true});
+  // Also check if already known to be touch device
+  if('ontouchstart' in window || navigator.maxTouchPoints>0){
+    showControls();
+  }
+})();
 
 // ─── Input ───
 document.addEventListener('keydown',e=>{
