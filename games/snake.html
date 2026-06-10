@@ -73,7 +73,13 @@ button:active { transform:scale(0.96); }
 .bp-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin:16px 0; }
 .bp-card { background:rgba(255,255,255,.05); border:2px solid rgba(255,255,255,.1); border-radius:10px; padding:12px 6px; text-align:center; cursor:pointer; transition:all .15s; }
 .bp-card.equipped { border-color:#ffcc44; background:rgba(255,204,68,.1); box-shadow:0 0 12px rgba(255,204,68,.2); }
-.bp-card.locked { opacity:.4; cursor:default; }
+.bp-card.owned { cursor:pointer; }
+.bp-card.owned:hover { border-color:#88ee88; background:rgba(136,238,136,.06); }
+.bp-card.locked { opacity:.5; cursor:pointer; }
+.bp-card.locked:hover { opacity:.75; }
+.shop-tabs { display:flex; gap:8px; margin:8px 0 12px; }
+.shop-tab { padding:8px 16px; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.1); border-radius:8px; color:#aaa; font-size:.9rem; cursor:default; }
+.shop-tab.active { background:rgba(255,204,68,.15); border-color:rgba(255,204,68,.4); color:#ffcc44; font-weight:700; }
 .bp-card .bp-emoji { font-size:2rem; margin-bottom:4px; }
 .bp-card .bp-name { font-size:.85rem; color:#ccc; font-weight:600; }
 .bp-card .bp-badge { font-size:.7rem; margin-top:4px; color:#ffcc44; }
@@ -278,15 +284,11 @@ canvas { display:block; border-radius:8px; }
 <div class="screen" id="shopScreen">
   <div class="screen-box">
     <h1 style="color:#ff8866;">🛒 商店</h1>
-    <div class="stat-bar" id="shopStats"></div>
-    <div class="shop-grid">
-      <div class="shop-card">Coming soon</div>
-      <div class="shop-card">Coming soon</div>
-      <div class="shop-card">Coming soon</div>
-      <div class="shop-card">Coming soon</div>
-      <div class="shop-card">Coming soon</div>
-      <div class="shop-card">Coming soon</div>
+    <div class="shop-tabs">
+      <div class="shop-tab active">🐍 皮肤</div>
     </div>
+    <div class="stat-bar" id="shopStats"></div>
+    <div class="bp-grid" id="shopGrid"></div>
     <div class="back-link" onclick="showMainMenu()">← 返回菜单</div>
   </div>
 </div>
@@ -525,12 +527,72 @@ function convertGold() {
   input.value = 10;
 }
 
-// ─── Shop screen ───
+// ─── Shop screen (skins) ───
 function showShop() {
   showScreen('shopScreen');
+  buildShop();
+}
+
+function buildShop() {
   document.getElementById('shopStats').innerHTML = `
-    <div class="stat"><span class="icon">🍎</span><span class="val apple-val">${pState.apples} 苹果</span></div>
+    <div class="stat"><span class="icon">🍎</span><span class="val apple-val">${pState.apples} 苹果</span> &nbsp; <span class="icon">💰</span><span class="val">${pState.gold} 金币</span></div>
   `;
+  var grid = document.getElementById('shopGrid');
+  grid.innerHTML = SKINS.map(function(sk) {
+    var owned = pState.ownedSkins.includes(sk.id);
+    var equipped = pState.equippedSkin === sk.id;
+    var cls = owned ? (equipped ? 'bp-card equipped' : 'bp-card owned') : 'bp-card locked';
+    var badge = owned ? (equipped ? '✅ 已装备' : '已拥有') : sk.priceApples + ' 🍎';
+    return '<div class="' + cls + '" ' + (!owned ? 'onclick="confirmBuySkin(\'' + sk.id + '\')"' : (equipped ? '' : 'onclick="equipFromShop(\'' + sk.id + '\')"')) + '>' +
+      '<div class="bp-emoji">' + sk.emoji + '</div>' +
+      '<div class="bp-name">' + sk.name + '</div>' +
+      '<div class="bp-badge">' + badge + '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function confirmBuySkin(id) {
+  var sk = SKINS.find(function(s){return s.id===id;});
+  if (!sk || pState.ownedSkins.includes(id)) return;
+  var price = sk.priceApples;
+  // Show confirmation overlay
+  var ov = document.getElementById('overlay');
+  var ob = document.getElementById('overlayBox');
+  ob.className = '';
+  document.getElementById('oTitle').textContent = '🛒 购买皮肤';
+  document.getElementById('oSub').textContent = '';
+  document.getElementById('oBody').innerHTML =
+    '<div style="font-size:2rem;margin:8px 0">' + sk.emoji + ' ' + sk.name + '</div>' +
+    '<div style="font-size:1.1rem;color:#ffcc44;margin:8px 0">确定要用 ' + price + ' 苹果购买此皮肤？</div>' +
+    '<div style="color:#aaa;font-size:.85rem">当前苹果：' + pState.apples + '</div>';
+  document.getElementById('oPrompt').innerHTML = '';
+  document.getElementById('oBtns').innerHTML =
+    '<button class="btn-secondary" onclick="cancelBuySkin()">取消</button>' +
+    '<button class="btn-primary" onclick="buySkin(\'' + id + '\')" ' + (pState.apples < price ? 'disabled style="opacity:.4"' : '') + '>确定</button>';
+  ov.classList.add('active');
+}
+
+function cancelBuySkin() {
+  document.getElementById('overlay').classList.remove('active');
+  buildShop();
+}
+
+function buySkin(id) {
+  var sk = SKINS.find(function(s){return s.id===id;});
+  if (!sk) return;
+  if (pState.apples < sk.priceApples) return;
+  pState.apples -= sk.priceApples;
+  pState.ownedSkins.push(id);
+  pState.equippedSkin = id;
+  saveState();
+  document.getElementById('overlay').classList.remove('active');
+  buildShop();
+}
+
+function equipFromShop(id) {
+  pState.equippedSkin = id;
+  saveState();
+  buildShop();
 }
 
 // ─── Backpack screen ───
@@ -540,20 +602,21 @@ function showBackpack() {
 }
 
 function buildBackpack() {
-  const grid = document.getElementById('bpGrid');
+  var grid = document.getElementById('bpGrid');
   document.getElementById('bpStats').innerHTML = `
-    <div class="stat"><span class="icon">🍎</span><span class="val apple-val">${pState.apples} 苹果</span></div>
+    <div class="stat"><span class="icon">🍎</span><span class="val apple-val">${pState.apples} 苹果</span> &nbsp; <span class="icon">💰</span><span class="val">${pState.gold} 金币</span></div>
   `;
-  grid.innerHTML = SKINS.map(sk => {
-    const owned = pState.ownedSkins.includes(sk.id);
-    const equipped = pState.equippedSkin === sk.id;
-    const cls = !owned ? 'bp-card locked' : (equipped ? 'bp-card equipped' : 'bp-card');
-    const badge = !owned ? `🔒 ${sk.priceApples} 🍎` : (equipped ? '✅ 已装备' : '');
-    return `<div class="${cls}" ${owned ? `onclick="equipSkin('${sk.id}')"` : ''}>
-      <div class="bp-emoji">${sk.emoji}</div>
-      <div class="bp-name">${sk.name}</div>
-      ${badge ? `<div class="bp-badge">${badge}</div>` : ''}
-    </div>`;
+  grid.innerHTML = SKINS.map(function(sk) {
+    var owned = pState.ownedSkins.includes(sk.id);
+    if (!owned) return '';
+    var equipped = pState.equippedSkin === sk.id;
+    var cls = equipped ? 'bp-card equipped' : 'bp-card';
+    var badge = equipped ? '✅ 已装备' : '';
+    return '<div class="' + cls + '" onclick="equipSkin(\'' + sk.id + '\')">' +
+      '<div class="bp-emoji">' + sk.emoji + '</div>' +
+      '<div class="bp-name">' + sk.name + '</div>' +
+      (badge ? '<div class="bp-badge">' + badge + '</div>' : '') +
+    '</div>';
   }).join('');
 }
 
@@ -628,7 +691,7 @@ function gameOver() {
   if (score > pState.hiScore) pState.hiScore = score;
   saveState();
   updateHud();
-  showGameOverOverlay(goldEarned, false);
+  showGameOverOverlay(goldEarned, false, 0, 0);
 }
 
 function victory() {
@@ -637,19 +700,34 @@ function victory() {
   sfxVictory();
   const goldEarned = calcGoldEarned(score);
   pState.gold += goldEarned;
+  // Victory bonus by board size
+  var bonusGold=0, bonusApples=0;
+  if(GRID===15) bonusGold=300;
+  else if(GRID===20) bonusGold=500;
+  else if(GRID===25) bonusApples=70;
+  pState.gold += bonusGold;
+  pState.apples += bonusApples;
   if (score > pState.hiScore) pState.hiScore = score;
   saveState();
   updateHud();
-  showGameOverOverlay(goldEarned, true);
+  showGameOverOverlay(goldEarned, true, bonusGold, bonusApples);
 }
 
-function showGameOverOverlay(goldEarned, isVictory) {
+function showGameOverOverlay(goldEarned, isVictory, bonusGold, bonusApples) {
   overlayBox.className = isVictory ? 'victory' : 'gameover';
   oTitle.textContent = isVictory ? '🏆 胜利！' : '💀 Game Over';
   oSub.textContent = isVictory ? '你填满了整个棋盘！太厉害了！' : (score > pState.hiScore - 1 ? '接近最高分了！' : '再来一次！');
+  var bonusHtml = '';
+  if(isVictory && (bonusGold||bonusApples)){
+    bonusHtml='<div style="color:#ffcc44;font-size:1.1rem;margin:6px 0">🏆 霸屏奖励：';
+    if(bonusGold) bonusHtml+='+'+bonusGold+' 金币';
+    if(bonusApples) bonusHtml+='+'+bonusApples+' 苹果';
+    bonusHtml+='</div>';
+  }
   oBody.innerHTML = `
     <div class="scoreBig">${score}</div>
     <div class="gold-earned">💰 +${goldEarned} 金币 (总共 ${pState.gold})</div>
+    ${bonusHtml}
     <div class="hiscore">🏆 最高分: <b>${pState.hiScore}</b> · 🐍 长度: <b>${snake.length}</b></div>
   `;
   oPrompt.innerHTML = `<kbd>R</kbd> 再来一次 · <kbd>Esc</kbd> 返回菜单`;
