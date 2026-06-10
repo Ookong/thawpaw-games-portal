@@ -162,10 +162,12 @@ canvas { display:block; border-radius:8px; }
 
 /* ── Mobile layout ── */
 @media (max-width:700px) {
-  body.touch-active #side { display:none; }
+  #side { display:none !important; }
   body.touch-active #mobileHud { display:block; }
   body.touch-active #wrap { flex-direction:column; }
   body.touch-active #canvasWrap { padding-top:46px; padding-bottom:160px; }
+  #canvasWrap { flex:1; width:100%; }
+  #wrap { flex-direction:column; }
 }
 @media (max-width:400px) {
   #joystick { bottom:10px; left:10px; width:100px; height:100px; }
@@ -914,7 +916,7 @@ function updateHud() {
 
 // ─── Canvas resize ───
 function resizeCanvas() {
-  const side = (window.innerWidth > 700 && !touchActive) ? 220 : 0;
+  const side = (window.innerWidth > 700) ? 220 : 0;
   const topPad = touchActive ? 46 : 0;
   const botPad = touchActive ? 180 : 0;
   const wAvail = window.innerWidth - side - 16;
