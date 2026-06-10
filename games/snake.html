@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="mobile-web-app-capable" content="yes">
-<title>🐍 Snake — Thawpaw Games</title>
+<title>🐍 Snake — Thawpaw Games [v2]</title>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
 html { height:100%; }
@@ -611,6 +611,7 @@ function showShop() {
 }
 
 function switchShopTab(tab) {
+  console.log('switchShopTab:', tab);
   shopTab = tab;
   document.getElementById('tabSkins').className = 'shop-tab' + (tab==='skins' ? ' active' : '');
   document.getElementById('tabBoards').className = 'shop-tab' + (tab==='boards' ? ' active' : '');
