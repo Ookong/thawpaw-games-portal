@@ -620,28 +620,35 @@ function restoreTouchControls() {
   }
 }
 
+// Global confirm callbacks (set before showing)
+var _pendingConfirm = null;
+var _pendingCancel = null;
+
 function showConfirmOverlay(title, body, onConfirm, confirmText, onCancel) {
-  // Hide any touch/game overlays that might intercept
   var tc = document.getElementById('touchControls');
   if (tc) tc.classList.remove('active');
+  _pendingConfirm = onConfirm;
+  _pendingCancel = onCancel || null;
   document.getElementById('oTitle').textContent = title;
   document.getElementById('oSub').textContent = '';
   document.getElementById('oBody').innerHTML = body;
   document.getElementById('oPrompt').innerHTML = '';
   document.getElementById('oBtns').innerHTML =
-    '<button class="btn-secondary" id="confirmCancel">取消</button>' +
-    '<button class="btn-primary" id="confirmOk">' + (confirmText || '确定') + '</button>';
+    '<button class="btn-secondary" onclick="_doConfirmCancel()">取消</button>' +
+    '<button class="btn-primary" onclick="_doConfirmOk()">' + (confirmText || '确定') + '</button>';
   document.getElementById('overlay').classList.add('active');
-  document.getElementById('confirmCancel').addEventListener('click', function(){
-    document.getElementById('overlay').classList.remove('active');
-    restoreTouchControls();
-    if (onCancel) onCancel();
-  });
-  document.getElementById('confirmOk').addEventListener('click', function(){
-    document.getElementById('overlay').classList.remove('active');
-    restoreTouchControls();
-    onConfirm();
-  });
+}
+
+function _doConfirmOk() {
+  document.getElementById('overlay').classList.remove('active');
+  restoreTouchControls();
+  if (_pendingConfirm) { var fn = _pendingConfirm; _pendingConfirm = null; _pendingCancel = null; fn(); }
+}
+
+function _doConfirmCancel() {
+  document.getElementById('overlay').classList.remove('active');
+  restoreTouchControls();
+  if (_pendingCancel) { var fn = _pendingCancel; _pendingConfirm = null; _pendingCancel = null; fn(); }
 }
 
 function switchShopTab(tab) {
