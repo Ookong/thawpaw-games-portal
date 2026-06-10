@@ -137,7 +137,7 @@ canvas { display:block; border-radius:8px; }
 #mobileHud .hud-spacer { flex:1; }
 
 /* ── Game overlay (gameover / victory) ── */
-#overlay { position:fixed; inset:0; z-index:60; display:none; align-items:center; justify-content:center; background:rgba(5,5,12,.85); backdrop-filter:blur(4px); }
+#overlay { position:fixed; inset:0; z-index:80; display:none; align-items:center; justify-content:center; background:rgba(5,5,12,.85); backdrop-filter:blur(4px); }
 #overlay.active { display:flex; }
 #overlayBox { background:#0e0e1a; border:2px solid #44cc44; border-radius:14px; padding:24px 32px; max-width:400px; width:90%; text-align:center; box-shadow:0 8px 40px rgba(68,204,68,.25); }
 #overlayBox.gameover { border-color:#ff6644; box-shadow:0 8px 40px rgba(255,102,68,.25); }
@@ -656,9 +656,7 @@ function confirmBuySkin(id) {
   var sk = SKINS.find(function(s){return s.id===id;});
   if (!sk || pState.ownedSkins.includes(id)) return;
   var price = sk.priceApples;
-  // Hide shop screen so overlay shows on top
-  document.getElementById('shopScreen').classList.remove('active');
-  // Show confirmation overlay
+  // Show confirmation overlay on top of shop
   var ov = document.getElementById('overlay');
   var ob = document.getElementById('overlayBox');
   ob.className = '';
@@ -702,7 +700,6 @@ function confirmBuyBoard(id) {
   var bd = BOARDS.find(function(b){return b.id===id;});
   if (!bd || pState.ownedBoards.includes(id)) return;
   var price = bd.priceApples;
-  document.getElementById('shopScreen').classList.remove('active');
   var ov = document.getElementById('overlay');
   var ob = document.getElementById('overlayBox');
   ob.className = '';
@@ -714,8 +711,8 @@ function confirmBuyBoard(id) {
     '<div style="font-size:.85rem;color:#888">你有 ' + pState.apples + ' 苹果</div>';
   var disabled = pState.apples < price ? ' disabled style="opacity:.4;cursor:default"' : '';
   document.getElementById('oBtns').innerHTML =
-    '<button class="bank-convert-btn"' + disabled + ' onclick="buyBoard(\'' + id + '\')" style="margin-right:12px">确定</button>' +
-    '<button class="bank-convert-btn" onclick="cancelBuyBoard()" style="background:rgba(255,255,255,.08)">取消</button>';
+    '<button class="btn-secondary" onclick="cancelBuyBoard()">取消</button>' +
+    '<button class="btn-primary" onclick="buyBoard(\'' + id + '\')"' + disabled + '>确定</button>';
   ov.classList.add('active');
 }
 
