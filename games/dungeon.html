@@ -32,11 +32,23 @@ canvas { display:block; border-radius:8px; }
 #side .row .val { color:#fff; font-weight:700; }
 #side .val.gold { color:#ffcc44; }
 #side .val.hp { color:#66ee66; }
+#side .val.hpLow { color:#ff6644; }
 #side .val.atk { color:#ff8866; }
 #side .val.def { color:#66aaff; }
 #side .val.equip { color:#cc88ff; font-size:12px; font-weight:600; }
-#hpBar { width:100%; height:12px; background:#1a1a2a; border:1px solid #2a2a3a; border-radius:3px; overflow:hidden; margin:3px 0 4px; }
+#side .playerBlock { background:#08080f; border:1px solid #1a1a2a; border-radius:6px; padding:8px 10px; margin:6px 0; }
+#side .playerBlock.p2 { border-color:#2a2a3a; }
+#side .playerBlock.dead { opacity:.55; }
+#side .playerBlock.dead::before { content:'💀 '; }
+#side .playerHead { display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; font-weight:700; }
+#side .playerHead .phName { color:#fff; font-size:13px; }
+#side .playerBlock.p2 .playerHead .phName { color:#ffd9a8; }
+#side .playerBlock.dead .playerHead .phName { color:#888; }
+#side .playerHead .phIcon { font-size:18px; }
+#hpBar { width:100%; height:10px; background:#1a1a2a; border:1px solid #2a2a3a; border-radius:3px; overflow:hidden; margin:2px 0 4px; }
 #hpFill { height:100%; background:linear-gradient(90deg,#44cc44,#88ff88); transition:width .25s; }
+#hpBar2 { width:100%; height:10px; background:#1a1a2a; border:1px solid #2a2a3a; border-radius:3px; overflow:hidden; margin:2px 0 4px; }
+#hpFill2 { height:100%; background:linear-gradient(90deg,#ffaa44,#ffdd66); transition:width .25s; }
 #msgLog { margin-top:10px; flex:1; overflow-y:auto; max-height:160px; background:#08080f; border:1px solid #1a1a2a; border-radius:4px; padding:5px 7px; }
 #msgLog .msg { color:#999; font-size:11px; margin:1px 0; word-wrap:break-word; font-family:monospace; }
 #msgLog .msg.hurt { color:#ff6666; }
@@ -44,6 +56,7 @@ canvas { display:block; border-radius:8px; }
 #msgLog .msg.info { color:#88aaff; }
 #msgLog .msg.gold { color:#ffcc44; }
 #msgLog .msg.boss { color:#ff44ff; font-weight:700; }
+#msgLog .msg.revive { color:#ff88ff; font-weight:700; }
 #side .tip { color:#666; font-size:11px; margin-top:10px; line-height:1.5; }
 #side .tip b { color:#ddaaff; }
 #side .tip kbd { background:#2a2a40; border:1px solid #444; border-radius:3px; padding:1px 5px; font-size:10px; color:#fff; }
@@ -51,32 +64,41 @@ canvas { display:block; border-radius:8px; }
 /* ── Mobile HUD overlay (top bar) ── */
 #mobileHud { display:none; position:fixed; top:0; left:0; right:0; z-index:30; background:rgba(10,10,20,.82); backdrop-filter:blur(4px); padding:4px 10px 5px; font-size:11px; pointer-events:none; }
 body.touch-active #mobileHud { display:block; }
-#mobileHud .hud-row { display:flex; align-items:center; gap:8px; }
+#mobileHud .hud-row { display:flex; align-items:center; gap:6px; flex-wrap:nowrap; }
 #mobileHud .hud-label { color:#888; white-space:nowrap; }
 #mobileHud .hud-val { color:#fff; font-weight:700; white-space:nowrap; }
 #mobileHud .hud-val.gold { color:#ffcc44; }
 #mobileHud .hud-val.atk { color:#ff8866; }
 #mobileHud .hud-val.def { color:#66aaff; }
-#mobileHud .hud-hpbar { flex:1; height:8px; background:#1a1a2a; border:1px solid #333; border-radius:2px; overflow:hidden; min-width:60px; }
+#mobileHud .hud-hpbar { flex:1; height:8px; background:#1a1a2a; border:1px solid #333; border-radius:2px; overflow:hidden; min-width:40px; }
 #mobileHud .hud-hpfill { height:100%; background:linear-gradient(90deg,#44cc44,#88ff88); transition:width .25s; }
+#mobileHud .hud-hpfill.p2 { background:linear-gradient(90deg,#ffaa44,#ffdd66); }
 #mobileHud .hud-msg { color:#aaa; font-size:11px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; max-width:100%; margin-top:3px; }
 
 /* ── Touch controls overlay ── */
 #touchControls { display:none; position:fixed; bottom:0; left:0; right:0; height:200px; z-index:40; pointer-events:none; }
 #touchControls.active { display:block; }
 
-#joystick { position:absolute; bottom:20px; left:20px; width:120px; height:120px; pointer-events:auto; }
-#joystickBase { width:120px; height:120px; background:rgba(255,255,255,.08); border:2px solid rgba(255,255,255,.15); border-radius:50%; position:relative; }
-#joystickKnob { width:50px; height:50px; background:rgba(255,255,255,.25); border:2px solid rgba(255,255,255,.35); border-radius:50%; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); transition:none; }
+#joystickP1, #joystickP2 { position:absolute; bottom:20px; width:120px; height:120px; pointer-events:auto; }
+#joystickP1 { left:20px; }
+#joystickP2 { right:20px; }
+.joyBase { width:120px; height:120px; background:rgba(255,255,255,.08); border:2px solid rgba(255,255,255,.15); border-radius:50%; position:relative; }
+.joyBase.p2 { background:rgba(255,200,120,.08); border-color:rgba(255,200,120,.22); }
+.joyKnob { width:50px; height:50px; background:rgba(255,255,255,.25); border:2px solid rgba(255,255,255,.35); border-radius:50%; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); transition:none; }
+.joyBase.p2 .joyKnob { background:rgba(255,200,120,.3); border-color:rgba(255,200,120,.5); }
 
-/* Action buttons: 2×2 grid in bottom-right (Attack / Potion / Bomb / Speed) */
-#touchActions { position:absolute; bottom:20px; right:20px; display:grid; grid-template-columns:repeat(2,1fr); gap:6px; pointer-events:auto; width:150px; }
-#touchActions button { width:72px; height:60px; background:rgba(255,255,255,.08); border:1.5px solid rgba(255,255,255,.18); border-radius:10px; color:#ccc; font-size:12px; cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1px; padding:0; }
+/* Action buttons: 2×3 or 2×4 grid in bottom-center (shared) */
+#touchActions { position:absolute; bottom:20px; left:50%; transform:translateX(-50%); display:grid; grid-template-columns:repeat(4,auto); gap:6px; pointer-events:auto; }
+#touchActions button { width:62px; height:56px; background:rgba(255,255,255,.08); border:1.5px solid rgba(255,255,255,.18); border-radius:10px; color:#ccc; font-size:11px; cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1px; padding:0; }
 #touchActions button:active { background:rgba(255,255,255,.2); border-color:rgba(255,255,255,.35); }
 #touchActions button .icon { font-size:20px; line-height:1; }
 #touchActions button .label { font-size:8px; opacity:.7; }
 #touchActions button.active-speed { background:rgba(255,200,80,.18); border-color:rgba(255,200,80,.5); color:#ffd866; }
 #touchActions button[hidden] { display:none; }
+
+/* Solo (single joystick) — center the actions in the right area */
+body.solo-touch #touchActions { left:auto; right:20px; transform:none; }
+body.solo-touch #joystickP2 { display:none; }
 
 /* ── Context popup (shop / stairs proximity) ── */
 #contextPopup { display:none; position:fixed; bottom:210px; left:50%; transform:translateX(-50%); z-index:35; pointer-events:auto; gap:8px; }
@@ -85,6 +107,7 @@ body.touch-active #mobileHud { display:block; }
 #contextPopup button:active { background:rgba(255,255,255,.22); }
 #contextPopup button.shopBtn { color:#ffd866; border-color:rgba(255,200,80,.4); }
 #contextPopup button.stairsBtn { color:#7fdfff; border-color:rgba(80,180,255,.4); }
+#contextPopup button.reviveBtn { color:#ff88ff; border-color:rgba(255,120,255,.4); }
 
 /* ── Restart button (top-right, always visible on touch) ── */
 #restartBtn { display:none; position:fixed; top:6px; right:8px; z-index:31; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.15); border-radius:8px; color:#aaa; font-size:14px; padding:5px 8px; cursor:pointer; pointer-events:auto; line-height:1; }
@@ -95,16 +118,18 @@ body.touch-active #restartBtn { display:block; }
 @media (max-width:700px) {
   body.touch-active #side { display:none; }
   body.touch-active #wrap { flex-direction:column; }
-  body.touch-active #canvasWrap { padding-top:52px; padding-bottom:210px; }
+  body.touch-active #canvasWrap { padding-top:62px; padding-bottom:210px; }
 }
 @media (max-width:400px) {
-  #joystick { bottom:10px; left:10px; width:100px; height:100px; }
-  #joystickBase { width:100px; height:100px; }
-  #joystickKnob { width:42px; height:42px; }
-  #touchActions { bottom:10px; right:10px; gap:5px; width:130px; }
-  #touchActions button { width:62px; height:52px; }
-  #touchActions button .icon { font-size:18px; }
-  #contextPopup { bottom:180px; }
+  #joystickP1, #joystickP2 { bottom:10px; width:96px; height:96px; }
+  .joyBase { width:96px; height:96px; }
+  .joyKnob { width:40px; height:40px; }
+  #joystickP1 { left:8px; }
+  #joystickP2 { right:8px; }
+  #touchActions { bottom:10px; gap:4px; }
+  #touchActions button { width:52px; height:48px; }
+  #touchActions button .icon { font-size:16px; }
+  #contextPopup { bottom:170px; }
 }
 
 /* ── Shop overlay ── */
@@ -132,7 +157,7 @@ body.touch-active #restartBtn { display:block; }
 
 /* ── Overlays (title / game over) ── */
 #overlay { position:fixed; inset:0; z-index:70; display:flex; align-items:center; justify-content:center; background:rgba(5,5,12,.88); backdrop-filter:blur(4px); }
-#overlayBox { background:#0e0e1a; border:2px solid #aa44ff; border-radius:14px; padding:24px 32px; max-width:420px; width:88%; text-align:center; box-shadow:0 8px 40px rgba(170,68,255,.3); }
+#overlayBox { background:#0e0e1a; border:2px solid #aa44ff; border-radius:14px; padding:24px 32px; max-width:440px; width:88%; text-align:center; box-shadow:0 8px 40px rgba(170,68,255,.3); }
 #overlayBox.gameover { border-color:#ff4444; box-shadow:0 8px 40px rgba(255,68,68,.3); }
 #overlayBox h1 { font-size:1.9rem; color:#ddaaff; margin-bottom:6px; letter-spacing:-.01em; }
 #overlayBox.gameover h1 { color:#ff8866; }
@@ -145,6 +170,26 @@ body.touch-active #restartBtn { display:block; }
 #overlayBox .prompt kbd { background:#2a2a40; border:1px solid #444; border-radius:4px; padding:2px 6px; font-size:.85rem; color:#fff; margin:0 2px; }
 #overlayBox .legend { color:#888; font-size:11px; margin-top:10px; line-height:1.6; }
 
+/* ── Mode select overlay ── */
+#modeOverlay { position:fixed; inset:0; z-index:200; display:flex; align-items:center; justify-content:center; background:radial-gradient(ellipse at center, #1a0a2e 0%, #05050c 70%); backdrop-filter:blur(6px); }
+#modeOverlay.hidden { display:none; }
+#modeBox { background:#0e0e1a; border:2px solid #aa44ff; border-radius:16px; padding:22px 26px; max-width:380px; width:90%; text-align:center; box-shadow:0 12px 50px rgba(170,68,255,.4); }
+#modeBox h1 { font-size:1.6rem; color:#ddaaff; margin-bottom:4px; }
+#modeBox .modeSubtitle { color:#aaa; font-size:.85rem; margin-bottom:18px; }
+.modeBtn { display:flex; align-items:center; gap:12px; width:100%; padding:12px 14px; margin:8px 0; background:#1a1a2a; border:2px solid #333; border-radius:10px; color:#fff; font-size:15px; cursor:pointer; transition:all .15s; text-align:left; font-family:inherit; }
+.modeBtn:hover { background:#252540; border-color:#aa44ff; transform:translateY(-1px); }
+.modeBtn:active { transform:translateY(0); }
+.modeBtn .modeIcon { font-size:32px; line-height:1; flex-shrink:0; }
+.modeBtn .modeInfo { flex:1; }
+.modeBtn .modeName { font-weight:700; color:#fff; font-size:15px; }
+.modeBtn .modeDesc { color:#888; font-size:11px; margin-top:2px; }
+.modeBtn .modeKey { background:#2a2a40; border:1px solid #444; border-radius:4px; padding:2px 8px; color:#fff; font-size:11px; font-family:monospace; }
+.modeBtn.soloBtn .modeName { color:#aaffcc; }
+.modeBtn.duoBtn .modeName { color:#ffd9a8; }
+.modeBtn.duoBtn { border-color:rgba(255,200,120,.3); }
+#modeHint { color:#888; font-size:11px; margin-top:12px; }
+#modeHint kbd { background:#2a2a40; border:1px solid #444; border-radius:3px; padding:1px 5px; font-size:10px; color:#fff; }
+
 /* ── Floating Ice button ── */
 #iceBtn{position:fixed;z-index:999;width:44px;height:44px;border-radius:50%;background:rgba(170,220,255,.18);border:1.5px solid rgba(170,220,255,.35);display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer;touch-action:none;user-select:none;-webkit-user-select:none;transition:background .15s;}
 #iceBtn:active{background:rgba(170,220,255,.35);}
@@ -152,18 +197,47 @@ body.touch-active #restartBtn { display:block; }
 </head>
 <body>
 <div id="iceBtn">❄️</div>
+
+<!-- Mode select (very first screen) -->
+<div id="modeOverlay">
+  <div id="modeBox">
+    <h1>🏰 Dungeon Explore</h1>
+    <p class="modeSubtitle">Choose your mode · 选择模式</p>
+    <button class="modeBtn soloBtn" data-mode="solo">
+      <div class="modeIcon">🐱</div>
+      <div class="modeInfo">
+        <div class="modeName">单人模式 Solo</div>
+        <div class="modeDesc">A brave cat hero adventures alone</div>
+      </div>
+      <div class="modeKey">1</div>
+    </button>
+    <button class="modeBtn duoBtn" data-mode="duo">
+      <div class="modeIcon">🐱🐼</div>
+      <div class="modeInfo">
+        <div class="modeName">双人模式 Duo</div>
+        <div class="modeDesc">Cat 🐱 + Panda 🐼 team up!</div>
+      </div>
+      <div class="modeKey">2</div>
+    </button>
+    <div id="modeHint">Click a button or press <kbd>1</kbd> Solo · <kbd>2</kbd> Duo</div>
+  </div>
+</div>
+
 <!-- Mobile HUD (shown on touch devices) -->
 <div id="mobileHud">
-  <div class="hud-row">
-    <span class="hud-label">HP</span>
+  <div class="hud-row" id="hudRow1">
+    <span class="hud-label" id="hudP1Icon">🐱</span>
     <div class="hud-hpbar"><div class="hud-hpfill" id="hudHpFill" style="width:100%"></div></div>
     <span class="hud-val" id="hudHp">30/30</span>
-    <span class="hud-label">Lv</span><span class="hud-val" id="hudLv">1</span>
+    <span class="hud-label" id="hudP2Icon" style="display:none">🐼</span>
+    <div class="hud-hpbar" id="hudHpBar2" style="display:none"><div class="hud-hpfill p2" id="hudHpFill2" style="width:100%"></div></div>
+    <span class="hud-val" id="hudHp2" style="display:none">30/30</span>
   </div>
   <div class="hud-row">
     <span class="hud-label">💰</span><span class="hud-val gold" id="hudGold">0</span>
     <span class="hud-label">⚔️</span><span class="hud-val atk" id="hudAtk">3</span>
     <span class="hud-label">🛡️</span><span class="hud-val def" id="hudDef">1</span>
+    <span class="hud-label">F</span><span class="hud-val" id="hudLv">1</span>
   </div>
   <div class="hud-msg" id="hudMsg">Welcome, brave hero!</div>
 </div>
@@ -175,21 +249,43 @@ body.touch-active #restartBtn { display:block; }
   <div id="canvasWrap"><canvas id="game"></canvas></div>
   <div id="side">
     <h2>🏰 Dungeon Explore</h2>
+
+    <!-- P1 block (always shown) -->
+    <div class="playerBlock" id="pBlock1">
+      <div class="playerHead">
+        <span class="phIcon" id="pIcon1">🐱</span>
+        <span class="phName" id="pName1">P1: Hero</span>
+      </div>
+      <div class="row"><span class="label">HP</span><span class="val hp" id="sHp">30/30</span></div>
+      <div id="hpBar"><div id="hpFill" style="width:100%"></div></div>
+      <div class="row"><span class="label">ATK</span><span class="val atk" id="sAtk">3</span></div>
+      <div class="row"><span class="label">DEF</span><span class="val def" id="sDef">1</span></div>
+      <div class="row"><span class="label">Weapon</span><span class="val equip" id="sWpn">Wooden Stick</span></div>
+      <div class="row"><span class="label">Armor</span><span class="val equip" id="sArm">Cloth Tunic</span></div>
+    </div>
+
+    <!-- P2 block (duo only) -->
+    <div class="playerBlock p2" id="pBlock2" style="display:none">
+      <div class="playerHead">
+        <span class="phIcon" id="pIcon2">🐼</span>
+        <span class="phName" id="pName2">P2: Panda</span>
+      </div>
+      <div class="row"><span class="label">HP</span><span class="val hp" id="sHp2">30/30</span></div>
+      <div id="hpBar2"><div id="hpFill2" style="width:100%"></div></div>
+      <div class="row"><span class="label">ATK</span><span class="val atk" id="sAtk2">3</span></div>
+      <div class="row"><span class="label">DEF</span><span class="val def" id="sDef2">1</span></div>
+    </div>
+
+    <!-- Shared resources -->
     <div class="row"><span class="label">Level</span><span class="val" id="sLv">1</span></div>
-    <div class="row"><span class="label">HP</span><span class="val hp" id="sHp">30/30</span></div>
-    <div id="hpBar"><div id="hpFill" style="width:100%"></div></div>
-    <div class="row"><span class="label">ATK</span><span class="val atk" id="sAtk">3</span></div>
-    <div class="row"><span class="label">DEF</span><span class="val def" id="sDef">1</span></div>
-    <div class="row"><span class="label">Weapon</span><span class="val equip" id="sWpn">Wooden Stick</span></div>
-    <div class="row"><span class="label">Armor</span><span class="val equip" id="sArm">Cloth Tunic</span></div>
     <div class="row"><span class="label">Gold</span><span class="val gold" id="sGold">0</span></div>
     <div class="row"><span class="label">Kills</span><span class="val" id="sKills">0</span></div>
     <div class="row"><span class="label">🧪 Potions</span><span class="val" id="sPots">0</span></div>
     <div class="row"><span class="label">❤️ Big Pots</span><span class="val" id="sBigP">0</span></div>
     <div class="row"><span class="label">💣 Bombs</span><span class="val" id="sBombs">0</span></div>
     <div id="msgLog"></div>
-    <div class="tip">
-      <b>WASD/Arrows</b> move (bump to attack)<br>
+    <div class="tip" id="tipBox">
+      <b id="tipTitle">WASD</b> move (bump to attack)<br>
       <kbd>Space</kbd> attack · <kbd>P</kbd> potion · <kbd>B</kbd> bomb<br>
       <kbd>E</kbd> shop · <kbd>►</kbd> descend · <kbd>F</kbd> speed<br>
       <kbd>R</kbd> restart
@@ -197,17 +293,21 @@ body.touch-active #restartBtn { display:block; }
   </div>
 </div>
 
-<!-- Touch device: floating joystick + action buttons -->
+<!-- Touch device: floating joysticks + shared action buttons -->
 <div id="touchControls">
-  <div id="joystick">
-    <div id="joystickBase">
-      <div id="joystickKnob"></div>
-    </div>
+  <div id="joystickP1">
+    <div class="joyBase" id="joyBase1"><div class="joyKnob" id="joyKnob1"></div></div>
+  </div>
+  <div id="joystickP2">
+    <div class="joyBase p2" id="joyBase2"><div class="joyKnob" id="joyKnob2"></div></div>
   </div>
   <div id="touchActions">
-    <button id="btnAttack" ontouchstart="event.preventDefault();doAttack()"><span class="icon">⚔️</span><span class="label">Attack</span></button>
+    <button id="btnAttack" ontouchstart="event.preventDefault();doAttack(0)"><span class="icon">⚔️</span><span class="label">Attack</span></button>
     <button id="btnPotion" ontouchstart="event.preventDefault();usePotion()"><span class="icon">🧪</span><span class="label">Potion</span></button>
     <button id="btnBomb" ontouchstart="event.preventDefault();useBomb()"><span class="icon">💣</span><span class="label">Bomb</span></button>
+    <button id="btnShop" ontouchstart="event.preventDefault();tryShop()"><span class="icon">🏪</span><span class="label">Shop</span></button>
+    <button id="btnDescend" ontouchstart="event.preventDefault();descend()"><span class="icon">▼</span><span class="label">Down</span></button>
+    <button id="btnRevive" ontouchstart="event.preventDefault();tryRevive()" style="display:none"><span class="icon">💖</span><span class="label">Revive</span></button>
     <button id="btnSpeed" ontouchstart="event.preventDefault();toggleSpeed()"><span class="icon">⏩</span><span class="label">Speed</span></button>
     <button id="btnRetry" ontouchstart="event.preventDefault();retry()"><span class="icon">🔄</span><span class="label">Retry</span></button>
   </div>
@@ -243,9 +343,9 @@ body.touch-active #restartBtn { display:block; }
 
 <script>
 'use strict';
-// ═══════════════════════════════════════════
-// 🏰 Dungeon Explore — Thawpaw Games
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════════════════════
+// 🏰 Dungeon Explore — Thawpaw Games (Solo + Duo)
+// ═══════════════════════════════════════════════════
 
 const WIDTH = 40, HEIGHT = 20;
 const ROOM_MIN = 4, ROOM_MAX = 9, MAX_ROOMS = 8;
@@ -272,7 +372,8 @@ const ITEM_TYPES = [
 const WEAPON_NAMES = ['Rusty Sword','Iron Blade','Steel Rapier','Flame Dagger','Crystal Staff','Shadow Edge'];
 const ARMOR_NAMES  = ['Leather Vest','Chain Mail','Iron Plate','Mithril Armor','Dragon Scale'];
 
-const SAVE_KEY = 'thawpaw.dungeon.save.v1';
+const SAVE_KEY = 'thawpaw.dungeon.save.v2';
+const MODE_KEY = 'thawpaw.dungeon.mode';
 
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
@@ -290,6 +391,18 @@ const sPots = document.getElementById('sPots');
 const sBigP = document.getElementById('sBigP');
 const sBombs = document.getElementById('sBombs');
 const hpFill = document.getElementById('hpFill');
+const sHp2 = document.getElementById('sHp2');
+const sAtk2 = document.getElementById('sAtk2');
+const sDef2 = document.getElementById('sDef2');
+const hpFill2 = document.getElementById('hpFill2');
+const pBlock1 = document.getElementById('pBlock1');
+const pBlock2 = document.getElementById('pBlock2');
+const pName1 = document.getElementById('pName1');
+const pName2 = document.getElementById('pName2');
+const pIcon1 = document.getElementById('pIcon1');
+const pIcon2 = document.getElementById('pIcon2');
+const tipBox = document.getElementById('tipBox');
+const tipTitle = document.getElementById('tipTitle');
 const msgLog = document.getElementById('msgLog');
 
 const hudHp = document.getElementById('hudHp');
@@ -299,6 +412,11 @@ const hudGold = document.getElementById('hudGold');
 const hudAtk = document.getElementById('hudAtk');
 const hudDef = document.getElementById('hudDef');
 const hudMsg = document.getElementById('hudMsg');
+const hudP1Icon = document.getElementById('hudP1Icon');
+const hudP2Icon = document.getElementById('hudP2Icon');
+const hudHp2 = document.getElementById('hudHp2');
+const hudHpBar2 = document.getElementById('hudHpBar2');
+const hudHpFill2 = document.getElementById('hudHpFill2');
 
 const overlay = document.getElementById('overlay');
 const overlayBox = document.getElementById('overlayBox');
@@ -306,6 +424,7 @@ const oTitle = document.getElementById('oTitle');
 const oSub = document.getElementById('oSub');
 const oBody = document.getElementById('oBody');
 const oPrompt = document.getElementById('oPrompt');
+const modeOverlay = document.getElementById('modeOverlay');
 
 // Shop elements
 const shopOverlay = document.getElementById('shopOverlay');
@@ -313,35 +432,45 @@ const shopGoldEl = document.getElementById('shopGold');
 const shopItemsEl = document.getElementById('shopItems');
 const shopMsgEl = document.getElementById('shopMsg');
 let shopStock = null;
-let shopBought = null; // per-slot sold-out flags
+let shopBought = null;
 let shopCursor = 0;
 
-// ─── State ───
+// ─── Mode / state ───
+let mode = loadMode();      // 'solo' | 'duo'
+let isDuo = false;          // derived from mode
 let tiles = [];
 let explored = [];
 let monsters = [];
 let items = [];
-let player = null;
+let players = [];           // [p0 (always), p1 (duo only)]
+let activeIdx = 0;          // 0 or 1 (mostly for input routing)
 let level = 1;
 let potions = 0, bigPotions = 0, bombs = 0;
 let gold = 0, kills = 0;
 let weaponName = 'Wooden Stick', armorName = 'Cloth Tunic';
 let messages = [];
-let running = true;          // false → game over
-let state = 'title';         // title | playing | over | shop
+let running = true;
+let state = 'modeSelect';   // modeSelect | title | playing | over | shop
 let shopPos = null;
-let pendingAction = null;    // when input arrives while showing an overlay
 let touchActive = false;
-let lastMoveDir = { dx:0, dy:0 };
-let gameSpeed = 1;            // 1 = normal (320ms), 2 = fast (160ms)
-let tickMs = 320;            // 320 normal, 160 fast (used for FOV recompute)
+let lastMoveDir = [ {dx:0,dy:0}, {dx:0,dy:0} ];
+let gameSpeed = 1;
+let tickMs = 320;
 let fastMode = false;
 let lastTick = 0;
 let rafId = null;
 let visibleSet = new Set();
-let animFx = [];             // {type, x, y, t, dur, ...}
+let animFx = [];
 let hudMessage = 'Welcome, brave hero!';
 let hudMsgTimer = 0;
+
+// Duo turn tracking
+let p1Acted = false;
+let p2Acted = false;
+
+// P2 last-attacked-this-turn lock (so P1 & P2 act in separate ticks)
+let p1DidAction = false;
+let p2DidAction = false;
 
 // ─── Audio ───
 let audioCtx = null;
@@ -374,6 +503,7 @@ function sfxBomb()      { [120,90,60,40].forEach((f,i) => setTimeout(() => blip(
 function sfxShop()      { blip(660, 0.05, 'square', 0.06); setTimeout(() => blip(880, 0.06, 'square', 0.06), 50); }
 function sfxShopErr()   { blip(220, 0.08, 'sawtooth', 0.06, 0.6); }
 function sfxStairs()    { blip(523, 0.06, 'triangle', 0.05); setTimeout(() => blip(784, 0.08, 'triangle', 0.05), 60); }
+function sfxRevive()    { [392,494,587,784].forEach((f,i) => setTimeout(() => blip(f, 0.12, 'sine', 0.07), i*80)); }
 
 // ─── Random utilities ───
 function rnd(n) { return Math.floor(Math.random() * n); }
@@ -408,22 +538,105 @@ function setHudMessage(m) {
   hudMsgTimer = performance.now();
 }
 
-// ─── Context popup (shop / stairs proximity) ───
+// ─── Mode loading / saving ───
+function loadMode() {
+  try {
+    const m = localStorage.getItem(MODE_KEY);
+    if (m === 'duo' || m === 'solo') return m;
+  } catch (e) {}
+  return 'solo';
+}
+function saveMode() {
+  try { localStorage.setItem(MODE_KEY, mode); } catch (e) {}
+}
+function applyMode() {
+  isDuo = (mode === 'duo');
+  document.body.classList.toggle('solo-touch', !isDuo);
+  // Show/hide P2 sidebar block
+  if (pBlock2) pBlock2.style.display = isDuo ? 'block' : 'none';
+  // Show/hide P2 mobile HUD bar
+  if (hudP2Icon) hudP2Icon.style.display = isDuo ? '' : 'none';
+  if (hudHpBar2) hudHpBar2.style.display = isDuo ? 'block' : 'none';
+  if (hudHp2) hudHp2.style.display = isDuo ? '' : 'none';
+  // Show/hide P2 joystick (mobile)
+  const j2 = document.getElementById('joystickP2');
+  if (j2) j2.style.display = isDuo ? 'block' : 'none';
+  // Tip text
+  if (tipBox) {
+    if (isDuo) {
+      tipTitle.textContent = 'P1: WASD · P2: Arrows';
+      tipBox.innerHTML =
+        '<b>P1 🐱</b> WASD move · <b>P2 🐼</b> Arrows move<br>' +
+        '<kbd>Space</kbd>/<kbd>Enter</kbd> attack · <kbd>P</kbd> potion · <kbd>B</kbd> bomb<br>' +
+        '<kbd>E</kbd> shop · <kbd>V</kbd> revive · <kbd>►</kbd> descend · <kbd>F</kbd> speed<br>' +
+        '<kbd>R</kbd> restart';
+    } else {
+      tipTitle.textContent = 'WASD';
+      tipBox.innerHTML =
+        '<b>WASD/Arrows</b> move (bump to attack)<br>' +
+        '<kbd>Space</kbd> attack · <kbd>P</kbd> potion · <kbd>B</kbd> bomb<br>' +
+        '<kbd>E</kbd> shop · <kbd>►</kbd> descend · <kbd>F</kbd> speed<br>' +
+        '<kbd>R</kbd> restart';
+    }
+  }
+  // Update HUD
+  updateHud();
+}
+
+// ─── Player helpers ───
+function makePlayer(emoji, name) {
+  return {
+    x: 0, y: 0,
+    hp: 30, maxHp: 30, atk: 3, defense: 1,
+    alive: true,
+    emoji, name,
+  };
+}
+function firstPlayer()  { return players[0]; }
+function secondPlayer() { return isDuo ? players[1] : null; }
+function livingPlayers() { return players.filter(p => p && p.alive); }
+function anyAlive()     { return livingPlayers().length > 0; }
+function bothAlive()    { return players.every(p => p && p.alive); }
+function idxOfPlayer(p) { return players.indexOf(p); }
+
+// ─── Context popup (shop / stairs / revive proximity) ──
 function updateContextPopup() {
   const popup = document.getElementById('contextPopup');
   if (!popup) return;
-  // Hide on title / over / shop
-  if (state !== 'playing' || !player) {
+  if (state !== 'playing' || !players[0]) {
     popup.classList.remove('show');
     popup.innerHTML = '';
     return;
   }
-  const t = tiles[player.y][player.x];
+  const living = livingPlayers();
+  if (living.length === 0) {
+    popup.classList.remove('show');
+    popup.innerHTML = '';
+    return;
+  }
   let html = '';
-  if (t === 'shop') {
-    html = '<button class="shopBtn" ontouchstart="event.preventDefault();tryShop()" onclick="tryShop()">🏪 Enter Shop</button>';
-  } else if (t === 'stairs') {
-    html = '<button class="stairsBtn" ontouchstart="event.preventDefault();descend()" onclick="descend()">▼ Descend</button>';
+  // Check shop — any alive player on/adjacent to shop
+  const shopReachable = living.some(p => canReachShop(p));
+  if (shopReachable && !isDuo) {
+    html += '<button class="shopBtn" ontouchstart="event.preventDefault();tryShop()" onclick="tryShop()">🏪 Shop</button>';
+  } else if (shopReachable && isDuo) {
+    html += '<button class="shopBtn" ontouchstart="event.preventDefault();tryShop()" onclick="tryShop()">🏪 Shop</button>';
+  }
+  // Stairs — solo: just on stairs. Duo: BOTH alive must be on stairs.
+  let canDescend = false;
+  if (!isDuo) {
+    canDescend = tiles[firstPlayer().y] && tiles[firstPlayer().y][firstPlayer().x] === 'stairs';
+  } else {
+    // Duo: every ALIVE player must be on stairs (ghosts can be wherever)
+    const alive = livingPlayers();
+    canDescend = alive.length > 0 && alive.every(p => tiles[p.y] && tiles[p.y][p.x] === 'stairs');
+  }
+  if (canDescend) {
+    html += '<button class="stairsBtn" ontouchstart="event.preventDefault();descend()" onclick="descend()">▼ Descend</button>';
+  }
+  // Revive — solo never; duo if exactly one alive and has potion
+  if (isDuo && living.length === 1 && (bigPotions > 0 || potions >= 3)) {
+    html += '<button class="reviveBtn" ontouchstart="event.preventDefault();tryRevive()" onclick="tryRevive()">💖 Revive</button>';
   }
   if (html) {
     popup.innerHTML = html;
@@ -439,6 +652,14 @@ function hideContextPopup() {
   popup.classList.remove('show');
   popup.innerHTML = '';
 }
+function canReachShop(p) {
+  if (tiles[p.y][p.x] === 'shop') return true;
+  for (const [dx,dy] of [[0,1],[0,-1],[1,0],[-1,0]]) {
+    const nx = p.x + dx, ny = p.y + dy;
+    if (nx>=0 && ny>=0 && nx<WIDTH && ny<HEIGHT && tiles[ny][nx] === 'shop') return true;
+  }
+  return false;
+}
 
 // Show/hide combat action buttons based on game state
 function updateTouchActions() {
@@ -447,31 +668,34 @@ function updateTouchActions() {
   const bmb = document.getElementById('btnBomb');
   const spd = document.getElementById('btnSpeed');
   const rtr = document.getElementById('btnRetry');
+  const shp = document.getElementById('btnShop');
+  const dwn = document.getElementById('btnDescend');
+  const rev = document.getElementById('btnRevive');
   if (!atk) return;
-  if (state === 'title') {
-    atk.hidden = true; pot.hidden = true; bmb.hidden = true;
-    rtr.hidden = true;
+  if (state === 'modeSelect' || state === 'title') {
+    atk.hidden = pot.hidden = bmb.hidden = rtr.hidden = shp.hidden = dwn.hidden = true;
     if (spd) spd.hidden = true;
+    if (rev) rev.hidden = true;
   } else if (state === 'over' || !running) {
-    // Death/won: hide attack/potion/bomb, show retry
-    atk.hidden = true;
-    pot.hidden = true;
-    bmb.hidden = true;
+    atk.hidden = pot.hidden = bmb.hidden = shp.hidden = dwn.hidden = true;
     rtr.hidden = false;
     if (spd) spd.hidden = false;
+    if (rev) rev.hidden = true;
   } else if (state === 'shop') {
-    // Don't show combat actions while shopping
-    atk.hidden = true;
-    pot.hidden = true;
-    bmb.hidden = true;
-    rtr.hidden = true;
+    atk.hidden = pot.hidden = bmb.hidden = rtr.hidden = shp.hidden = dwn.hidden = true;
     if (spd) spd.hidden = true;
+    if (rev) rev.hidden = true;
   } else {
-    atk.hidden = false;
-    pot.hidden = false;
-    bmb.hidden = false;
-    rtr.hidden = true;
+    // playing
+    atk.hidden = pot.hidden = bmb.hidden = rtr.hidden = false;
+    shp.hidden = false;
+    dwn.hidden = false;
     if (spd) spd.hidden = false;
+    if (rev) {
+      // show revive if conditions met
+      if (isDuo && livingPlayers().length === 1 && (bigPotions > 0 || potions >= 3)) rev.hidden = false;
+      else rev.hidden = true;
+    }
   }
   updateSpeedBtn();
 }
@@ -521,14 +745,27 @@ function generateLevel() {
     tiles[cy][cx] = 'floor';
   }
 
-  if (player == null) {
-    const r0 = rooms[0];
-    player = { x: r0.x + (r0.w>>1), y: r0.y + (r0.h>>1), hp:30, maxHp:30, atk:3, defense:1 };
-  } else {
-    const r0 = rooms[0];
-    player.x = r0.x + (r0.w>>1);
-    player.y = r0.y + (r0.h>>1);
+  // place players in first room
+  const r0 = rooms[0];
+  const cx0 = r0.x + (r0.w>>1);
+  const cy0 = r0.y + (r0.h>>1);
+  if (players.length === 0) {
+    players = [ makePlayer('🐱', 'Hero Cat') ];
   }
+  if (isDuo) {
+    if (players.length < 2) {
+      players[1] = makePlayer('🐼', 'Panda Pal');
+    }
+    players[0].x = cx0;     players[0].y = cy0;
+    players[1].x = cx0 + 1; players[1].y = cy0;
+  } else {
+    // Solo: ensure only 1 player
+    if (players.length > 1) players = players.slice(0, 1);
+    if (players.length === 0) players = [ makePlayer('🐱', 'Hero Cat') ];
+    players[0].x = cx0; players[0].y = cy0;
+  }
+  // Make sure alive flags are valid
+  for (const p of players) { if (p.hp > 0) p.alive = true; }
 
   // stairs in last room
   const lastRoom = rooms[rooms.length - 1];
@@ -549,7 +786,7 @@ function generateLevel() {
     }
   }
 
-  // monsters
+  // monsters — avoid spawning on players
   const maxIdx = Math.min(MONSTER_TYPES.length - 1, level + 2);
   for (let i = 1; i < rooms.length; i++) {
     const r = rooms[i];
@@ -560,7 +797,7 @@ function generateLevel() {
         const mx = r.x + 1 + rnd(Math.max(1, r.w - 2));
         const my = r.y + 1 + rnd(Math.max(1, r.h - 2));
         if (tiles[my][mx] !== 'floor') continue;
-        if (mx === player.x && my === player.y) continue;
+        if (players.some(p => p.x === mx && p.y === my)) continue;
         const mtype = MONSTER_TYPES[rnd(maxIdx + 1)];
         const m = {
           x: mx, y: my,
@@ -605,6 +842,7 @@ function generateLevel() {
           const ix = r.x + 1 + rnd(Math.max(1, r.w - 2));
           const iy = r.y + 1 + rnd(Math.max(1, r.h - 2));
           if (tiles[iy][ix] !== 'floor') continue;
+          if (players.some(p => p.x === ix && p.y === iy)) continue;
           const base = choice(ITEM_TYPES);
           const it = {
             x: ix, y: iy,
@@ -619,18 +857,27 @@ function generateLevel() {
     }
   }
 
+  // reset turn flags
+  p1Acted = false;
+  p2Acted = false;
+
   logMsg('─ Level ' + level + ' ─ Explore the dungeon!', 'info');
 }
 
-// ─── FOV ───
+// ─── FOV (union of all alive players) ───
 function computeFov() {
   const set = new Set();
-  const px = player.x, py = player.y;
-  for (let dy = -FOV_RADIUS; dy <= FOV_RADIUS; dy++) {
-    for (let dx = -FOV_RADIUS; dx <= FOV_RADIUS; dx++) {
-      const x = px + dx, y = py + dy;
-      if (x < 0 || y < 0 || x >= WIDTH || y >= HEIGHT) continue;
-      if (dx*dx + dy*dy <= FOV_RADIUS*FOV_RADIUS) set.add(x + ',' + y);
+  const living = livingPlayers();
+  if (living.length === 0) return set;
+  // If all dead, fallback to first player
+  const sources = living.length > 0 ? living : [players[0]];
+  for (const src of sources) {
+    for (let dy = -FOV_RADIUS; dy <= FOV_RADIUS; dy++) {
+      for (let dx = -FOV_RADIUS; dx <= FOV_RADIUS; dx++) {
+        const x = src.x + dx, y = src.y + dy;
+        if (x < 0 || y < 0 || x >= WIDTH || y >= HEIGHT) continue;
+        if (dx*dx + dy*dy <= FOV_RADIUS*FOV_RADIUS) set.add(x + ',' + y);
+      }
     }
   }
   return set;
@@ -650,16 +897,19 @@ function makeShopStock(lv) {
 }
 
 // ─── Shop logic ───
+function isAnyOnShop() {
+  return livingPlayers().some(p => tiles[p.y][p.x] === 'shop');
+}
+function isAnyAdjacentShop() {
+  return livingPlayers().some(p => canReachShop(p));
+}
 function openShop() {
   if (state !== 'playing') return;
-  if (tiles[player.y][player.x] !== 'shop') {
-    // check adjacent
-    let near = false;
-    for (const [dx,dy] of [[0,1],[0,-1],[1,0],[-1,0]]) {
-      const nx = player.x + dx, ny = player.y + dy;
-      if (nx>=0 && ny>=0 && nx<WIDTH && ny<HEIGHT && tiles[ny][nx] === 'shop') { near = true; break; }
-    }
-    if (!near) { logMsg('🏪 No shop nearby. Look for $ tiles!', 'info'); return; }
+  if (!isAnyAdjacentShop()) {
+    logMsg('🏪 No shop nearby. Look for $ tiles!', 'info');
+    return;
+  }
+  if (!isAnyOnShop()) {
     logMsg('🏪 Step onto the $ tile and press E!', 'info');
     return;
   }
@@ -671,7 +921,6 @@ function openShop() {
   shopOverlay.classList.add('active');
   hideContextPopup();
   updateTouchActions();
-  pendingAction = null;
 }
 function closeShop() {
   shopOverlay.classList.remove('active');
@@ -725,16 +974,20 @@ function doPurchase(i) {
     case 'potion':    potions++; break;
     case 'bigpotion': bigPotions++; break;
     case 'weapon':
-      player.atk += 2;
+      // Both players get ATK +2 (shared team)
+      for (const p of players) p.atk += 2;
       weaponName = randName(WEAPON_NAMES, weaponName);
       break;
     case 'armor':
-      player.defense += 1;
+      for (const p of players) p.defense += 1;
       armorName = randName(ARMOR_NAMES, armorName);
       break;
     case 'maxhp':
-      player.maxHp += 10;
-      player.hp = player.maxHp;
+      for (const p of players) {
+        p.maxHp += 10;
+        p.hp = p.maxHp;
+        p.alive = true;
+      }
       break;
     case 'map':
       for (let y = 0; y < HEIGHT; y++)
@@ -758,35 +1011,36 @@ function showShopMsg(text, isErr) {
 }
 
 // ─── Combat / movement ───
-function tryMove(dx, dy) {
+// Returns true if player moved or successfully attacked
+function tryMove(pi, dx, dy) {
   if (state !== 'playing') return false;
   if (dx === 0 && dy === 0) return false;
-  const nx = player.x + dx, ny = player.y + dy;
+  const p = players[pi];
+  if (!p) return false;
+  const nx = p.x + dx, ny = p.y + dy;
   if (nx < 0 || ny < 0 || nx >= WIDTH || ny >= HEIGHT) return false;
   if (tiles[ny][nx] === 'wall') return false;
-  // adjacent monster → attack
   const mon = monsters.find(m => m.x === nx && m.y === ny);
-  if (mon) { attackMonster(mon); return true; }
-  // move
-  player.x = nx; player.y = ny;
-  // pickup
+  if (mon) { attackMonster(pi, mon); return true; }
+  p.x = nx; p.y = ny;
   const it = items.find(i => i.x === nx && i.y === ny);
-  if (it) pickupItem(it);
-  // prompt
+  if (it) pickupItem(pi, it);
   const t = tiles[ny][nx];
-  if (t === 'stairs') { logMsg('🪜 You see stairs! Press ► to descend.', 'info'); sfxStairs(); }
-  if (t === 'shop')   { logMsg('🏪 Shop found! Press E to enter.', 'info'); }
-  lastMoveDir = { dx, dy };
+  if (t === 'stairs') { logMsg('🪜 ' + p.emoji + ' sees stairs!', 'info'); sfxStairs(); }
+  if (t === 'shop')   { logMsg('🏪 ' + p.emoji + ' at shop!', 'info'); }
+  lastMoveDir[pi] = { dx, dy };
   updateContextPopup();
   return true;
 }
 
-function attackMonster(mon) {
-  const dmg = Math.max(1, player.atk - mon.defense + rnd(4) - 1);
+function attackMonster(pi, mon) {
+  const p = players[pi];
+  if (!p || !p.alive) return;
+  const dmg = Math.max(1, p.atk - mon.defense + rnd(4) - 1);
   mon.hp -= dmg;
   sfxAttack();
   spawnFx('hit', mon.x, mon.y, '#ff8855');
-  logMsg(`⚔️ You hit ${mon.name} for ${dmg} dmg! (${Math.max(0,mon.hp)}/${mon.maxHp})`, mon.isBoss ? 'hurt' : 'info');
+  logMsg(`⚔️ ${p.emoji} ${p.name} hits ${mon.name} for ${dmg} dmg! (${Math.max(0,mon.hp)}/${mon.maxHp})`, mon.isBoss ? 'hurt' : 'info');
   if (mon.hp <= 0) {
     logMsg(`💀 ${mon.name} defeated! +${mon.xp}xp`, 'good');
     kills++;
@@ -794,46 +1048,64 @@ function attackMonster(mon) {
     gold += goldDrop;
     logMsg(`💰 +${goldDrop}g from ${mon.name}!`, 'gold');
     monsters = monsters.filter(m => m !== mon);
-    if (kills % 5 === 0) {
-      player.maxHp += 5;
-      player.hp = Math.min(player.hp + 10, player.maxHp);
-      player.atk += 1;
+    // Level-up threshold scales to player count for fairness in duo
+    const lvThreshold = isDuo ? 7 : 5;
+    if (kills % lvThreshold === 0) {
+      // Both players gain
+      for (const pl of players) {
+        pl.maxHp += 5;
+        pl.hp = Math.min(pl.hp + 10, pl.maxHp);
+        pl.atk += 1;
+      }
       sfxLevelUp();
-      logMsg(`🎉 LEVEL UP! HP+5 ATK+1 (HP:${player.hp}/${player.maxHp})`, 'good');
+      logMsg(`🎉 TEAM LEVEL UP! HP+5 ATK+1 each!`, 'good');
     }
   }
 }
 
-function doAttack() {
+function doAttack(pi) {
   if (state !== 'playing') return;
-  // find adjacent monster — prefer last move dir, else any
+  pi = (pi === undefined) ? 0 : pi;
+  const p = players[pi];
+  if (!p || !p.alive) {
+    logMsg(`${p ? p.emoji : ''} Can't act — down!`, 'info');
+    return;
+  }
   const dirs = [];
-  if (lastMoveDir.dx || lastMoveDir.dy) dirs.push(lastMoveDir);
+  const last = lastMoveDir[pi];
+  if (last && (last.dx || last.dy)) dirs.push(last);
   for (const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]) {
-    if (!(dx === lastMoveDir.dx && dy === lastMoveDir.dy)) dirs.push({dx,dy});
+    if (!(dx === last.dx && dy === last.dy)) dirs.push({dx,dy});
   }
   for (const d of dirs) {
-    const nx = player.x + d.dx, ny = player.y + d.dy;
+    const nx = p.x + d.dx, ny = p.y + d.dy;
     const mon = monsters.find(m => m.x === nx && m.y === ny);
-    if (mon) { attackMonster(mon); monsterTurn(); return; }
+    if (mon) {
+      attackMonster(pi, mon);
+      markActed(pi);
+      endPlayerTurn();
+      return;
+    }
   }
-  logMsg('⚔️ No enemy in range.', 'info');
+  logMsg(`⚔️ ${p.emoji} No enemy in range.`, 'info');
 }
 
-function pickupItem(it) {
+function pickupItem(pi, it) {
   items = items.filter(i => i !== it);
+  const p = players[pi];
   sfxPickup();
   if (it.effect === 'heal') {
     potions++;
-    logMsg(`🧪 Picked up ${it.name}! (P:${potions})`, 'good');
+    logMsg(`🧪 ${p.emoji} picked up ${it.name}! (P:${potions})`, 'good');
   } else if (it.effect === 'atk') {
-    player.atk += it.value;
+    // ATK scroll applies to BOTH players (shared)
+    for (const pl of players) pl.atk += it.value;
     weaponName = randName(WEAPON_NAMES, weaponName);
-    logMsg(`⚔️ ${weaponName}! ATK +${it.value} → ${player.atk}`, 'good');
+    logMsg(`⚔️ ${weaponName}! ATK +${it.value} (both players) → ${players[0].atk}`, 'good');
   } else if (it.effect === 'def') {
-    player.defense += it.value;
+    for (const pl of players) pl.defense += it.value;
     armorName = randName(ARMOR_NAMES, armorName);
-    logMsg(`🛡️ ${armorName}! DEF +${it.value} → ${player.defense}`, 'good');
+    logMsg(`🛡️ ${armorName}! DEF +${it.value} (both players) → ${players[0].defense}`, 'good');
   } else if (it.effect === 'gold') {
     gold += it.value;
     logMsg(`💰 +${it.value} gold! (Total: ${gold})`, 'gold');
@@ -842,26 +1114,64 @@ function pickupItem(it) {
   saveGame();
 }
 
+// ─── Duo turn system ───
+function markActed(pi) {
+  if (!isDuo) { p1Acted = true; p2Acted = true; return; }
+  if (pi === 0) p1Acted = true;
+  else if (pi === 1) p2Acted = true;
+  // Dead players auto-pass: treat their flag as true so the survivor isn't blocked
+  if (!players[0] || !players[0].alive) p1Acted = true;
+  if (!players[1] || !players[1].alive) p2Acted = true;
+}
+function endPlayerTurn() {
+  if (!isDuo) {
+    monsterTurn();
+    return;
+  }
+  // Duo: only run monster turn once BOTH have acted (alive ones)
+  if (p1Acted && p2Acted) {
+    monsterTurn();
+    p1Acted = false;
+    p2Acted = false;
+  }
+}
+
 function monsterTurn() {
   for (const mon of monsters) {
-    const dx = player.x - mon.x;
-    const dy = player.y - mon.y;
+    // Target the nearest alive player
+    const targets = livingPlayers();
+    if (targets.length === 0) break;
+    let best = targets[0], bestDist = Math.abs(mon.x - best.x) + Math.abs(mon.y - best.y);
+    for (let i = 1; i < targets.length; i++) {
+      const t = targets[i];
+      const d = Math.abs(mon.x - t.x) + Math.abs(mon.y - t.y);
+      if (d < bestDist) { best = t; bestDist = d; }
+    }
+    const dx = best.x - mon.x;
+    const dy = best.y - mon.y;
     const dist = Math.abs(dx) + Math.abs(dy);
     if (dist === 1) {
-      const dmg = Math.max(1, mon.atk - player.defense + rnd(3) - 1);
-      player.hp -= dmg;
+      const dmg = Math.max(1, mon.atk - best.defense + rnd(3) - 1);
+      best.hp -= dmg;
       sfxHurt();
-      spawnFx('hit', player.x, player.y, '#ff4444');
-      logMsg(`💢 ${mon.name} hits you for ${dmg}! (${Math.max(0,player.hp)}/${player.maxHp})`, 'hurt');
-      if (player.hp <= 0) {
-        logMsg(`💀💀💀 YOU DIED on Level ${level} with ${gold}g and ${kills} kills.`, 'hurt');
-        logMsg('Press R to restart.', 'info');
-        running = false;
-        state = 'over';
-        sfxDeath();
-        saveGame();
-        showGameOver();
-        return;
+      spawnFx('hit', best.x, best.y, '#ff4444');
+      logMsg(`💢 ${mon.name} hits ${best.emoji} for ${dmg}! (${Math.max(0,best.hp)}/${best.maxHp})`, 'hurt');
+      if (best.hp <= 0) {
+        best.alive = false;
+        logMsg(`💀 ${best.emoji} ${best.name} has fallen!`, 'hurt');
+        sfxHurt();
+        if (!anyAlive()) {
+          logMsg('💀💀💀 TEAM WIPED on Level ' + level + ' with ' + gold + 'g and ' + kills + ' kills.', 'hurt');
+          logMsg('Press R to restart.', 'info');
+          running = false;
+          state = 'over';
+          sfxDeath();
+          saveGame();
+          showGameOver();
+          return;
+        } else {
+          logMsg('🆘 Survive and press V to revive! (1 big potion / 3 potions)', 'revive');
+        }
       }
     } else if (dist <= FOV_RADIUS) {
       const mx = (dx > 0) ? 1 : (dx < 0) ? -1 : 0;
@@ -873,7 +1183,7 @@ function monsterTurn() {
         if (tnx < 0 || tny < 0 || tnx >= WIDTH || tny >= HEIGHT) continue;
         if (tiles[tny][tnx] === 'wall') continue;
         if (monsters.some(m => m !== mon && m.x === tnx && m.y === tny)) continue;
-        if (tnx === player.x && tny === player.y) continue;
+        if (players.some(p => p.x === tnx && p.y === tny)) continue;
         mon.x = tnx; mon.y = tny;
         break;
       }
@@ -886,23 +1196,32 @@ function usePotion() {
   if (bigPotions > 0) {
     bigPotions--;
     const heal = 40 + level * 3;
-    const old = player.hp;
-    player.hp = Math.min(player.hp + heal, player.maxHp);
+    for (const p of players) {
+      if (!p.alive) continue;
+      const old = p.hp;
+      p.hp = Math.min(p.hp + heal, p.maxHp);
+      if (p.hp > old) {
+        // log
+      }
+    }
     sfxPickup();
-    logMsg(`❤️ Greater Potion! Healed ${player.hp - old} HP! (${player.hp}/${player.maxHp})`, 'good');
+    logMsg(`❤️ Greater Potion! Both heroes healed!`, 'good');
   } else if (potions > 0) {
     potions--;
     const heal = 15 + level * 2;
-    const old = player.hp;
-    player.hp = Math.min(player.hp + heal, player.maxHp);
+    for (const p of players) {
+      if (!p.alive) continue;
+      const old = p.hp;
+      p.hp = Math.min(p.hp + heal, p.maxHp);
+    }
     sfxPickup();
-    logMsg(`🧪 Healed ${player.hp - old} HP! (${player.hp}/${player.maxHp})`, 'good');
+    logMsg(`🧪 Potion! Both heroes healed!`, 'good');
   } else {
     logMsg("🧪 No potions! Visit the shop 💰", 'info');
     return;
   }
   updateHud();
-  monsterTurn();
+  endPlayerTurn();
   saveGame();
 }
 
@@ -923,21 +1242,39 @@ function useBomb() {
     logMsg(`💣 ${m.name} destroyed! +${g}g!`, 'gold');
   }
   logMsg(`💣 BOOM! ${killed.length} monsters annihilated!`, 'good');
-  if (kills % 5 === 0) {
-    player.maxHp += 5;
-    player.hp = Math.min(player.hp + 10, player.maxHp);
-    player.atk += 1;
+  const lvThreshold = isDuo ? 7 : 5;
+  if (kills % lvThreshold === 0) {
+    for (const pl of players) {
+      pl.maxHp += 5;
+      pl.hp = Math.min(pl.hp + 10, pl.maxHp);
+      pl.atk += 1;
+    }
     sfxLevelUp();
-    logMsg(`🎉 LEVEL UP! HP+5 ATK+1 (HP:${player.hp}/${player.maxHp})`, 'good');
+    logMsg(`🎉 TEAM LEVEL UP! HP+5 ATK+1 each!`, 'good');
   }
   updateHud();
-  monsterTurn();
+  // Bomb counts as both players acting
+  p1Acted = true; p2Acted = true;
+  endPlayerTurn();
   saveGame();
 }
 
 function descend() {
   if (state !== 'playing') return;
-  if (tiles[player.y][player.x] !== 'stairs') { logMsg('🪜 No stairs here. Find the > tile!', 'info'); return; }
+  // Check first player always (solo case), or all alive (duo case)
+  if (!isDuo) {
+    const p = firstPlayer();
+    if (tiles[p.y][p.x] !== 'stairs') { logMsg('🪜 No stairs here. Find the > tile!', 'info'); return; }
+  } else {
+    const alive = livingPlayers();
+    if (alive.length === 0) return;
+    for (const p of alive) {
+      if (tiles[p.y][p.x] !== 'stairs') {
+        logMsg('🪜 Both heroes must stand on > to descend!', 'info');
+        return;
+      }
+    }
+  }
   level++;
   sfxDescend();
   logMsg(`🪜 Descending to Level ${level}...`, 'info');
@@ -950,6 +1287,39 @@ function tryShop() {
   if (state === 'shop') { closeShop(); return; }
   if (state !== 'playing') return;
   openShop();
+}
+
+function tryRevive() {
+  if (state !== 'playing') return;
+  if (!isDuo) { logMsg('Solo mode — no partner to revive.', 'info'); return; }
+  const alive = livingPlayers();
+  if (alive.length === 0) { logMsg('Both heroes are down...', 'hurt'); return; }
+  if (alive.length === 2) { logMsg('Both heroes are still standing!', 'info'); return; }
+  // Determine which to revive
+  const dead = players.find(p => !p.alive);
+  const surv = alive[0];
+  if (bigPotions > 0) {
+    bigPotions--;
+  } else if (potions >= 3) {
+    potions -= 3;
+  } else {
+    logMsg('Need 1 ❤️ Greater Potion OR 3 🧪 Potions to revive!', 'info');
+    return;
+  }
+  // Revive at survivor's position
+  dead.x = surv.x;
+  dead.y = surv.y;
+  dead.hp = Math.max(1, Math.floor(dead.maxHp * 0.5));
+  dead.alive = true;
+  sfxRevive();
+  spawnFx('revive', dead.x, dead.y, '#ff88ff');
+  logMsg(`💖 ${dead.emoji} ${dead.name} REVIVED! (HP ${dead.hp}/${dead.maxHp})`, 'revive');
+  updateHud();
+  updateContextPopup();
+  // Revive counts as both players having acted (use resources like an action)
+  p1Acted = true; p2Acted = true;
+  endPlayerTurn();
+  saveGame();
 }
 
 function toggleSpeed() {
@@ -971,7 +1341,8 @@ function updateSpeedBtn() {
 
 function retry() {
   initAudio();
-  newGame(true);
+  // Return to mode select rather than auto-restart in current mode
+  showModeSelect();
 }
 
 // ─── Animation FX ───
@@ -984,36 +1355,68 @@ function updateFx(dt) {
 
 // ─── HUD ───
 function updateHud() {
+  if (!players[0]) return;
   sLv.textContent = level;
-  const hpPct = player ? Math.max(0, player.hp / player.maxHp) * 100 : 100;
-  sHp.textContent = `${player ? player.hp : 0}/${player ? player.maxHp : 0}`;
-  hpFill.style.width = hpPct + '%';
-  hpFill.style.background = hpPct > 50
+  // P1
+  const p1 = players[0];
+  const hpPct1 = Math.max(0, p1.hp / p1.maxHp) * 100;
+  sHp.textContent = `${p1.hp}/${p1.maxHp}`;
+  sHp.className = 'val ' + (p1.alive ? (hpPct1 > 25 ? 'hp' : 'hpLow') : 'hpLow');
+  hpFill.style.width = hpPct1 + '%';
+  hpFill.style.background = hpPct1 > 50
     ? 'linear-gradient(90deg,#44cc44,#88ff88)'
-    : hpPct > 25
+    : hpPct1 > 25
     ? 'linear-gradient(90deg,#ddaa22,#ffd866)'
     : 'linear-gradient(90deg,#cc3333,#ff6666)';
-  sAtk.textContent = player ? player.atk : 3;
-  sDef.textContent = player ? player.defense : 1;
+  sAtk.textContent = p1.atk;
+  sDef.textContent = p1.defense;
   sWpn.textContent = weaponName;
   sArm.textContent = armorName;
+  pIcon1.textContent = p1.emoji;
+  pName1.textContent = p1.name;
+  pBlock1.classList.toggle('dead', !p1.alive);
+  // P2 (duo only)
+  if (isDuo && players[1]) {
+    const p2 = players[1];
+    const hpPct2 = Math.max(0, p2.hp / p2.maxHp) * 100;
+    sHp2.textContent = `${p2.hp}/${p2.maxHp}`;
+    sHp2.className = 'val ' + (p2.alive ? (hpPct2 > 25 ? 'hp' : 'hpLow') : 'hpLow');
+    hpFill2.style.width = hpPct2 + '%';
+    hpFill2.style.background = hpPct2 > 50
+      ? 'linear-gradient(90deg,#ffaa44,#ffdd66)'
+      : hpPct2 > 25
+      ? 'linear-gradient(90deg,#ddaa22,#ffd866)'
+      : 'linear-gradient(90deg,#cc3333,#ff6666)';
+    sAtk2.textContent = p2.atk;
+    sDef2.textContent = p2.defense;
+    pIcon2.textContent = p2.emoji;
+    pName2.textContent = p2.name;
+    pBlock2.classList.toggle('dead', !p2.alive);
+  }
+  // Shared
   sGold.textContent = gold;
   sKills.textContent = kills;
   sPots.textContent = potions;
   sBigP.textContent = bigPotions;
   sBombs.textContent = bombs;
-
-  hudHp.textContent = `${player ? player.hp : 0}/${player ? player.maxHp : 0}`;
-  hudHpFill.style.width = hpPct + '%';
-  hudHpFill.style.background = hpPct > 50
+  // Mobile HUD
+  hudHp.textContent = `${p1.hp}/${p1.maxHp}`;
+  hudHpFill.style.width = hpPct1 + '%';
+  hudHpFill.style.background = hpPct1 > 50
     ? 'linear-gradient(90deg,#44cc44,#88ff88)'
-    : hpPct > 25
+    : hpPct1 > 25
     ? 'linear-gradient(90deg,#ddaa22,#ffd866)'
     : 'linear-gradient(90deg,#cc3333,#ff6666)';
+  if (isDuo && players[1]) {
+    const p2 = players[1];
+    const hpPct2 = Math.max(0, p2.hp / p2.maxHp) * 100;
+    hudHp2.textContent = `${p2.hp}/${p2.maxHp}`;
+    hudHpFill2.style.width = hpPct2 + '%';
+  }
   hudLv.textContent = level;
   hudGold.textContent = gold;
-  hudAtk.textContent = player ? player.atk : 3;
-  hudDef.textContent = player ? player.defense : 1;
+  hudAtk.textContent = p1.atk;
+  hudDef.textContent = p1.defense;
 }
 
 // ─── Rendering ───
@@ -1023,7 +1426,6 @@ function resizeCanvas() {
   const botPad = touchActive ? 200 : 0;
   const wAvail = window.innerWidth - side - 16;
   const hAvail = window.innerHeight - topPad - botPad - 16;
-  // Pick tile size so the whole map fits
   const tile = Math.max(8, Math.floor(Math.min(wAvail / WIDTH, hAvail / HEIGHT)));
   const w = tile * WIDTH, h = tile * HEIGHT;
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -1042,15 +1444,12 @@ function draw() {
   const W = canvas.width / (window.devicePixelRatio || 1);
   const H = canvas.height / (window.devicePixelRatio || 1);
 
-  // background
   ctx.fillStyle = '#0a0a14';
   ctx.fillRect(0, 0, W, H);
-
-  // fog background
   ctx.fillStyle = '#06060d';
   ctx.fillRect(0, 0, W, H);
 
-  // draw explored (dimmed) tiles first
+  // explored tiles
   for (let y = 0; y < HEIGHT; y++) {
     for (let x = 0; x < WIDTH; x++) {
       if (!explored[y][x]) continue;
@@ -1059,15 +1458,22 @@ function draw() {
     }
   }
 
-  // visible FX overlay (subtle vignette pulse)
-  if (state === 'playing') {
-    const cx = (player.x + 0.5) * tile, cy = (player.y + 0.5) * tile;
-    const maxR = (FOV_RADIUS + 1) * tile;
-    const grad = ctx.createRadialGradient(cx, cy, maxR * 0.4, cx, cy, maxR * 1.1);
-    grad.addColorStop(0, 'rgba(0,0,0,0)');
-    grad.addColorStop(1, 'rgba(0,0,0,0.55)');
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, W, H);
+  // vignette
+  if (state === 'playing' && players[0]) {
+    const living = livingPlayers();
+    if (living.length > 0) {
+      // Use union center: average of living players
+      let sx = 0, sy = 0;
+      for (const p of living) { sx += p.x; sy += p.y; }
+      sx /= living.length; sy /= living.length;
+      const cx = (sx + 0.5) * tile, cy = (sy + 0.5) * tile;
+      const maxR = (FOV_RADIUS + 1) * tile;
+      const grad = ctx.createRadialGradient(cx, cy, maxR * 0.4, cx, cy, maxR * 1.1);
+      grad.addColorStop(0, 'rgba(0,0,0,0)');
+      grad.addColorStop(1, 'rgba(0,0,0,0.55)');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, W, H);
+    }
   }
 
   // FX
@@ -1093,12 +1499,21 @@ function draw() {
       ctx.arc(cx, cy, r, 0, Math.PI * 2);
       ctx.fill();
       ctx.globalAlpha = 1;
+    } else if (fx.type === 'revive') {
+      ctx.globalAlpha = 1 - p;
+      const grad = ctx.createRadialGradient(cx, cy, 2, cx, cy, tile * (1 + p));
+      grad.addColorStop(0, '#ffddff');
+      grad.addColorStop(0.5, fx.color);
+      grad.addColorStop(1, 'rgba(255,120,255,0)');
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(cx, cy, tile * (1 + p), 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = 1;
     }
   }
 
-  // overlay (title / game over) — drawn last
-  if (state === 'title' || state === 'over') {
-    // dim the canvas
+  if (state === 'title' || state === 'over' || state === 'modeSelect') {
     ctx.fillStyle = 'rgba(0,0,0,0.5)';
     ctx.fillRect(0, 0, W, H);
   }
@@ -1109,12 +1524,10 @@ function drawTile(x, y, tile, alpha) {
   const t = tiles[y][x];
   ctx.globalAlpha = alpha;
   if (t === 'wall') {
-    // dark gray block with subtle pattern
     ctx.fillStyle = '#1a1a2a';
     ctx.fillRect(px, py, tile, tile);
     ctx.fillStyle = '#2a2a3e';
     ctx.fillRect(px + 1, py + 1, tile - 2, tile - 2);
-    // tiny notch
     ctx.fillStyle = '#11111a';
     if (((x + y) & 1) === 0) {
       ctx.fillRect(px + tile - 2, py, 1, 1);
@@ -1123,13 +1536,11 @@ function drawTile(x, y, tile, alpha) {
   } else if (t === 'floor') {
     ctx.fillStyle = '#0e0e18';
     ctx.fillRect(px, py, tile, tile);
-    // subtle dot
     ctx.fillStyle = '#1a1a2a';
     const dx = (x * 13 + y * 7) % (tile - 2);
     const dy = (x * 5 + y * 11) % (tile - 2);
     ctx.fillRect(px + dx, py + dy, 1, 1);
   } else if (t === 'stairs') {
-    // glowing blue >
     ctx.fillStyle = '#0e0e18';
     ctx.fillRect(px, py, tile, tile);
     const cx = px + tile/2, cy = py + tile/2;
@@ -1160,9 +1571,7 @@ function drawTile(x, y, tile, alpha) {
   }
   ctx.globalAlpha = 1;
 
-  // overlay emoji items (always in explored)
   if (explored[y][x]) {
-    // items
     const it = items.find(i => i.x === x && i.y === y);
     if (it) {
       const a = visibleSet.has(x + ',' + y) ? 1 : 0.5;
@@ -1170,7 +1579,6 @@ function drawTile(x, y, tile, alpha) {
       drawCenteredEmoji(it.emoji, px, py, tile);
       ctx.globalAlpha = 1;
     }
-    // monsters
     const mon = monsters.find(m => m.x === x && m.y === y);
     if (mon) {
       const a = visibleSet.has(x + ',' + y) ? 1 : 0.5;
@@ -1194,14 +1602,11 @@ function drawMonster(mon, px, py, tile) {
   ctx.font = `${fs}px "Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif`;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  // drop shadow
   ctx.globalAlpha = 0.4;
   ctx.fillStyle = '#000';
   ctx.fillText(mon.emoji, px + tile/2 + 1, py + tile/2 + 2);
   ctx.globalAlpha = 1;
-  // main
   ctx.fillText(mon.emoji, px + tile/2, py + tile/2 + 1);
-  // boss crown ring
   if (mon.isBoss) {
     const cx = px + tile/2, cy = py + tile/2;
     const r = tile * 0.55;
@@ -1216,7 +1621,6 @@ function drawMonster(mon, px, py, tile) {
     ctx.arc(cx, cy, r + 3, 0, Math.PI * 2);
     ctx.stroke();
   }
-  // hp pip for hurt monsters
   if (mon.hp < mon.maxHp) {
     const w = tile, h = 3;
     const bx = px, by = py - 4;
@@ -1228,24 +1632,53 @@ function drawMonster(mon, px, py, tile) {
   }
 }
 
-function drawPlayerOverlay() {
-  if (state === 'title' || state === 'over' || !player) return;
-  if (!visibleSet.has(player.x + ',' + player.y)) return;
+function drawPlayersOverlay() {
+  if (state === 'title' || state === 'over' || state === 'modeSelect') return;
+  if (!players[0]) return;
   const tile = parseInt(canvas.dataset.tile || '20', 10);
-  const px = player.x * tile, py = player.y * tile;
-  const cx = px + tile/2, cy = py + tile/2;
-  const fs = Math.floor(tile * 1.0);
-  ctx.font = `${fs}px "Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif`;
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  // glow
-  const glow = ctx.createRadialGradient(cx, cy, 2, cx, cy, tile * 0.8);
-  glow.addColorStop(0, 'rgba(255,255,200,0.4)');
-  glow.addColorStop(1, 'rgba(255,255,200,0)');
-  ctx.fillStyle = glow;
-  ctx.fillRect(px - tile*0.2, py - tile*0.2, tile*1.4, tile*1.4);
-  // body
-  ctx.fillText('🐱', cx, cy + 1);
+  for (const p of players) {
+    if (!visibleSet.has(p.x + ',' + p.y)) continue;
+    const px = p.x * tile, py = p.y * tile;
+    const cx = px + tile/2, cy = py + tile/2;
+    const fs = Math.floor(tile * 1.0);
+    ctx.font = `${fs}px "Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    // Color tint per player
+    const isP1 = (p === players[0]);
+    const glowColor = isP1 ? 'rgba(255,255,200,0.4)' : 'rgba(255,200,120,0.4)';
+    const glow = ctx.createRadialGradient(cx, cy, 2, cx, cy, tile * 0.8);
+    glow.addColorStop(0, glowColor);
+    glow.addColorStop(1, 'rgba(255,255,200,0)');
+    ctx.fillStyle = glow;
+    ctx.fillRect(px - tile*0.2, py - tile*0.2, tile*1.4, tile*1.4);
+    // Body
+    if (p.alive) {
+      ctx.globalAlpha = 1;
+      ctx.fillText(p.emoji, cx, cy + 1);
+    } else {
+      // Ghost — semi-transparent
+      ctx.globalAlpha = 0.35;
+      ctx.fillText('👻', cx, cy + 1);
+      ctx.globalAlpha = 1;
+      // tiny "down" indicator
+      ctx.font = `bold ${Math.floor(tile*0.4)}px monospace`;
+      ctx.fillStyle = '#ff6666';
+      ctx.fillText('×', cx, py - tile*0.1);
+    }
+    // HP pip (only if hurt and alive)
+    if (p.alive && p.hp < p.maxHp) {
+      const w = tile * 0.9, h = 3;
+      const bx = px + (tile - w)/2, by = py - 4;
+      ctx.fillStyle = '#1a1a1a';
+      ctx.fillRect(bx, by, w, h);
+      const pct = Math.max(0, p.hp / p.maxHp);
+      ctx.fillStyle = isP1
+        ? (pct > 0.5 ? '#44dd44' : pct > 0.25 ? '#ddaa22' : '#dd4444')
+        : (pct > 0.5 ? '#ffaa44' : pct > 0.25 ? '#ddaa22' : '#dd4444');
+      ctx.fillRect(bx, by, Math.floor(w * pct), h);
+    }
+  }
 }
 
 // ─── Game loop ───
@@ -1256,16 +1689,14 @@ function loop(ts) {
   const dt = ts - lastTick;
   if (dt >= tickMs) {
     lastTick = ts;
-    // FOV recompute
     visibleSet = computeFov();
     for (const [x, y] of [...visibleSet].map(k => k.split(',').map(Number))) {
       explored[y][x] = true;
     }
   }
   updateFx(dt);
-  // draw scene
   draw();
-  drawPlayerOverlay();
+  drawPlayersOverlay();
   rafId = requestAnimationFrame(loop);
 }
 
@@ -1282,9 +1713,10 @@ function stopLoop() {
 function saveGame() {
   try {
     const data = {
+      mode,
       level, gold, kills, potions, bigPotions, bombs,
       weaponName, armorName,
-      player, running,
+      players, running,
     };
     localStorage.setItem(SAVE_KEY, JSON.stringify(data));
   } catch (e) { /* quota — ignore */ }
@@ -1297,10 +1729,31 @@ function loadGame() {
     const s = localStorage.getItem(SAVE_KEY);
     if (!s) return false;
     const d = JSON.parse(s);
+    if (d.mode && d.mode !== mode) {
+      // Mode mismatch — don't load (avoid mixing state)
+      return false;
+    }
     level = d.level; gold = d.gold; kills = d.kills;
     potions = d.potions; bigPotions = d.bigPotions; bombs = d.bombs;
     weaponName = d.weaponName; armorName = d.armorName;
-    player = d.player; running = d.running;
+    // Restore players array (defensive: ensure length matches mode)
+    if (Array.isArray(d.players) && d.players.length > 0) {
+      players = d.players.map(p => ({
+        x: p.x, y: p.y,
+        hp: p.hp, maxHp: p.maxHp, atk: p.atk, defense: p.defense,
+        alive: (p.hp > 0),
+        emoji: p.emoji || (isDuo && p === d.players[1] ? '🐼' : '🐱'),
+        name: p.name || (isDuo && p === d.players[1] ? 'Panda Pal' : 'Hero Cat'),
+      }));
+      if (isDuo && players.length < 2) {
+        players[1] = makePlayer('🐼', 'Panda Pal');
+      } else if (!isDuo && players.length > 1) {
+        players = players.slice(0, 1);
+      }
+    } else {
+      players = [ makePlayer('🐱', 'Hero Cat') ];
+    }
+    running = d.running;
     generateLevel();
     visibleSet = computeFov();
     return true;
@@ -1313,18 +1766,27 @@ function newGame(fromRetry) {
   if (shopOverlay) shopOverlay.classList.remove('active');
   level = 1; gold = 0; kills = 0; potions = 0; bigPotions = 0; bombs = 0;
   weaponName = 'Wooden Stick'; armorName = 'Cloth Tunic';
-  player = { x: 0, y: 0, hp: 30, maxHp: 30, atk: 3, defense: 1 };
+  players = isDuo
+    ? [ makePlayer('🐱', 'Hero Cat'), makePlayer('🐼', 'Panda Pal') ]
+    : [ makePlayer('🐱', 'Hero Cat') ];
   running = true;
   messages = [];
   state = 'playing';
   generateLevel();
   visibleSet = computeFov();
   for (const [x, y] of [...visibleSet].map(k => k.split(',').map(Number))) explored[y][x] = true;
-  logMsg('Welcome, brave hero! May StarClan light your path.', 'info');
-  logMsg('WASD: move · Space: attack · P: potion · B: bomb', 'info');
-  logMsg('E: shop · ►: descend · F: speed · R: restart', 'info');
+  if (isDuo) {
+    logMsg(`🐱🐼 The duo enters the dungeon!`, 'info');
+    logMsg(`P1 WASD · P2 Arrows · Space/Enter attack · P potion · B bomb`, 'info');
+    logMsg(`E shop · V revive · ► descend · F speed · R restart`, 'info');
+  } else {
+    logMsg('Welcome, brave hero! May StarClan light your path.', 'info');
+    logMsg('WASD: move · Space: attack · P: potion · B: bomb', 'info');
+    logMsg('E: shop · ►: descend · F: speed · R: restart', 'info');
+  }
   renderMsgLog();
   hideOverlay();
+  applyMode();
   updateHud();
   updateTouchActions();
   updateContextPopup();
@@ -1341,11 +1803,10 @@ function showTitle() {
   state = 'title';
   overlayBox.classList.remove('gameover');
   oTitle.textContent = '🏰 Dungeon Explore';
-  oSub.textContent = 'A roguelike crawl into the dark';
+  oSub.textContent = isDuo ? '🐱🐼 Duo Mode · A roguelike crawl into the dark' : '🐱 Solo Mode · A roguelike crawl into the dark';
   oBody.innerHTML = `
     <div style="font-size:13px;color:#888;margin:8px 0;line-height:1.6">
-      Slay monsters · Collect gold · Find the stairs<br>
-      Go as deep as you dare — there's no end! 🕳️
+      ${isDuo ? 'Team up as 🐱 + 🐼! Share gold and items.<br>Both must stand on stairs to descend.' : 'Slay monsters · Collect gold · Find the stairs<br>Go as deep as you dare — there\'s no end! 🕳️'}
     </div>
     <div class="statsBlock">
       <div class="statRow"><span class="lbl">🟢 Slime</span><span class="v">easy</span></div>
@@ -1365,13 +1826,22 @@ function showGameOver() {
   state = 'over';
   stopLoop();
   overlayBox.classList.add('gameover');
-  oTitle.textContent = '💀 You Died';
-  oSub.textContent = `The dungeon claims another hero...`;
+  oTitle.textContent = isDuo ? '💀 Team Wiped' : '💀 You Died';
+  oSub.textContent = `The dungeon claims another ${isDuo ? 'team' : 'hero'}...`;
+  // Stats
+  const p1 = players[0];
+  const p2 = isDuo ? players[1] : null;
+  let p2Row = '';
+  if (p2) {
+    p2Row = `<div class="statRow"><span class="lbl">🐼 P2 HP</span><span class="v" style="color:${p2.alive ? '#ff8866' : '#888'}">${p2.alive ? p2.hp : 'DOWN'} / ${p2.maxHp}</span></div>`;
+  }
   oBody.innerHTML = `
     <div class="statsBlock">
       <div class="statRow"><span class="lbl">Reached</span><span class="v">Level ${level}</span></div>
       <div class="statRow"><span class="lbl">Gold</span><span class="v" style="color:#ffcc44">${gold}</span></div>
       <div class="statRow"><span class="lbl">Kills</span><span class="v">${kills}</span></div>
+      <div class="statRow"><span class="lbl">🐱 P1 HP</span><span class="v" style="color:#ff8866">${p1 ? (p1.alive ? p1.hp : 'DOWN') : 0} / ${p1 ? p1.maxHp : 0}</span></div>
+      ${p2Row}
       <div class="statRow"><span class="lbl">Weapon</span><span class="v" style="color:#cc88ff">${escapeHtml(weaponName)}</span></div>
       <div class="statRow"><span class="lbl">Armor</span><span class="v" style="color:#cc88ff">${escapeHtml(armorName)}</span></div>
     </div>
@@ -1383,19 +1853,50 @@ function showGameOver() {
   draw();
 }
 
+// ─── Mode select ───
+function showModeSelect() {
+  state = 'modeSelect';
+  stopLoop();
+  overlay.style.display = 'none';
+  if (modeOverlay) modeOverlay.classList.remove('hidden');
+  if (shopOverlay) shopOverlay.classList.remove('active');
+  hideContextPopup();
+  updateTouchActions();
+}
+function selectMode(m) {
+  if (m !== 'solo' && m !== 'duo') return;
+  mode = m;
+  isDuo = (m === 'duo');
+  saveMode();
+  applyMode();
+  if (modeOverlay) modeOverlay.classList.add('hidden');
+  showTitle();
+}
+
+// Wire up mode buttons
+document.querySelectorAll('.modeBtn').forEach(btn => {
+  btn.addEventListener('click', () => selectMode(btn.dataset.mode));
+});
+
 // ─── Input ───
 function handleAction(fn) {
   initAudio();
   if (state === 'title') { newGame(); return; }
   if (state === 'over')  { newGame(true); return; }
-  if (state === 'shop') return; // shop uses its own input
+  if (state === 'shop') return;
   if (state === 'playing') fn();
 }
 
 document.addEventListener('keydown', e => {
   initAudio();
   const k = e.key;
-  // shop inputs
+  // Mode select
+  if (state === 'modeSelect') {
+    if (k === '1' || k === 'Escape' || k === 'Enter') { selectMode('solo'); e.preventDefault(); return; }
+    if (k === '2') { selectMode('duo'); e.preventDefault(); return; }
+    return;
+  }
+  // Shop inputs
   if (state === 'shop') {
     if (k === 'Escape' || k === 'e' || k === 'E' || k === 'q' || k === 'Q') { closeShop(); e.preventDefault(); return; }
     if (k >= '1' && k <= '7') {
@@ -1410,36 +1911,92 @@ document.addEventListener('keydown', e => {
     return;
   }
   if (state === 'title') {
-    if (k === 'Enter' || k === ' ') { newGame(); e.preventDefault(); }
-    else if (k === 'r' || k === 'R') { if (!loadGame()) newGame(); else { state = 'playing'; hideOverlay(); updateHud(); startLoop(); } e.preventDefault(); }
+    if (k === 'Enter' || k === ' ') { newGame(); e.preventDefault(); return; }
+    if (k === 'r' || k === 'R') {
+      if (!loadGame()) newGame();
+      else { state = 'playing'; hideOverlay(); updateHud(); startLoop(); }
+      e.preventDefault(); return;
+    }
+    if (k === 'Escape' || k === 'm' || k === 'M') { showModeSelect(); e.preventDefault(); return; }
     return;
   }
   if (state === 'over') {
     if (k === 'r' || k === 'R' || k === 'Enter' || k === ' ') { newGame(true); e.preventDefault(); return; }
-    if (k === 'Escape') { showTitle(); state = 'title'; e.preventDefault(); return; }
+    if (k === 'Escape' || k === 'm' || k === 'M') { showModeSelect(); e.preventDefault(); return; }
     return;
   }
   if (state === 'playing') {
     if (k === 'r' || k === 'R') { newGame(true); e.preventDefault(); return; }
+    if (k === 'Escape' || k === 'm' || k === 'M') { showModeSelect(); e.preventDefault(); return; }
     if (k === 'p' || k === 'P') { usePotion(); e.preventDefault(); return; }
     if (k === 'b' || k === 'B') { useBomb(); e.preventDefault(); return; }
     if (k === 'e' || k === 'E') { tryShop(); e.preventDefault(); return; }
     if (k === 'f' || k === 'F') { toggleSpeed(); e.preventDefault(); return; }
     if (k === '>' || k === '.') { descend(); e.preventDefault(); return; }
-    if (k === ' ') { doAttack(); e.preventDefault(); return; }
-    let dx = 0, dy = 0;
-    if (k === 'w' || k === 'W' || k === 'ArrowUp') dy = -1;
-    else if (k === 's' || k === 'S' || k === 'ArrowDown') dy = 1;
-    else if (k === 'a' || k === 'A' || k === 'ArrowLeft') dx = -1;
-    else if (k === 'd' || k === 'D' || k === 'ArrowRight') dx = 1;
-    if (dx !== 0 || dy !== 0) {
-      // turn-by-turn: each key = one move
-      if (tryMove(dx, dy)) {
-        if (running) monsterTurn();
-        updateHud();
-        saveGame();
+    if (k === 'v' || k === 'V') { tryRevive(); e.preventDefault(); return; }
+    // P1 attack (Space)
+    if (k === ' ') { doAttack(0); e.preventDefault(); return; }
+    // P2 attack (Enter, only in duo)
+    if (k === 'Enter' && isDuo) { doAttack(1); e.preventDefault(); return; }
+
+    // Movement: P1 = WASD, P2 = Arrows (both can be used in solo too)
+    let p1dx = 0, p1dy = 0;
+    if (k === 'w' || k === 'W') p1dy = -1;
+    else if (k === 's' || k === 'S') p1dy = 1;
+    else if (k === 'a' || k === 'A') p1dx = -1;
+    else if (k === 'd' || k === 'D') p1dx = 1;
+    if (p1dx !== 0 || p1dy !== 0) {
+      if (players[0] && players[0].alive) {
+        if (tryMove(0, p1dx, p1dy)) {
+          markActed(0);
+          endPlayerTurn();
+          updateHud();
+          saveGame();
+        }
+      } else if (isDuo && !players[0].alive) {
+        // ghost move: dead P1 can still move, doesn't trigger enemy turn
+        if (tryMove(0, p1dx, p1dy)) { updateHud(); saveGame(); }
       }
       e.preventDefault();
+      return;
+    }
+    // P2 movement (Arrows)
+    if (isDuo) {
+      let p2dx = 0, p2dy = 0;
+      if (k === 'ArrowUp') p2dy = -1;
+      else if (k === 'ArrowDown') p2dy = 1;
+      else if (k === 'ArrowLeft') p2dx = -1;
+      else if (k === 'ArrowRight') p2dx = 1;
+      if (p2dx !== 0 || p2dy !== 0) {
+        if (players[1] && players[1].alive) {
+          if (tryMove(1, p2dx, p2dy)) {
+            markActed(1);
+            endPlayerTurn();
+            updateHud();
+            saveGame();
+          }
+        } else if (!players[1].alive) {
+          // ghost P2
+          if (tryMove(1, p2dx, p2dy)) { updateHud(); saveGame(); }
+        }
+        e.preventDefault();
+        return;
+      }
+    } else {
+      // Solo: arrows also work as WASD alias
+      let dx = 0, dy = 0;
+      if (k === 'ArrowUp') dy = -1;
+      else if (k === 'ArrowDown') dy = 1;
+      else if (k === 'ArrowLeft') dx = -1;
+      else if (k === 'ArrowRight') dx = 1;
+      if (dx !== 0 || dy !== 0) {
+        if (tryMove(0, dx, dy)) {
+          monsterTurn();
+          updateHud();
+          saveGame();
+        }
+        e.preventDefault();
+      }
     }
   }
 });
@@ -1459,10 +2016,11 @@ window.addEventListener('touchstart', showTouchControls, { passive: true });
 window.addEventListener('touchmove', showTouchControls, { passive: true });
 if ('ontouchstart' in window || navigator.maxTouchPoints > 0) showTouchControls();
 
-// ─── Joystick ───
-(function setupJoystick() {
-  const knob = document.getElementById('joystickKnob');
-  const base = document.getElementById('joystickBase');
+// ─── Joysticks (P1 left, P2 right; P2 hidden in solo) ───
+function setupJoystick(opts) {
+  const knob = opts.knob;
+  const base = opts.base;
+  const playerIndex = opts.playerIndex;   // 0 or 1
   let joyActive = false, joyId = null, lastDir = { x:0, y:0 };
   const deadZone = 15;
   let moveTimer = null;
@@ -1474,14 +2032,15 @@ if ('ontouchstart' in window || navigator.maxTouchPoints > 0) showTouchControls(
     moveTimer = setInterval(() => {
       if (!joyActive) return;
       if (state !== 'playing' || !running) return;
+      const p = players[playerIndex];
+      if (!p || !p.alive) return;
       if (lastDir.x === 0 && lastDir.y === 0) return;
-      if (tryMove(lastDir.x, lastDir.y)) {
-        if (running) monsterTurn();
+      if (tryMove(playerIndex, lastDir.x, lastDir.y)) {
+        markActed(playerIndex);
+        endPlayerTurn();
         updateHud();
         saveGame();
         if (!running) stopMoveTimer();
-      } else {
-        // Bumped a wall — still in the direction, just keep ticking
       }
     }, joyInterval());
   }
@@ -1511,6 +2070,11 @@ if ('ontouchstart' in window || navigator.maxTouchPoints > 0) showTouchControls(
   base.addEventListener('touchstart', e => {
     e.preventDefault();
     initAudio();
+    if (state === 'modeSelect') {
+      // tap on joystick = select solo (for P1) or duo (for P2)
+      selectMode(opts.playerIndex === 0 ? 'solo' : 'duo');
+      return;
+    }
     if (state === 'title') { newGame(); return; }
     if (state === 'over') { newGame(true); return; }
     joyActive = true;
@@ -1521,9 +2085,14 @@ if ('ontouchstart' in window || navigator.maxTouchPoints > 0) showTouchControls(
     setKnob(dx, dy, c.maxR);
     const d = calcDir(dx, dy);
     lastDir = d;
-    if (d.x !== 0 || d.y !== 0) {
-      // First move immediately
-      if (tryMove(d.x, d.y)) { if (running) monsterTurn(); updateHud(); saveGame(); }
+    const p = players[playerIndex];
+    if (p && p.alive && (d.x !== 0 || d.y !== 0)) {
+      if (tryMove(playerIndex, d.x, d.y)) {
+        markActed(playerIndex);
+        endPlayerTurn();
+        updateHud();
+        saveGame();
+      }
       startMoveTimer();
     }
   }, { passive: false });
@@ -1540,9 +2109,18 @@ if ('ontouchstart' in window || navigator.maxTouchPoints > 0) showTouchControls(
         if (d.x !== lastDir.x || d.y !== lastDir.y) {
           lastDir = d;
           if (d.x !== 0 || d.y !== 0) {
-            if (tryMove(d.x, d.y)) { if (running) monsterTurn(); updateHud(); saveGame(); }
-            // (Re)start the repeat timer for the new direction
-            startMoveTimer();
+            const p = players[playerIndex];
+            if (p && p.alive) {
+              if (tryMove(playerIndex, d.x, d.y)) {
+                markActed(playerIndex);
+                endPlayerTurn();
+                updateHud();
+                saveGame();
+              }
+              startMoveTimer();
+            } else {
+              stopMoveTimer();
+            }
           } else {
             stopMoveTimer();
           }
@@ -1565,9 +2143,11 @@ if ('ontouchstart' in window || navigator.maxTouchPoints > 0) showTouchControls(
     }
   });
   document.addEventListener('touchcancel', releaseJoy);
-})();
+}
+setupJoystick({ knob: document.getElementById('joyKnob1'), base: document.getElementById('joyBase1'), playerIndex: 0 });
+setupJoystick({ knob: document.getElementById('joyKnob2'), base: document.getElementById('joyBase2'), playerIndex: 1 });
 
-// Tap to start on overlay (mobile)
+// Tap to start on overlay (mobile) — tapping the title overlay starts a new game
 overlay.addEventListener('touchstart', e => {
   e.preventDefault();
   initAudio();
@@ -1575,10 +2155,13 @@ overlay.addEventListener('touchstart', e => {
   else if (state === 'over') { newGame(true); }
 }, { passive: false });
 
+// Tap on mode overlay (mobile) — handled by the buttons themselves; tapping outside does nothing
+
 // ─── Boot ───
 function boot() {
+  applyMode();
   resizeCanvas();
-  showTitle();
+  showModeSelect();
   updateHud();
   updateTouchActions();
   hideContextPopup();
@@ -1606,15 +2189,12 @@ b.addEventListener('pointermove',function(e){
 b.addEventListener('pointerup',function(e){
   if(!drag)return;drag=false;
   if(!moved){location.href='../index.html';return;}
-  // snap to nearest edge (left or right)
   var r=b.getBoundingClientRect();
-  var midY=r.top+r.height/2;
   if(r.left+r.width/2<window.innerWidth/2){
     b.style.left='6px';b.style.right='auto';
   }else{
     b.style.left='auto';b.style.right='6px';
   }
-  // clamp vertical
   var maxY=window.innerHeight-r.height-6;
   var fy=Math.max(6,Math.min(parseInt(b.style.top)||r.top,maxY));
   b.style.top=fy+'px';b.style.bottom='auto';
