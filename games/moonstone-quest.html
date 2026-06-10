@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Moonstone Quest</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:#0a0a14; color:#ccc; font-family:'Courier New',monospace; overflow:hidden; height:100vh; display:flex; flex-direction:column; }
+a { color:#88aaff; }
+#back { position:fixed; top:8px; left:10px; z-index:100; font-size:13px; color:#6688aa; text-decoration:none; }
+#back:hover { color:#aaccff; }
+#wrap { display:flex; flex:1; min-height:0; }
+#canvasWrap { flex:1; display:flex; align-items:center; justify-content:center; min-width:0; position:relative; }
+canvas { image-rendering:pixelated; display:block; }
+#sidebar { width:220px; background:#0e0e1a; border-left:1px solid #222; padding:10px; overflow-y:auto; font-size:12px; line-height:1.5; flex-shrink:0; display:flex; flex-direction:column; }
+#sidebar h2 { color:#aaddff; font-size:15px; margin-bottom:6px; }
+#sidebar .stat { margin:2px 0; }
+#sidebar .stat .label { color:#888; }
+#sidebar .stat .val { color:#ddd; }
+#hpBar { width:100%; height:14px; background:#1a1a2a; border:1px solid #333; border-radius:3px; overflow:hidden; margin:3px 0; }
+#hpFill { height:100%; background:#44cc44; transition:width .2s; }
+#expBar { width:100%; height:10px; background:#1a1a2a; border:1px solid #333; border-radius:3px; overflow:hidden; margin:2px 0; }
+#expFill { height:100%; background:#aa44ff; transition:width .2s; }
+#msgLog { margin-top:8px; flex:1; overflow-y:auto; }
+#msgLog .msg { color:#aaa; font-size:11px; margin:1px 0; word-wrap:break-word; }
+#msgLog .msg.hurt { color:#ff6666; }
+#msgLog .msg.good { color:#66ff66; }
+#msgLog .msg.info { color:#6688ff; }
+#msgLog .msg.gold { color:#ffcc44; }
+#controls { display:none; padding:8px; background:#0e0e1a; border-top:1px solid #222; }
+#dpad { display:inline-block; width:130px; }
+#dpad button { width:40px; height:40px; background:#1a1a2e; border:1px solid #333; color:#aaa; font-size:18px; border-radius:6px; cursor:pointer; }
+#dpad button:active { background:#2a2a4e; }
+#actionBtns { display:inline-block; margin-left:12px; vertical-align:top; }
+#actionBtns button { display:block; width:70px; height:30px; margin:2px 0; background:#1a1a2e; border:1px solid #333; color:#aaa; font-size:10px; border-radius:6px; cursor:pointer; }
+#actionBtns button:active { background:#2a2a4e; }
+#shopOverlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,.85); z-index:50; justify-content:center; align-items:center; }
+#shopBox { background:#12122a; border:2px solid #3355aa; border-radius:10px; padding:18px 22px; max-width:420px; width:90%; max-height:85vh; overflow-y:auto; }
+#shopBox h2 { color:#ffcc44; text-align:center; margin-bottom:10px; }
+#shopBox .shopItem { display:flex; align-items:center; padding:6px 0; border-bottom:1px solid #1a1a2e; cursor:pointer; }
+#shopBox .shopItem:hover { background:#1a1a3e; }
+#shopBox .shopItem .siIcon { width:28px; text-align:center; font-size:16px; }
+#shopBox .shopItem .siName { flex:1; color:#ccc; font-size:13px; }
+#shopBox .shopItem .siCost { color:#ffcc44; font-size:13px; margin-right:10px; }
+#shopBox .shopItem .siDesc { color:#777; font-size:11px; display:none; }
+#shopBox .shopMsg { color:#66ff66; text-align:center; margin-top:8px; font-size:12px; min-height:16px; }
+#shopBox .shopClose { text-align:center; margin-top:10px; color:#888; font-size:12px; }
+@media (max-width:700px) {
+  #wrap { flex-direction:column; }
+  #sidebar { width:100%; max-height:30vh; flex-shrink:0; flex-direction:row; flex-wrap:wrap; border-left:none; border-top:1px solid #222; padding:6px; }
+  #sidebar h2 { width:100%; }
+  #msgLog { max-height:60px; }
+  #controls { display:block; text-align:center; }
+}
+</style>
+</head>
+<body>
+<a id="back" href="../index.html">← Menu</a>
+<div id="wrap">
+  <div id="canvasWrap"><canvas id="game"></canvas></div>
+  <div id="sidebar">
+    <h2>🌙 Moonstone Quest</h2>
+    <div class="stat"><span class="label">Lv </span><span class="val" id="sLv">1</span> &nbsp;<span class="label">ATK </span><span class="val" id="sAtk">5</span></div>
+    <div class="stat"><span class="label">HP</span></div>
+    <div id="hpBar"><div id="hpFill" style="width:100%"></div></div>
+    <div class="stat"><span class="val" id="sHp">30/30</span></div>
+    <div class="stat"><span class="label">EXP</span></div>
+    <div id="expBar"><div id="expFill" style="width:0%"></div></div>
+    <div class="stat"><span class="val" id="sExp">0/15</span></div>
+    <div class="stat"><span class="label">🌿 </span><span class="val" id="sHerb">2</span> &nbsp;<span class="label">✦ </span><span class="val" id="sExpH">0</span></div>
+    <div class="stat"><span class="label">Floor </span><span class="val" id="sFloor">1/10</span></div>
+    <div id="msgLog"></div>
+  </div>
+</div>
+<div id="controls">
+  <div id="dpad">
+    <div style="text-align:center"><button onclick="doMove(0,-1)">▲</button></div>
+    <div style="text-align:center"><button onclick="doMove(-1,0)">◄</button><button onclick="doMove(0,1)" style="margin:0 4px">▼</button><button onclick="doMove(1,0)">►</button></div>
+  </div>
+  <div id="actionBtns">
+    <button onclick="doAttack()">⚔ Attack</button>
+    <button onclick="doHeal()">🌿 Heal</button>
+    <button onclick="doExpHerb()">✦ ExpHerb</button>
+    <button onclick="doShop()">🏪 Shop</button>
+    <button onclick="doDescend()">▼ Stairs</button>
+  </div>
+</div>
+<div id="shopOverlay">
+  <div id="shopBox">
+    <h2>🏪 SkyClan Shop</h2>
+    <div style="text-align:center;color:#ffcc44;margin-bottom:8px">EXP: <span id="shopExp">0</span> 💰</div>
+    <div id="shopItems"></div>
+    <div class="shopMsg" id="shopMsg"></div>
+    <div class="shopClose">Press ESC or P to close</div>
+  </div>
+</div>
+<script>
+// ═══════════════════════════════════════════
+// 🌙 Moonstone Quest — HTML5 Canvas Roguelike
+// Translated from moonstone-quest.py
+// ═══════════════════════════════════════════
+
+const MAP_W=40, MAP_H=20, FOV_RAD=5, MAX_FLOOR=10, TILE=28;
+const canvas=document.getElementById('game'), ctx=canvas.getContext('2d');
+
+// ─── Enemy data ───
+const EDATA={
+  rat:{ch:'r',col:'#999999',hp:8,atk:2,exp:5,name:'Rat'},
+  badger:{ch:'B',col:'#cc4444',hp:18,atk:5,exp:12,name:'Badger'},
+  fox:{ch:'F',col:'#ddaa33',hp:14,atk:4,exp:10,name:'Fox'},
+  snake:{ch:'s',col:'#44cc44',hp:16,atk:6,exp:14,name:'Snake'},
+  shadow_cat:{ch:'S',col:'#bb44bb',hp:22,atk:7,exp:18,name:'Shadow Cat'},
+  dark_warrior:{ch:'D',col:'#ff4444',hp:30,atk:10,exp:25,name:'Dark Warrior'},
+  owl:{ch:'O',col:'#44bbbb',hp:12,atk:3,exp:8,name:'Owl'},
+  spider:{ch:'x',col:'#aa44aa',hp:10,atk:3,exp:7,name:'Spider'},
+  adder:{ch:'a',col:'#ccaa33',hp:15,atk:8,exp:13,name:'Adder'},
+  dog:{ch:'G',col:'#ff6644',hp:28,atk:9,exp:20,name:'Dog'},
+  twoleg_trap:{ch:'T',col:'#dddddd',hp:35,atk:5,exp:22,name:'Twoleg Trap'},
+  rogue:{ch:'R',col:'#4466dd',hp:24,atk:8,exp:20,name:'Rogue'},
+  badger_lord:{ch:'W',col:'#ff4444',hp:45,atk:12,exp:35,name:'Badger Lord'},
+  tigerstar_spirit:{ch:'☠',col:'#dd44ff',hp:60,atk:15,exp:50,name:'Tigerstar Spirit'},
+};
+const FLOOR_ENEMIES={
+  1:['rat','rat'],2:['rat','rat','spider'],3:['rat','badger','fox'],
+  4:['badger','fox','snake','owl'],5:['fox','snake','shadow_cat','adder'],
+  6:['snake','shadow_cat','dark_warrior','rogue'],
+  7:['shadow_cat','dark_warrior','dog','rogue'],
+  8:['dark_warrior','dog','rogue','twoleg_trap','badger_lord'],
+  9:['dog','rogue','badger_lord','tigerstar_spirit'],
+  10:['badger_lord','tigerstar_spirit','dark_warrior','rogue','dog'],
+};
+const SHOP=[
+  {key:'1',name:'Healing Herb',icon:'🌿',desc:'Restore 15 HP',cost:8,type:'heal_herb'},
+  {key:'2',name:'Exp Herb',icon:'✦',desc:'+10 EXP',cost:12,type:'exp_herb'},
+  {key:'3',name:'Sharp Claw',icon:'†',desc:'ATK +1 permanently',cost:20,type:'atk_up'},
+  {key:'4',name:'Iron Fur',icon:'🛡',desc:'MaxHP +5 & full heal',cost:25,type:'max_hp_up'},
+  {key:'5',name:'StarClan Blessing',icon:'⭐',desc:'Full HP restore',cost:18,type:'full_heal'},
+  {key:'6',name:'Eagle Eyes',icon:'👁',desc:'FOV +1 permanently',cost:30,type:'fov_up'},
+  {key:'7',name:'Swift Paws',icon:'💨',desc:'Stun all enemies 1 turn',cost:15,type:'stun'},
+];
+
+// ─── Audio ───
+let audioCtx=null;
+function initAudio(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();}
+function playTone(freq,dur,type,vol){
+  if(!audioCtx)return;
+  try{
+    const o=audioCtx.createOscillator(),g=audioCtx.createGain();
+    o.type=type||'square';o.frequency.value=freq;
+    g.gain.value=vol||0.08;
+    g.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+dur);
+    o.connect(g);g.connect(audioCtx.destination);
+    o.start();o.stop(audioCtx.currentTime+dur);
+  }catch(e){}
+}
+function sfxAttack(){playTone(200,0.1,'sawtooth',0.1);setTimeout(()=>playTone(120,0.08,'square',0.08),40);}
+function sfxPickup(){playTone(600,0.08,'sine',0.1);setTimeout(()=>playTone(900,0.1,'sine',0.1),60);}
+function sfxLevelUp(){playTone(400,0.1,'square',0.08);setTimeout(()=>playTone(500,0.1,'square',0.08),80);setTimeout(()=>playTone(700,0.15,'square',0.1),160);}
+function sfxHurt(){playTone(100,0.15,'sawtooth',0.1);}
+function sfxDeath(){playTone(300,0.15,'sawtooth',0.1);setTimeout(()=>playTone(200,0.15,'sawtooth',0.1),120);setTimeout(()=>playTone(100,0.3,'sawtooth',0.1),240);}
+function sfxDescend(){playTone(300,0.15,'sine',0.08);setTimeout(()=>playTone(200,0.2,'sine',0.08),100);}
+function sfxVictory(){[0,100,200,300,400,500].forEach((d,i)=>setTimeout(()=>playTone(400+i*80,0.15,'sine',0.1),d));}
+
+// ─── Particles ───
+let particles=[];
+function spawnParticles(x,y,color,count){
+  for(let i=0;i<count;i++){
+    particles.push({x:x*TILE+TILE/2, y:y*TILE+TILE/2,
+      vx:(Math.random()-0.5)*3, vy:(Math.random()-0.5)*3,
+      life:0.6+Math.random()*0.4, color, size:2+Math.random()*2});
+  }
+}
+function updateParticles(dt){
+  for(let i=particles.length-1;i>=0;i--){
+    const p=particles[i];
+    p.x+=p.vx;p.y+=p.vy;p.life-=dt;
+    if(p.life<=0)particles.splice(i,1);
+  }
+}
+function drawParticles(){
+  particles.forEach(p=>{
+    ctx.globalAlpha=Math.max(0,p.life);
+    ctx.fillStyle=p.color;
+    ctx.fillRect(p.x-p.size/2,p.y-p.size/2,p.size,p.size);
+  });
+  ctx.globalAlpha=1;
+}
+
+// ─── Screen shake & flash ───
+let shakeTime=0, flashColor=null, flashTime=0;
+function triggerShake(dur){shakeTime=dur;}
+function triggerFlash(col,dur){flashColor=col;flashTime=dur;}
+
+// ─── Game State ───
+let G={
+  state:'title', // title, playing, shop, dead, won
+  floor:1,
+  grid:null, rooms:null, stairsPos:null,
+  seen:null,
+  enemies:[], items:[],
+  player:{x:0,y:0,hp:30,maxHp:30,atk:5,exp:0,level:1,herbs:2,expHerbs:0,kills:0,fovBonus:0},
+  messages:[],
+  shopMsg:'',
+  totalSpent:0,
+  turnCount:0,
+};
+function fovRadius(){return FOV_RAD+G.player.fovBonus;}
+function expToNext(){return G.player.level*15;}
+
+function addMsg(txt,cls){
+  G.messages.push({txt,cls:cls||''});
+  if(G.messages.length>50)G.messages=G.messages.slice(-50);
+}
+
+// ─── Map Generation (from Python) ───
+function generateMap(floorNum){
+  const grid=[];
+  for(let y=0;y<MAP_H;y++){grid[y]=[];for(let x=0;x<MAP_W;x++)grid[y][x]='#';}
+  const rooms=[];
+  let numRooms=Math.floor(4+Math.random()*3)+floorNum;
+  for(let attempt=0;attempt<numRooms*10&&rooms.length<numRooms;attempt++){
+    const w=4+Math.floor(Math.random()*6);
+    const h=3+Math.floor(Math.random()*5);
+    const rx=1+Math.floor(Math.random()*(MAP_W-w-1));
+    const ry=1+Math.floor(Math.random()*(MAP_H-h-1));
+    let overlap=false;
+    for(let cy=ry-1;cy<=ry+h&&!overlap;cy++)
+      for(let cx=rx-1;cx<=rx+w&&!overlap;cx++)
+        if(cy>=0&&cy<MAP_H&&cx>=0&&cx<MAP_W&&grid[cy][cx]==='.')overlap=true;
+    if(overlap)continue;
+    for(let cy=ry;cy<ry+h;cy++)for(let cx=rx;cx<rx+w;cx++)grid[cy][cx]='.';
+    rooms.push({x:rx,y:ry,w,h});
+  }
+  // corridors
+  for(let i=0;i<rooms.length-1;i++){
+    const x1=rooms[i].x+Math.floor(rooms[i].w/2);
+    const y1=rooms[i].y+Math.floor(rooms[i].h/2);
+    const x2=rooms[i+1].x+Math.floor(rooms[i+1].w/2);
+    const y2=rooms[i+1].y+Math.floor(rooms[i+1].h/2);
+    if(Math.random()<0.5){
+      for(let cx=Math.min(x1,x2);cx<=Math.max(x1,x2);cx++)grid[y1][cx]='.';
+      for(let cy=Math.min(y1,y2);cy<=Math.max(y1,y2);cy++)grid[cy][x2]='.';
+    }else{
+      for(let cy=Math.min(y1,y2);cy<=Math.max(y1,y2);cy++)grid[cy][x1]='.';
+      for(let cx=Math.min(x1,x2);cx<=Math.max(x1,x2);cx++)grid[y2][cx]='.';
+    }
+  }
+  return {grid,rooms};
+}
+
+function placeStairs(grid,rooms,floorNum){
+  const r=rooms[rooms.length-1];
+  const sx=r.x+Math.floor(r.w/2), sy=r.y+Math.floor(r.h/2);
+  grid[sy][sx]=floorNum===MAX_FLOOR?'M':'>';
+  return {x:sx,y:sy};
+}
+
+function placeEnemies(grid,rooms,floorNum){
+  const types=FLOOR_ENEMIES[floorNum]||['tigerstar_spirit','badger_lord'];
+  const count=3+floorNum*2;
+  const enemies=[];
+  for(let i=0;i<count;i++){
+    const ri=1+Math.floor(Math.random()*(rooms.length-1));
+    const r=rooms[ri];
+    const ex=r.x+1+Math.floor(Math.random()*(r.w-2));
+    const ey=r.y+1+Math.floor(Math.random()*(r.h-2));
+    if(grid[ey][ex]!=='.')continue;
+    const etype=types[Math.floor(Math.random()*types.length)];
+    const d=EDATA[etype];
+    enemies.push({x:ex,y:ey,type:etype,hp:d.hp+floorNum*2,maxHp:d.hp+floorNum*2,atk:d.atk+floorNum,exp:d.exp,stunned:false});
+  }
+  return enemies;
+}
+
+function placeItems(grid,rooms,floorNum){
+  const items=[];
+  const count=3+floorNum;
+  for(let i=0;i<count;i++){
+    const r=rooms[Math.floor(Math.random()*rooms.length)];
+    const ix=r.x+1+Math.floor(Math.random()*(r.w-2));
+    const iy=r.y+1+Math.floor(Math.random()*(r.h-2));
+    if(grid[iy][ix]!=='.')continue;
+    const r2=Math.random();
+    const itype=r2<0.4?'healing_herb':r2<0.7?'exp_herb':'attack_claw';
+    items.push({x:ix,y:iy,type:itype});
+  }
+  return items;
+}
+
+function updateFov(){
+  const p=G.player, rad=fovRadius();
+  for(let y=0;y<MAP_H;y++)
+    for(let x=0;x<MAP_W;x++)
+      if(Math.abs(x-p.x)+Math.abs(y-p.y)<=rad)G.seen[y][x]=true;
+}
+
+function visible(x,y){
+  const p=G.player;
+  return Math.abs(x-p.x)+Math.abs(y-p.y)<=fovRadius();
+}
+
+function enemyAt(x,y){return G.enemies.find(e=>e.x===x&&e.y===y)||null;}
+function itemAt(x,y){return G.items.find(i=>i.x===x&&i.y===y)||null;}
+
+// ─── Floor generation ───
+function generateFloor(){
+  const res=generateMap(G.floor);
+  G.grid=res.grid; G.rooms=res.rooms;
+  G.stairsPos=placeStairs(G.grid,G.rooms,G.floor);
+  const r=G.rooms[0];
+  G.player.x=r.x+Math.floor(r.w/2);
+  G.player.y=r.y+Math.floor(r.h/2);
+  G.enemies=placeEnemies(G.grid,G.rooms,G.floor);
+  G.items=placeItems(G.grid,G.rooms,G.floor);
+  G.seen=[];
+  for(let y=0;y<MAP_H;y++){G.seen[y]=[];for(let x=0;x<MAP_W;x++)G.seen[y][x]=false;}
+  updateFov();
+  addMsg(`  ~ Floor ${G.floor} of ${MAX_FLOOR} ~`,'info');
+}
+
+// ─── New game ───
+function newGame(){
+  G.state='playing'; G.floor=1;
+  G.player={x:0,y:0,hp:30,maxHp:30,atk:5,exp:0,level:1,herbs:2,expHerbs:0,kills:0,fovBonus:0};
+  G.messages=[];G.totalSpent=0;G.turnCount=0;
+  G.shopMsg='';
+  particles=[];
+  addMsg('🌙 You descend into the caves seeking the Moonstone...','info');
+  addMsg('   May StarClan light your path, apprentice!','info');
+  addMsg('   💡 Press P anytime to open the Shop!','info');
+  generateFloor();
+}
+
+// ─── Gain EXP ───
+function gainExp(amount){
+  const p=G.player;
+  p.exp+=amount;
+  let leveled=false;
+  while(p.exp>=expToNext()){
+    p.exp-=expToNext();
+    p.level++;p.maxHp+=5;p.hp=Math.min(p.hp+10,p.maxHp);p.atk+=2;
+    leveled=true;
+  }
+  return leveled;
+}
+
+function spendExp(amount){
+  if(G.player.exp>=amount){G.player.exp-=amount;return true;}
+  return false;
+}
+
+// ─── Player actions ───
+function movePlayer(dx,dy){
+  if(G.state!=='playing')return;
+  initAudio();
+  const p=G.player;
+  const nx=p.x+dx, ny=p.y+dy;
+  if(nx<0||nx>=MAP_W||ny<0||ny>=MAP_H||G.grid[ny][nx]==='#')return;
+  if(enemyAt(nx,ny))return;
+  p.x=nx; p.y=ny;
+  // item pickup
+  const it=itemAt(nx,ny);
+  if(it){
+    G.items=G.items.filter(i=>i!==it);
+    sfxPickup();
+    if(it.type==='healing_herb'){
+      p.herbs++;addMsg(`♥ Found a healing herb! (${p.herbs} total)`,'good');
+      spawnParticles(nx,ny,'#44cc44',6);
+    }else if(it.type==='exp_herb'){
+      p.expHerbs++;addMsg(`✦ Found an experience herb! (${p.expHerbs} total)`,'good');
+      spawnParticles(nx,ny,'#aa44ff',6);
+    }else if(it.type==='attack_claw'){
+      p.atk++;addMsg(`† Found a sharp claw! ATK +1 → ${p.atk}`,'good');
+      spawnParticles(nx,ny,'#44bbcc',6);
+    }
+  }
+  if(G.grid[ny][nx]==='>'){
+    addMsg('▼ You see stairs! Press > to descend.','info');
+  }else if(G.grid[ny][nx]==='M'){
+    G.state='won';
+    addMsg('◆◆◆ You found the MOONSTONE! StarClan honors you! ◆◆◆','gold');
+    sfxVictory();
+    return;
+  }
+  updateFov();
+  enemyTurn();
+}
+
+function attackAdjacent(){
+  if(G.state!=='playing')return;
+  initAudio();
+  const dirs=[[0,-1],[0,1],[-1,0],[1,0],[-1,-1],[1,-1],[-1,1],[1,1]];
+  const p=G.player;
+  for(const[dx,dy]of dirs){
+    const e=enemyAt(p.x+dx,p.y+dy);
+    if(e){
+      const dmg=p.atk+Math.floor(Math.random()*4)-1;
+      e.hp-=dmg;
+      sfxAttack();
+      addMsg(`⚔️ You scratch the ${e.type.replace(/_/g,' ')} for ${dmg} damage!`,'good');
+      spawnParticles(e.x,e.y,'#ffffff',4);
+      if(e.hp<=0){
+        G.enemies=G.enemies.filter(en=>en!==e);
+        p.kills++;
+        const leveled=gainExp(e.exp);
+        addMsg(`💀 ${e.type.replace(/_/g,' ')} defeated! +${e.exp} EXP`,'good');
+        spawnParticles(e.x,e.y,EDATA[e.type].col,8);
+        if(leveled){
+          sfxLevelUp();
+          addMsg(`⭐ LEVEL UP! Now level ${p.level}! HP+5 ATK+2`,'gold');
+          spawnParticles(p.x,p.y,'#ffcc44',12);
+        }
+      }
+      enemyTurn();
+      return;
+    }
+  }
+  addMsg('Nothing to attack nearby!','');
+}
+
+function useHealHerb(){
+  if(G.state!=='playing')return;
+  initAudio();
+  const p=G.player;
+  if(p.herbs>0){
+    const old=p.hp;
+    p.hp=Math.min(p.hp+15,p.maxHp);
+    p.herbs--;
+    addMsg(`🌿 Used healing herb! +${p.hp-old} HP (${p.hp}/${p.maxHp})`,'good');
+    spawnParticles(p.x,p.y,'#44cc44',5);
+    enemyTurn();
+  }else{
+    addMsg('No healing herbs! Press P to buy some.','hurt');
+  }
+}
+
+function useExpHerb(){
+  if(G.state!=='playing')return;
+  initAudio();
+  const p=G.player;
+  if(p.expHerbs>0){
+    p.expHerbs--;
+    const leveled=gainExp(10);
+    addMsg('✦ Used experience herb! +10 EXP','good');
+    if(leveled){
+      sfxLevelUp();
+      addMsg(`⭐ LEVEL UP! Now level ${p.level}! HP+5 ATK+2`,'gold');
+      spawnParticles(p.x,p.y,'#ffcc44',12);
+    }
+    enemyTurn();
+  }else{
+    addMsg('No experience herbs! Press P to buy some.','hurt');
+  }
+}
+
+function tryDescend(){
+  if(G.state!=='playing')return;
+  initAudio();
+  const p=G.player;
+  if(G.grid[p.y][p.x]==='>'){
+    G.floor++;
+    sfxDescend();
+    addMsg(`▼ Descending to floor ${G.floor}...`,'info');
+    generateFloor();
+  }else{
+    addMsg('No stairs here! Look for ▼ on the map.','');
+  }
+}
+
+// ─── Enemy turn ───
+function enemyTurn(){
+  if(G.state!=='playing')return;
+  const p=G.player;
+  for(const e of G.enemies){
+    if(e.stunned){e.stunned=false;continue;}
+    const dx=p.x-e.x, dy=p.y-e.y;
+    const dist=Math.abs(dx)+Math.abs(dy);
+    if(dist<=1){
+      const dmg=Math.max(1,e.atk+Math.floor(Math.random()*3)-1);
+      p.hp-=dmg;
+      sfxHurt();
+      triggerShake(0.15);triggerFlash('#ff0000',0.15);
+      addMsg(`🩸 ${e.type.replace(/_/g,' ')} attacks you for ${dmg} damage!`,'hurt');
+      if(p.hp<=0){
+        p.hp=0;G.state='dead';
+        sfxDeath();
+        addMsg(`💀 You were defeated by a ${e.type.replace(/_/g,' ')}...`,'hurt');
+        return;
+      }
+    }else if(dist<=7&&visible(e.x,e.y)){
+      if(Math.random()<0.7){
+        let mx=dx>0?1:dx<0?-1:0;
+        let my=dy>0?1:dy<0?-1:0;
+        let nx,ny;
+        if(Math.abs(dx)>=Math.abs(dy)){nx=e.x+mx;ny=e.y;}
+        else{nx=e.x;ny=e.y+my;}
+        if(nx>=0&&nx<MAP_W&&ny>=0&&ny<MAP_H&&G.grid[ny][nx]!=='#'&&!enemyAt(nx,ny)&&!(nx===p.x&&ny===p.y)){
+          e.x=nx;e.y=ny;
+        }
+      }
+    }
+  }
+}
+
+// ─── Shop ───
+function openShop(){
+  if(G.state!=='playing')return;
+  G.state='shop';G.shopMsg='';
+  document.getElementById('shopOverlay').style.display='flex';
+  renderShop();
+}
+function closeShop(){
+  G.state='playing';G.shopMsg='';
+  document.getElementById('shopOverlay').style.display='none';
+}
+function buyItem(idx){
+  const item=SHOP[idx];
+  const p=G.player;
+  if(!spendExp(item.cost)){
+    G.shopMsg=`❌ Not enough EXP! Need ${item.cost}, have ${p.exp}`;
+    renderShop();return;
+  }
+  G.totalSpent+=item.cost;
+  const it=item.type;
+  if(it==='heal_herb'){p.herbs++;addMsg(`🛒 Bought ${item.name}! (herbs: ${p.herbs})`,'good');}
+  else if(it==='exp_herb'){p.expHerbs++;addMsg(`🛒 Bought ${item.name}! (exp herbs: ${p.expHerbs})`,'good');}
+  else if(it==='atk_up'){p.atk++;addMsg(`🛒 Bought ${item.name}! ATK → ${p.atk}`,'good');}
+  else if(it==='max_hp_up'){p.maxHp+=5;p.hp=p.maxHp;addMsg(`🛒 Bought ${item.name}! MaxHP → ${p.maxHp}, fully healed!`,'good');}
+  else if(it==='full_heal'){p.hp=p.maxHp;addMsg(`🛒 Bought ${item.name}! HP fully restored!`,'good');}
+  else if(it==='fov_up'){p.fovBonus++;updateFov();addMsg(`🛒 Bought ${item.name}! FOV → ${fovRadius()}`,'good');}
+  else if(it==='stun'){G.enemies.forEach(e=>e.stunned=true);addMsg(`🛒 Bought ${item.name}! All enemies stunned!`,'good');}
+  G.shopMsg=`✅ Bought ${item.icon} ${item.name}! (-${item.cost} EXP, ${p.exp} left)`;
+  sfxPickup();
+  renderShop();
+}
+function renderShop(){
+  const el=document.getElementById('shopItems');
+  document.getElementById('shopExp').textContent=G.player.exp;
+  let html='';
+  SHOP.forEach((item,i)=>{
+    const can=G.player.exp>=item.cost;
+    html+=`<div class="shopItem" onclick="buyItem(${i})" style="opacity:${can?1:0.5}">
+      <div class="siIcon">${item.icon}</div>
+      <div class="siName">${item.name}<br><small style="color:#777">${item.desc}</small></div>
+      <div class="siCost">${item.cost} EXP</div>
+    </div>`;
+  });
+  el.innerHTML=html;
+  document.getElementById('shopMsg').textContent=G.shopMsg;
+}
+
+// ─── Mobile controls ───
+function doMove(dx,dy){initAudio();if(G.state==='title'){newGame();return;}movePlayer(dx,dy);}
+function doAttack(){initAudio();attackAdjacent();}
+function doHeal(){initAudio();useHealHerb();}
+function doExpHerb(){initAudio();useExpHerb();}
+function doShop(){initAudio();if(G.state==='shop')closeShop();else if(G.state==='playing')openShop();}
+function doDescend(){initAudio();tryDescend();}
+
+// ─── Input ───
+document.addEventListener('keydown',e=>{
+  initAudio();
+  const k=e.key;
+  if(G.state==='title'){
+    if(k==='Enter'||k===' '){newGame();e.preventDefault();}
+    return;
+  }
+  if(G.state==='shop'){
+    if(k==='Escape'||k==='p'||k==='P')closeShop();
+    else if(k>='1'&&k<='7')buyItem(parseInt(k)-1);
+    e.preventDefault();return;
+  }
+  if(G.state==='playing'){
+    if(k==='w'||k==='W'||k==='ArrowUp'){movePlayer(0,-1);e.preventDefault();}
+    else if(k==='s'||k==='S'||k==='ArrowDown'){movePlayer(0,1);e.preventDefault();}
+    else if(k==='a'||k==='A'||k==='ArrowLeft'){movePlayer(-1,0);e.preventDefault();}
+    else if(k==='d'||k==='D'||k==='ArrowRight'){movePlayer(1,0);e.preventDefault();}
+    else if(k===' '){attackAdjacent();e.preventDefault();}
+    else if(k==='h'||k==='H')useHealHerb();
+    else if(k==='e'||k==='E')useExpHerb();
+    else if(k==='p'||k==='P')openShop();
+    else if(k==='.'||k==='>'||k==='Shift')tryDescend();
+  }
+  if(G.state==='dead'||G.state==='won'){
+    if(k==='r'||k==='R')newGame();
+  }
+});
+
+// ─── Save / Load ───
+function saveGame(){
+  try{
+    const d=JSON.stringify({
+      floor:G.floor,player:G.player,messages:G.messages.slice(-20),
+      state:G.state,totalSpent:G.totalSpent,
+      grid:G.grid,rooms:G.rooms,stairsPos:G.stairsPos,
+      enemies:G.enemies,items:G.items,seen:G.seen,
+    });
+    localStorage.setItem('moonstone_save',d);
+  }catch(e){}
+}
+function loadGame(){
+  try{
+    const d=localStorage.getItem('moonstone_save');
+    if(!d)return false;
+    const s=JSON.parse(d);
+    Object.assign(G,s);
+    document.getElementById('shopOverlay').style.display='none';
+    return true;
+  }catch(e){return false;}
+}
+
+// ─── Rendering ───
+let animTime=0;
+function resizeCanvas(){
+  const wrap=document.getElementById('canvasWrap');
+  const cw=wrap.clientWidth, ch=wrap.clientHeight;
+  canvas.width=MAP_W*TILE;canvas.height=MAP_H*TILE;
+  const scale=Math.min(cw/(MAP_W*TILE),ch/(MAP_H*TILE),1.5);
+  canvas.style.width=Math.floor(MAP_W*TILE*scale)+'px';
+  canvas.style.height=Math.floor(MAP_H*TILE*scale)+'px';
+}
+
+function drawTile(x,y,ch,bg,fg){
+  const px=x*TILE, py=y*TILE;
+  ctx.fillStyle=bg;
+  ctx.fillRect(px,py,TILE,TILE);
+  if(ch){
+    ctx.fillStyle=fg||'#ccc';
+    ctx.font=`bold ${TILE-6}px monospace`;
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(ch,px+TILE/2,py+TILE/2+1);
+  }
+}
+
+function render(dt){
+  animTime+=dt;
+  updateParticles(dt);
+  if(shakeTime>0)shakeTime-=dt;
+  if(flashTime>0)flashTime-=dt;
+
+  ctx.save();
+  if(shakeTime>0){
+    ctx.translate((Math.random()-0.5)*4,(Math.random()-0.5)*4);
+  }
+
+  if(G.state==='title'){renderTitle();}
+  else if(G.state==='dead'){renderMap();renderDeath();}
+  else if(G.state==='won'){renderMap();renderVictory();}
+  else{renderMap();}
+
+  drawParticles();
+
+  if(flashTime>0&&flashColor){
+    ctx.fillStyle=flashColor;
+    ctx.globalAlpha=flashTime*2;
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.globalAlpha=1;
+  }
+
+  ctx.restore();
+  updateSidebar();
+}
+
+function renderTitle(){
+  ctx.fillStyle='#0a0a14';ctx.fillRect(0,0,canvas.width,canvas.height);
+  // Stars
+  for(let i=0;i<50;i++){
+    const sx=(i*137+50)%canvas.width, sy=(i*89+30)%canvas.height;
+    ctx.fillStyle=`rgba(200,200,255,${0.3+0.3*Math.sin(animTime*2+i)})`;
+    ctx.fillRect(sx,sy,2,2);
+  }
+  // Moon
+  ctx.fillStyle='#ddeeff';
+  ctx.beginPath();ctx.arc(canvas.width/2,canvas.height*0.28,40,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#0a0a14';
+  ctx.beginPath();ctx.arc(canvas.width/2+12,canvas.height*0.28-8,35,0,Math.PI*2);ctx.fill();
+  // Title
+  ctx.fillStyle='#aaddff';ctx.font='bold 32px monospace';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText('🌙 Moonstone Quest',canvas.width/2,canvas.height*0.48);
+  ctx.fillStyle='#8888aa';ctx.font='14px monospace';
+  ctx.fillText('A Warrior Cats Roguelike',canvas.width/2,canvas.height*0.56);
+  // Cat
+  ctx.fillStyle='#ddeeff';ctx.font='28px serif';
+  ctx.fillText('🐱',canvas.width/2,canvas.height*0.68);
+  // Prompt
+  ctx.fillStyle=`rgba(170,170,200,${0.5+0.5*Math.sin(animTime*3)})`;
+  ctx.font='16px monospace';
+  ctx.fillText('Press Enter to Start',canvas.width/2,canvas.height*0.82);
+}
+
+function renderMap(){
+  ctx.fillStyle='#0a0a14';ctx.fillRect(0,0,canvas.width,canvas.height);
+  const p=G.player, rad=fovRadius();
+  for(let y=0;y<MAP_H;y++){
+    for(let x=0;x<MAP_W;x++){
+      const vis=visible(x,y);
+      const seen=G.seen[y]&&G.seen[y][x];
+      const tile=G.grid[y]?G.grid[y][x]:'#';
+
+      if(vis){
+        // Player
+        if(x===p.x&&y===p.y){
+          drawTile(x,y,null,'#1a1a2e');
+          ctx.fillStyle='#ddeeff';ctx.font=`bold ${TILE-4}px monospace`;ctx.textAlign='center';ctx.textBaseline='middle';
+          ctx.fillText('🐱',x*TILE+TILE/2,y*TILE+TILE/2+1);
+          continue;
+        }
+        const en=enemyAt(x,y);
+        if(en){
+          drawTile(x,y,null,'#1a1a2e');
+          const d=EDATA[en.type];
+          ctx.fillStyle=en.stunned?'#666':d.col;
+          ctx.font=`bold ${TILE-6}px monospace`;ctx.textAlign='center';ctx.textBaseline='middle';
+          ctx.fillText(en.stunned?'z':d.ch,x*TILE+TILE/2,y*TILE+TILE/2+1);
+          // hp bar
+          if(en.hp<en.maxHp){
+            const bw=TILE-4, bh=3;
+            const bx=x*TILE+2, by=y*TILE+1;
+            ctx.fillStyle='#440000';ctx.fillRect(bx,by,bw,bh);
+            ctx.fillStyle='#ff4444';ctx.fillRect(bx,by,bw*(en.hp/en.maxHp),bh);
+          }
+          continue;
+        }
+        const it=itemAt(x,y);
+        if(it){
+          const bg2='#1a1a2e';
+          const col=it.type==='healing_herb'?'#44cc44':it.type==='exp_herb'?'#aa44ff':'#44bbcc';
+          const ch2=it.type==='healing_herb'?'♥':it.type==='exp_herb'?'✦':'†';
+          drawTile(x,y,null,bg2);
+          ctx.fillStyle=col;ctx.font=`bold ${TILE-6}px monospace`;ctx.textAlign='center';ctx.textBaseline='middle';
+          ctx.fillText(ch2,x*TILE+TILE/2,y*TILE+TILE/2+1);
+          continue;
+        }
+        if(tile==='>'){
+          const glow=0.3+0.15*Math.sin(animTime*3);
+          drawTile(x,y,null,'#1a1a2e');
+          ctx.fillStyle=`rgba(68,136,255,${glow})`;ctx.fillRect(x*TILE,y*TILE,TILE,TILE);
+          ctx.fillStyle='#4488ff';ctx.font=`bold ${TILE-6}px monospace`;ctx.textAlign='center';ctx.textBaseline='middle';
+          ctx.fillText('▼',x*TILE+TILE/2,y*TILE+TILE/2+1);
+        }else if(tile==='M'){
+          const pulse=0.4+0.3*Math.sin(animTime*4);
+          drawTile(x,y,null,'#1a1a2e');
+          ctx.fillStyle=`rgba(170,221,255,${pulse})`;ctx.fillRect(x*TILE,y*TILE,TILE,TILE);
+          ctx.fillStyle='#aaddff';ctx.font=`bold ${TILE-4}px monospace`;ctx.textAlign='center';ctx.textBaseline='middle';
+          ctx.fillText('◆',x*TILE+TILE/2,y*TILE+TILE/2+1);
+        }else if(tile==='#'){
+          drawTile(x,y,null,'#2a2a3a');
+        }else{
+          drawTile(x,y,null,'#3a2a1a');
+        }
+      }else if(seen){
+        if(tile==='#'){
+          drawTile(x,y,null,'#1a1a28');
+        }else{
+          drawTile(x,y,null,'#1a1408');
+          ctx.fillStyle='rgba(100,100,120,0.3)';ctx.font=`${TILE-8}px monospace`;ctx.textAlign='center';ctx.textBaseline='middle';
+          ctx.fillText('·',x*TILE+TILE/2,y*TILE+TILE/2+1);
+        }
+      }
+      // else: black, already background
+    }
+  }
+}
+
+function renderDeath(){
+  ctx.fillStyle='rgba(20,0,0,0.75)';ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.fillStyle='#ff4444';ctx.font='bold 28px monospace';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText('💀 GAME OVER',canvas.width/2,canvas.height*0.35);
+  ctx.fillStyle='#cc8888';ctx.font='14px monospace';
+  ctx.fillText(`Level ${G.player.level} · ${G.player.kills} enemies defeated · Floor ${G.floor}`,canvas.width/2,canvas.height*0.45);
+  ctx.fillStyle='#888';ctx.font='13px monospace';
+  ctx.fillText('StarClan weeps for you...',canvas.width/2,canvas.height*0.53);
+  ctx.fillStyle=`rgba(200,200,200,${0.5+0.5*Math.sin(animTime*3)})`;
+  ctx.font='16px monospace';
+  ctx.fillText('Press R to retry',canvas.width/2,canvas.height*0.68);
+}
+
+function renderVictory(){
+  ctx.fillStyle='rgba(0,0,20,0.75)';ctx.fillRect(0,0,canvas.width,canvas.height);
+  // golden glow
+  const glow=0.3+0.2*Math.sin(animTime*2);
+  ctx.fillStyle=`rgba(255,204,68,${glow*0.15})`;
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.fillStyle='#ffcc44';ctx.font='bold 28px monospace';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText('🎉 VICTORY!',canvas.width/2,canvas.height*0.3);
+  ctx.fillStyle='#aaddff';ctx.font='bold 18px monospace';
+  ctx.fillText('🌙 You found the Moonstone!',canvas.width/2,canvas.height*0.4);
+  ctx.fillStyle='#ccc';ctx.font='14px monospace';
+  ctx.fillText(`Level ${G.player.level} · ${G.player.kills} enemies defeated · ${G.totalSpent} EXP spent in shop`,canvas.width/2,canvas.height*0.5);
+  ctx.fillStyle='#88aaff';ctx.font='13px monospace';
+  ctx.fillText('StarClan honors you, warrior!',canvas.width/2,canvas.height*0.58);
+  ctx.fillStyle=`rgba(200,200,200,${0.5+0.5*Math.sin(animTime*3)})`;
+  ctx.font='16px monospace';
+  ctx.fillText('Press R to play again',canvas.width/2,canvas.height*0.72);
+}
+
+function updateSidebar(){
+  const p=G.player;
+  document.getElementById('sLv').textContent=p.level;
+  document.getElementById('sAtk').textContent=p.atk;
+  document.getElementById('sHp').textContent=`${p.hp}/${p.maxHp}`;
+  document.getElementById('hpFill').style.width=(p.hp/p.maxHp*100)+'%';
+  document.getElementById('hpFill').style.background=p.hp>p.maxHp*0.5?'#44cc44':p.hp>p.maxHp*0.25?'#ccaa33':'#cc4444';
+  document.getElementById('sExp').textContent=`${p.exp}/${expToNext()}`;
+  document.getElementById('expFill').style.width=(p.exp/expToNext()*100)+'%';
+  document.getElementById('sHerb').textContent=p.herbs;
+  document.getElementById('sExpH').textContent=p.expHerbs;
+  document.getElementById('sFloor').textContent=`${G.floor}/${MAX_FLOOR}`;
+  // messages
+  const log=document.getElementById('msgLog');
+  const recent=G.messages.slice(-6);
+  log.innerHTML=recent.map(m=>`<div class="msg ${m.cls}">${m.txt}</div>`).join('');
+  log.scrollTop=log.scrollHeight;
+}
+
+// ─── Game loop ───
+let lastTime=0;
+function loop(ts){
+  const dt=Math.min((ts-lastTime)/1000,0.1);
+  lastTime=ts;
+  render(dt);
+  requestAnimationFrame(loop);
+}
+
+// ─── Init ───
+window.addEventListener('resize',resizeCanvas);
+resizeCanvas();
+
+// Try load
+if(!loadGame()){
+  G.state='title';
+}else{
+  if(G.state==='shop'){G.state='playing';document.getElementById('shopOverlay').style.display='none';}
+}
+
+// Auto-save periodically
+setInterval(()=>{if(G.state==='playing'||G.state==='dead'||G.state==='won')saveGame();},5000);
+
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>

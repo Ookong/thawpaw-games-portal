@@ -1,0 +1,13 @@
+{
+  "title": "Thawpaw Games",
+  "games": [
+    {
+      "id": "moonstone-quest",
+      "name": "Moonstone Quest",
+      "file": "games/moonstone-quest.html",
+      "icon": "moonstone",
+      "description": "Descend 10 floors to find the Moonstone!",
+      "color": "#4488ff"
+    }
+  ]
+}
