@@ -555,11 +555,13 @@ function confirmBuySkin(id) {
   var sk = SKINS.find(function(s){return s.id===id;});
   if (!sk || pState.ownedSkins.includes(id)) return;
   var price = sk.priceApples;
+  // Hide shop screen so overlay shows on top
+  document.getElementById('shopScreen').classList.remove('active');
   // Show confirmation overlay
   var ov = document.getElementById('overlay');
   var ob = document.getElementById('overlayBox');
   ob.className = '';
-  document.getElementById('oTitle').textContent = '🛒 购买皮肤';
+  document.getElementById('oTitle').textContent = '\u{1F6D2} 购买皮肤';
   document.getElementById('oSub').textContent = '';
   document.getElementById('oBody').innerHTML =
     '<div style="font-size:2rem;margin:8px 0">' + sk.emoji + ' ' + sk.name + '</div>' +
@@ -574,7 +576,7 @@ function confirmBuySkin(id) {
 
 function cancelBuySkin() {
   document.getElementById('overlay').classList.remove('active');
-  buildShop();
+  showShop();
 }
 
 function buySkin(id) {
