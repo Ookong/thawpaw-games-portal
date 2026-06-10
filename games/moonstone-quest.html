@@ -40,7 +40,7 @@ canvas { image-rendering:pixelated; display:block; }
 #joystickKnob { width:50px; height:50px; background:rgba(255,255,255,.25); border:2px solid rgba(255,255,255,.35); border-radius:50%; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); transition:none; }
 
 /* Action buttons (right side) */
-#touchActions { position:absolute; bottom:15px; right:15px; display:grid; grid-template-columns:repeat(2,1fr); gap:8px; pointer-events:auto; }
+#touchActions { position:absolute; bottom:15px; right:15px; display:grid; grid-template-columns:repeat(3,1fr); gap:6px; pointer-events:auto; }
 #touchActions button { width:72px; height:62px; background:rgba(255,255,255,.08); border:1.5px solid rgba(255,255,255,.18); border-radius:12px; color:#ccc; font-size:12px; cursor:pointer; -webkit-tap-highlight-color:transparent; touch-action:manipulation; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; }
 #touchActions button:active { background:rgba(255,255,255,.2); border-color:rgba(255,255,255,.35); }
 #touchActions button .icon { font-size:22px; }
@@ -140,6 +140,8 @@ canvas { image-rendering:pixelated; display:block; }
     <button id="btnHeal" ontouchstart="event.preventDefault();doHeal()"><span class="icon">🌿</span><span class="label">Heal</span></button>
     <button id="btnExp" ontouchstart="event.preventDefault();doExpHerb()"><span class="icon">✦</span><span class="label">Exp</span></button>
     <button id="btnDown" ontouchstart="event.preventDefault();doDescend()"><span class="icon">▼</span><span class="label">Down</span></button>
+    <button id="btnShop" ontouchstart="event.preventDefault();doShop()"><span class="icon">🏪</span><span class="label">Shop</span></button>
+    <button id="btnRestart" ontouchstart="event.preventDefault();newGame()"><span class="icon">🔄</span><span class="label">Retry</span></button>
   </div>
 </div>
 <div id="shopOverlay">
@@ -996,34 +998,39 @@ function updateSidebar(){
   var bh=document.getElementById('btnHeal');
   var be=document.getElementById('btnExp');
   var bd=document.getElementById('btnDown');
+  var bs=document.getElementById('btnShop');
+  var br=document.getElementById('btnRestart');
   if(ba && G.state==='dead' && p.herbs>=5){
     ba.innerHTML='<span class="icon">✨</span><span class="label">Revive</span>';
     ba.setAttribute('ontouchstart','event.preventDefault();revivePlayer()');
-    bh.innerHTML='<span class="icon">🔄</span><span class="label">Retry</span>';
-    bh.setAttribute('ontouchstart','event.preventDefault();newGame()');
+    bh.style.display='none';
     be.style.display='none';
     bd.style.display='none';
-  } else if(ba && G.state==='dead' && p.herbs<5){
-    ba.innerHTML='<span class="icon">🔄</span><span class="label">Retry</span>';
-    ba.setAttribute('ontouchstart','event.preventDefault();newGame()');
-    bh.innerHTML='<span class="icon">🌿</span><span class="label">'+p.herbs+'/5</span>';
-    bh.setAttribute('ontouchstart','event.preventDefault();');
+    bs.style.display='none';
+    br.style.display='';
+  } else if(ba && G.state==='dead'){
+    ba.style.display='none';
+    bh.style.display='none';
     be.style.display='none';
     bd.style.display='none';
+    bs.style.display='none';
+    br.style.display='';
   } else if(ba && G.state==='won'){
-    ba.innerHTML='<span class="icon">🔄</span><span class="label">Retry</span>';
-    ba.setAttribute('ontouchstart','event.preventDefault();newGame()');
-    bh.style.display='none'; be.style.display='none'; bd.style.display='none';
+    ba.style.display='none';
+    bh.style.display='none';
+    be.style.display='none';
+    bd.style.display='none';
+    bs.style.display='none';
+    br.style.display='';
   } else if(ba){
     ba.innerHTML='<span class="icon">⚔️</span><span class="label">Attack</span>';
     ba.setAttribute('ontouchstart','event.preventDefault();doAttack()');
-    bh.innerHTML='<span class="icon">🌿</span><span class="label">Heal</span>';
-    bh.setAttribute('ontouchstart','event.preventDefault();doHeal()');
-    be.innerHTML='<span class="icon">✦</span><span class="label">Exp</span>';
-    be.setAttribute('ontouchstart','event.preventDefault();doExpHerb()');
-    bd.innerHTML='<span class="icon">▼</span><span class="label">Down</span>';
-    bd.setAttribute('ontouchstart','event.preventDefault();doDescend()');
-    ba.style.display=''; bh.style.display=''; be.style.display=''; bd.style.display='';
+    ba.style.display='';
+    bh.style.display='';
+    be.style.display='';
+    bd.style.display='';
+    bs.style.display='';
+    br.style.display='';
   }
   // messages
   const log=document.getElementById('msgLog');
