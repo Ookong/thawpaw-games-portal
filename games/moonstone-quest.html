@@ -6,8 +6,8 @@
 <title>Moonstone Quest</title>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
-body { background:#0a0a14; color:#ccc; font-family:'Courier New',monospace; height:100vh; display:flex; flex-direction:column; overflow:hidden; -webkit-fill-available: height 100vh; }
-body { height:100dvh; }
+html { height:100%; }
+body { background:#0a0a14; color:#ccc; font-family:'Courier New',monospace; height:100vh; height:100dvh; display:flex; flex-direction:column; overflow:hidden; }
 a { color:#88aaff; }
 #back { position:fixed; top:8px; left:10px; z-index:100; font-size:13px; color:#6688aa; text-decoration:none; }
 #back:hover { color:#aaccff; }
@@ -46,16 +46,24 @@ canvas { image-rendering:pixelated; display:block; }
 #touchActions button .icon { font-size:20px; }
 #touchActions button .label { font-size:8px; opacity:.7; }
 
+
+/* ── Mobile HUD overlay ── */
+#mobileHud { display:none; position:fixed; top:0; left:0; right:0; z-index:30; background:rgba(10,10,20,.82); backdrop-filter:blur(4px); padding:4px 10px 5px; font-size:11px; pointer-events:none; }
+#mobileHud .hud-row { display:flex; align-items:center; gap:8px; }
+#mobileHud .hud-row+.hud-row { margin-top:2px; }
+#mobileHud .hud-hpbar { flex:1; height:10px; background:#1a1a2a; border:1px solid #333; border-radius:2px; overflow:hidden; }
+#mobileHud .hud-hpfill { height:100%; background:#44cc44; transition:width .2s; }
+#mobileHud .hud-expbar { width:80px; height:6px; background:#1a1a2a; border:1px solid #333; border-radius:2px; overflow:hidden; }
+#mobileHud .hud-expfill { height:100%; background:#aa44ff; transition:width .2s; }
+#mobileHud .hud-label { color:#888; white-space:nowrap; }
+#mobileHud .hud-val { color:#ddd; white-space:nowrap; }
+#mobileHud .hud-msg { color:#aaa; font-size:10px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; max-width:100%; }
 /* ── Mobile layout ── */
 @media (max-width:700px) {
-  #wrap { flex-direction:column; }
-  #sidebar { width:100%; max-height:24vh; flex-shrink:0; flex-direction:row; flex-wrap:wrap; border-left:none; border-top:1px solid #222; padding:4px 8px; font-size:11px; overflow-y:auto; }
-  #sidebar h2 { width:100%; font-size:13px; margin-bottom:2px; }
-  #sidebar .stat { margin:1px 0; }
-  #msgLog { max-height:36px; }
-  #hpBar { height:10px; }
-  #expBar { height:8px; }
-  body { overflow:hidden; }
+  body.touch-active #sidebar { display:none; }
+  body.touch-active #mobileHud { display:block; }
+  body.touch-active #wrap { flex-direction:column; }
+  body.touch-active #canvasWrap { padding-top:52px; }
 }
 @media (max-width:400px) {
   #sidebar { max-height:20vh; padding:3px 6px; font-size:10px; }
@@ -96,6 +104,24 @@ canvas { image-rendering:pixelated; display:block; }
 </style>
 </head>
 <body>
+<!-- Mobile HUD (shown on touch devices) -->
+<div id="mobileHud">
+  <div class="hud-row">
+    <span class="hud-label">HP</span>
+    <div class="hud-hpbar"><div class="hud-hpfill" id="hudHpFill" style="width:100%"></div></div>
+    <span class="hud-val" id="hudHp">30/30</span>
+    <span class="hud-label">Lv</span><span class="hud-val" id="hudLv">1</span>
+    <span class="hud-label">ATK</span><span class="hud-val" id="hudAtk">5</span>
+    <span class="hud-label">EXP</span>
+    <div class="hud-expbar"><div class="hud-expfill" id="hudExpFill" style="width:0%"></div></div>
+    <span class="hud-val" id="hudExp">0/15</span>
+  </div>
+  <div class="hud-row">
+    <span class="hud-val" id="hudHerbs">🌿2</span>
+    <span class="hud-val" id="hudFloor">🏠1/10</span>
+    <span class="hud-msg" id="hudMsg">Welcome!</span>
+  </div>
+</div>
 <a id="back" href="../index.html">← Menu</a>
 <div id="wrap">
   <div id="canvasWrap"><canvas id="game"></canvas></div>
@@ -655,6 +681,7 @@ function toggleSpeed(){
     var tc=document.getElementById('touchControls');
     if(tc.classList.contains('active'))return;
     tc.classList.add('active');
+    document.body.classList.add('touch-active');
     window.removeEventListener('touchstart',showTouchControls);
     window.removeEventListener('touchmove',showTouchControls);
     setTimeout(resizeCanvas,50);
@@ -1016,6 +1043,21 @@ function updateSidebar(){
   document.getElementById('sHerb').textContent=p.herbs;
   document.getElementById('sExpH').textContent=p.expHerbs;
   document.getElementById('sFloor').textContent=`${G.floor}/${MAX_FLOOR}`;
+  // Mobile HUD update
+  var hhp=document.getElementById('hudHp');
+  if(hhp){
+    hhp.textContent=p.hp+'/'+p.maxHp;
+    document.getElementById('hudHpFill').style.width=(p.hp/p.maxHp*100)+'%';
+    document.getElementById('hudHpFill').style.background=p.hp>p.maxHp*0.5?'#44cc44':p.hp>p.maxHp*0.25?'#ccaa33':'#cc4444';
+    document.getElementById('hudLv').textContent=p.level;
+    document.getElementById('hudAtk').textContent=p.atk;
+    document.getElementById('hudExp').textContent=p.exp+'/'+expToNext();
+    document.getElementById('hudExpFill').style.width=(p.exp/expToNext()*100)+'%';
+    document.getElementById('hudHerbs').textContent='\u{1F33F}'+p.herbs;
+    document.getElementById('hudFloor').textContent='\u{1F3E0}'+G.floor+'/'+MAX_FLOOR;
+    var lastMsg=G.messages.length?G.messages[G.messages.length-1].txt:'';
+    document.getElementById('hudMsg').textContent=lastMsg;
+  }
   // Update touch buttons for dead state
   var ba=document.getElementById('btnAttack');
   var bh=document.getElementById('btnHeal');
