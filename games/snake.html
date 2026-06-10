@@ -184,6 +184,7 @@ canvas { display:block; border-radius:8px; }
     <span class="hud-label">Score</span>
     <span class="hud-val score" id="hudScore">0</span>
     <span class="hud-spacer"></span>
+    <button onclick="toggleFullscreen()" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:6px;color:#ccc;font-size:16px;padding:2px 8px;pointer-events:auto">⛶</button>
     <span class="hud-label">Best</span>
     <span class="hud-val hi" id="hudHi">0</span>
   </div>
@@ -312,7 +313,8 @@ canvas { display:block; border-radius:8px; }
   <div class="screen-box">
     <h1 style="color:#ff8866;">🛒 商店</h1>
     <div class="shop-tabs">
-      <div class="shop-tab active">🐍 皮肤</div>
+      <div class="shop-tab active" id="tabSkins" onclick="switchShopTab('skins')">🐍 皮肤</div>
+      <div class="shop-tab" id="tabBoards" onclick="switchShopTab('boards')">🎲 棋盘</div>
     </div>
     <div class="stat-bar" id="shopStats"></div>
     <div class="bp-grid" id="shopGrid"></div>
@@ -347,6 +349,16 @@ const SKINS = [
   { id:'rainbow',name:'彩虹蛇',emoji:'🌈', body:'rainbow', head:'#ff88ff', pattern:'rainbow',  priceApples:20 },
 ];
 
+// ─── Board themes ───
+const BOARDS = [
+  { id:'default', name:'默认',    emoji:'⬛', bg:'#0a0a14', grid:'rgba(255,255,255,.04)', priceApples:0 },
+  { id:'fire',    name:'火焰',    emoji:'🔥', bg:'#1a0a0a', grid:'rgba(255,80,20,.08)',  priceApples:10 },
+  { id:'ocean',   name:'海浪',    emoji:'🌊', bg:'#0a0a1a', grid:'rgba(68,136,255,.08)', priceApples:10 },
+  { id:'stars',   name:'星空',    emoji:'✨', bg:'#05050f', grid:'rgba(200,200,255,.06)', priceApples:15 },
+  { id:'cloud',   name:'白云',    emoji:'☁️', bg:'#0e0e18', grid:'rgba(220,220,240,.07)', priceApples:20 },
+  { id:'rainbow', name:'彩虹',    emoji:'🌈', bg:'#0a0a14', grid:'rgba(255,100,200,.06)', priceApples:30 },
+];
+
 // ─── Gold-per-score ratios ───
 const GOLD_RATIOS = {
   '15-slow':1, '15-medium':1, '15-fast':2,
@@ -372,7 +384,7 @@ const STATE_KEY = 'thawpaw.snake.state.v2';
 let pState = loadState();
 
 function defaultState() {
-  return { gold:0, apples:0, ownedSkins:['green'], equippedSkin:'green', hiScore:0, settings:{ size:20, speed:'medium', control:'joystick' } };
+  return { gold:0, apples:0, ownedSkins:['green'], equippedSkin:'green', ownedBoards:['default'], equippedBoard:'default', hiScore:0, settings:{ size:20, speed:'medium', control:'joystick' } };
 }
 function loadState() {
   try {
@@ -582,27 +594,52 @@ function convertGold() {
 }
 
 // ─── Shop screen (skins) ───
+var shopTab = 'skins';
+
 function showShop() {
   showScreen('shopScreen');
   buildShop();
 }
 
+function switchShopTab(tab) {
+  shopTab = tab;
+  document.getElementById('tabSkins').className = 'shop-tab' + (tab==='skins' ? ' active' : '');
+  document.getElementById('tabBoards').className = 'shop-tab' + (tab==='boards' ? ' active' : '');
+  buildShop();
+}
+
 function buildShop() {
-  document.getElementById('shopStats').innerHTML = `
-    <div class="stat"><span class="icon">🍎</span><span class="val apple-val">${pState.apples} 苹果</span> &nbsp; <span class="icon">💰</span><span class="val">${pState.gold} 金币</span></div>
-  `;
+  document.getElementById('shopStats').innerHTML =
+    '<div class="stat"><span class="icon">🍎</span><span class="val apple-val">' + pState.apples + ' 苹果</span> &nbsp; <span class="icon">💰</span><span class="val">' + pState.gold + ' 金币</span></div>';
   var grid = document.getElementById('shopGrid');
-  grid.innerHTML = SKINS.map(function(sk) {
-    var owned = pState.ownedSkins.includes(sk.id);
-    var equipped = pState.equippedSkin === sk.id;
-    var cls = owned ? (equipped ? 'bp-card equipped' : 'bp-card owned') : 'bp-card locked';
-    var badge = owned ? (equipped ? '✅ 已装备' : '已拥有') : sk.priceApples + ' 🍎';
-    return '<div class="' + cls + '" ' + (!owned ? 'onclick="confirmBuySkin(\'' + sk.id + '\')"' : (equipped ? '' : 'onclick="equipFromShop(\'' + sk.id + '\')"')) + '>' +
-      '<div class="bp-emoji">' + sk.emoji + '</div>' +
-      '<div class="bp-name">' + sk.name + '</div>' +
-      '<div class="bp-badge">' + badge + '</div>' +
-    '</div>';
-  }).join('');
+  if (shopTab === 'boards') {
+    grid.innerHTML = BOARDS.map(function(bd) {
+      var owned = pState.ownedBoards.includes(bd.id);
+      var equipped = pState.equippedBoard === bd.id;
+      var cls = owned ? (equipped ? 'bp-card equipped' : 'bp-card owned') : 'bp-card locked';
+      var badge = bd.id === 'default' ? (equipped ? '✅ 使用中' : '免费') : (owned ? (equipped ? '✅ 使用中' : '已拥有') : bd.priceApples + ' 🍎');
+      var onclick = '';
+      if (!owned && bd.id !== 'default') onclick = 'onclick="confirmBuyBoard(\'' + bd.id + '\')"';
+      else if (owned && !equipped) onclick = 'onclick="equipBoard(\'' + bd.id + '\')"';
+      return '<div class="' + cls + '" ' + onclick + '>' +
+        '<div class="bp-emoji">' + bd.emoji + '</div>' +
+        '<div class="bp-name">' + bd.name + '</div>' +
+        '<div class="bp-badge">' + badge + '</div>' +
+      '</div>';
+    }).join('');
+  } else {
+    grid.innerHTML = SKINS.map(function(sk) {
+      var owned = pState.ownedSkins.includes(sk.id);
+      var equipped = pState.equippedSkin === sk.id;
+      var cls = owned ? (equipped ? 'bp-card equipped' : 'bp-card owned') : 'bp-card locked';
+      var badge = owned ? (equipped ? '✅ 已装备' : '已拥有') : sk.priceApples + ' 🍎';
+      return '<div class="' + cls + '" ' + (!owned ? 'onclick="confirmBuySkin(\'' + sk.id + '\')"' : (equipped ? '' : 'onclick="equipFromShop(\'' + sk.id + '\')"')) + '>' +
+        '<div class="bp-emoji">' + sk.emoji + '</div>' +
+        '<div class="bp-name">' + sk.name + '</div>' +
+        '<div class="bp-badge">' + badge + '</div>' +
+      '</div>';
+    }).join('');
+  }
 }
 
 function confirmBuySkin(id) {
@@ -641,14 +678,75 @@ function buySkin(id) {
   pState.ownedSkins.push(id);
   pState.equippedSkin = id;
   saveState();
-  document.getElementById('overlay').classList.remove('active');
-  buildShop();
+  showCongrats(sk.emoji + ' ' + sk.name + ' 皮肤');
 }
 
 function equipFromShop(id) {
   pState.equippedSkin = id;
   saveState();
   buildShop();
+}
+
+// ─── Board buy/equip ───
+function confirmBuyBoard(id) {
+  var bd = BOARDS.find(function(b){return b.id===id;});
+  if (!bd || pState.ownedBoards.includes(id)) return;
+  var price = bd.priceApples;
+  document.getElementById('shopScreen').classList.remove('active');
+  var ov = document.getElementById('overlay');
+  var ob = document.getElementById('overlayBox');
+  ob.className = '';
+  document.getElementById('oTitle').textContent = '\u{1F6D2} 购买棋盘';
+  document.getElementById('oSub').textContent = '';
+  document.getElementById('oBody').innerHTML =
+    '<div style="font-size:2rem;margin:8px 0">' + bd.emoji + ' ' + bd.name + '</div>' +
+    '<div style="font-size:1.1rem;color:#ffcc44;margin:8px 0">确定要用 ' + price + ' 苹果购买此棋盘？</div>' +
+    '<div style="font-size:.85rem;color:#888">你有 ' + pState.apples + ' 苹果</div>';
+  var disabled = pState.apples < price ? ' disabled style="opacity:.4;cursor:default"' : '';
+  document.getElementById('oBtns').innerHTML =
+    '<button class="bank-convert-btn"' + disabled + ' onclick="buyBoard(\'' + id + '\')" style="margin-right:12px">确定</button>' +
+    '<button class="bank-convert-btn" onclick="cancelBuyBoard()" style="background:rgba(255,255,255,.08)">取消</button>';
+  ov.classList.add('active');
+}
+
+function cancelBuyBoard() {
+  document.getElementById('overlay').classList.remove('active');
+  showShop();
+}
+
+function buyBoard(id) {
+  var bd = BOARDS.find(function(b){return b.id===id;});
+  if (!bd) return;
+  if (pState.apples < bd.priceApples) return;
+  pState.apples -= bd.priceApples;
+  if (!pState.ownedBoards) pState.ownedBoards = ['default'];
+  pState.ownedBoards.push(id);
+  pState.equippedBoard = id;
+  saveState();
+  showCongrats(bd.emoji + ' ' + bd.name + ' 棋盘');
+}
+
+function equipBoard(id) {
+  pState.equippedBoard = id;
+  saveState();
+  buildShop();
+}
+
+function showCongrats(itemName) {
+  var ov = document.getElementById('overlay');
+  var ob = document.getElementById('overlayBox');
+  ob.className = 'victory';
+  document.getElementById('oTitle').textContent = '🎉 恭喜获得';
+  document.getElementById('oSub').textContent = '';
+  document.getElementById('oBody').innerHTML = '<div style="font-size:1.4rem;color:#ffcc44;margin:12px 0;font-weight:700">' + itemName + '</div>';
+  document.getElementById('oBtns').innerHTML =
+    '<button class="bank-convert-btn" onclick="afterCongrats()" style="margin-top:8px">太好了！</button>';
+  ov.classList.add('active');
+}
+
+function afterCongrats() {
+  document.getElementById('overlay').classList.remove('active');
+  showShop();
 }
 
 // ─── Backpack screen ───
@@ -930,23 +1028,24 @@ function draw() {
   const tile = parseInt(canvas.dataset.tile || '20', 10);
   const W = canvas.width / (window.devicePixelRatio || 1);
   const H = canvas.height / (window.devicePixelRatio || 1);
+  var boardTheme = BOARDS.find(function(b){return b.id===pState.equippedBoard;}) || BOARDS[0];
 
   // Background
-  ctx.fillStyle = '#0a0a14';
+  ctx.fillStyle = boardTheme.bg;
   ctx.fillRect(0, 0, W, H);
 
   // Inner playfield
   const pad = Math.max(2, Math.floor(tile*0.08));
   const fx = pad, fy = pad;
   const fw = W - pad*2, fh = H - pad*2;
-  ctx.fillStyle = '#0e0e1a';
+  ctx.fillStyle = boardTheme.bg === '#0a0a14' ? '#0e0e1a' : boardTheme.bg;
   ctx.fillRect(fx, fy, fw, fh);
   ctx.strokeStyle = '#1a1a2a';
   ctx.lineWidth = 1;
   ctx.strokeRect(fx+0.5, fy+0.5, fw-1, fh-1);
 
   // Subtle grid
-  ctx.strokeStyle = 'rgba(255,255,255,0.025)';
+  ctx.strokeStyle = boardTheme.grid;
   ctx.lineWidth = 1;
   for (let i=1; i<GRID; i++) {
     ctx.beginPath(); ctx.moveTo(fx+i*tile, fy); ctx.lineTo(fx+i*tile, fy+fh); ctx.stroke();
@@ -1242,6 +1341,14 @@ b.addEventListener('pointerup',function(e){
 });
 })();
 
+function toggleFullscreen() {
+  if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+    var el = document.documentElement;
+    (el.requestFullscreen || el.webkitRequestFullscreen || function(){}).call(el);
+  } else {
+    (document.exitFullscreen || document.webkitExitFullscreen || function(){}).call(document);
+  }
+}
 </script>
 </body>
 </html>
