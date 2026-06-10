@@ -32,6 +32,14 @@
       "icon": "warrior-quest",
       "description": "Choose your Clan! A text adventure in the Warrior Cats world",
       "color": "#ff6644"
+    },
+    {
+      "id": "starclan-trial",
+      "name": "星族的考验",
+      "file": "games/starclan-trial.html",
+      "icon": "starclan-trial",
+      "description": "StarClan's Trial — Explore, fight, defeat Tigerstar!",
+      "color": "#cc44ff"
     }
   ]
 }
