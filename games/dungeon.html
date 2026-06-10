@@ -298,8 +298,6 @@ const hudLv = document.getElementById('hudLv');
 const hudGold = document.getElementById('hudGold');
 const hudAtk = document.getElementById('hudAtk');
 const hudDef = document.getElementById('hudDef');
-const hudKills = document.getElementById('hudKills');
-const hudPots = document.getElementById('hudPots');
 const hudMsg = document.getElementById('hudMsg');
 
 const overlay = document.getElementById('overlay');
@@ -450,13 +448,17 @@ function updateTouchActions() {
   const spd = document.getElementById('btnSpeed');
   const rtr = document.getElementById('btnRetry');
   if (!atk) return;
-  if (state === 'over' || !running) {
+  if (state === 'title') {
+    atk.hidden = true; pot.hidden = true; bmb.hidden = true;
+    rtr.hidden = true;
+    if (spd) spd.hidden = true;
+  } else if (state === 'over' || !running) {
     // Death/won: hide attack/potion/bomb, show retry
     atk.hidden = true;
     pot.hidden = true;
     bmb.hidden = true;
     rtr.hidden = false;
-    if (spd) spd.hidden = true;
+    if (spd) spd.hidden = false;
   } else if (state === 'shop') {
     // Don't show combat actions while shopping
     atk.hidden = true;
@@ -1012,8 +1014,6 @@ function updateHud() {
   hudGold.textContent = gold;
   hudAtk.textContent = player ? player.atk : 3;
   hudDef.textContent = player ? player.defense : 1;
-  hudKills.textContent = kills;
-  hudPots.textContent = potions;
 }
 
 // ─── Rendering ───
@@ -1580,6 +1580,8 @@ function boot() {
   resizeCanvas();
   showTitle();
   updateHud();
+  updateTouchActions();
+  hideContextPopup();
   renderMsgLog();
 }
 boot();
