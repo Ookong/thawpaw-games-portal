@@ -40,11 +40,11 @@ canvas { image-rendering:pixelated; display:block; }
 #joystickKnob { width:50px; height:50px; background:rgba(255,255,255,.25); border:2px solid rgba(255,255,255,.35); border-radius:50%; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); transition:none; }
 
 /* Action buttons (right side) */
-#touchActions { position:absolute; bottom:15px; right:15px; display:grid; grid-template-columns:repeat(3,1fr); gap:6px; pointer-events:auto; }
-#touchActions button { width:78px; height:66px; background:rgba(255,255,255,.08); border:1.5px solid rgba(255,255,255,.18); border-radius:12px; color:#ccc; font-size:12px; cursor:pointer; -webkit-tap-highlight-color:transparent; touch-action:manipulation; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; }
+#touchActions { position:absolute; bottom:15px; right:15px; display:grid; grid-template-columns:repeat(4,1fr); gap:5px; pointer-events:auto; }
+#touchActions button { width:64px; height:54px; background:rgba(255,255,255,.08); border:1.5px solid rgba(255,255,255,.18); border-radius:10px; color:#ccc; font-size:12px; cursor:pointer; -webkit-tap-highlight-color:transparent; touch-action:manipulation; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1px; }
 #touchActions button:active { background:rgba(255,255,255,.2); border-color:rgba(255,255,255,.35); }
-#touchActions button .icon { font-size:24px; }
-#touchActions button .label { font-size:10px; opacity:.7; }
+#touchActions button .icon { font-size:20px; }
+#touchActions button .label { font-size:8px; opacity:.7; }
 
 /* ── Mobile layout ── */
 @media (max-width:700px) {
@@ -65,8 +65,8 @@ canvas { image-rendering:pixelated; display:block; }
   #joystickBase { width:100px; height:100px; }
   #joystickKnob { width:40px; height:40px; }
   #touchActions { bottom:8px; right:8px; gap:5px; }
-  #touchActions button { width:68px; height:56px; }
-  #touchActions button .icon { font-size:22px; }
+  #touchActions button { width:56px; height:46px; }
+  #touchActions button .icon { font-size:18px; }
 }
 
 /* Desktop controls (hidden on touch) */
@@ -80,7 +80,7 @@ canvas { image-rendering:pixelated; display:block; }
 #actionBtns button:active { background:#2a2a4e; color:#fff; }
 
 #shopOverlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,.85); z-index:50; justify-content:center; align-items:center; }
-#shopBox { background:#12122a; border:2px solid #3355aa; border-radius:10px; padding:18px 22px; max-width:420px; width:90%; max-height:85vh; overflow-y:auto; }
+#shopBox { background:#12122a; border:2px solid #3355aa; border-radius:10px; padding:18px 22px; max-width:420px; width:90%; max-height:85vh; overflow-y:auto; position:relative; }
 #shopBox h2 { color:#ffcc44; text-align:center; margin-bottom:10px; }
 #shopBox .shopItem { display:flex; align-items:center; padding:6px 0; border-bottom:1px solid #1a1a2e; cursor:pointer; }
 #shopBox .shopItem:hover { background:#1a1a3e; }
@@ -90,6 +90,8 @@ canvas { image-rendering:pixelated; display:block; }
 #shopBox .shopItem .siDesc { color:#777; font-size:11px; display:none; }
 #shopBox .shopMsg { color:#66ff66; text-align:center; margin-top:8px; font-size:12px; min-height:16px; }
 #shopBox .shopClose { text-align:center; margin-top:10px; color:#888; font-size:12px; }
+#shopCloseBtn { position:absolute; top:10px; right:14px; background:none; border:none; color:#888; font-size:22px; cursor:pointer; padding:4px 8px; border-radius:6px; }
+#shopCloseBtn:hover { color:#ff6644; background:rgba(255,255,255,.05); }
 #controls.touch-active { display:block; text-align:center; }
 </style>
 </head>
@@ -142,10 +144,12 @@ canvas { image-rendering:pixelated; display:block; }
     <button id="btnDown" ontouchstart="event.preventDefault();doDescend()"><span class="icon">▼</span><span class="label">Down</span></button>
     <button id="btnShop" ontouchstart="event.preventDefault();doShop()"><span class="icon">🏪</span><span class="label">Shop</span></button>
     <button id="btnRestart" ontouchstart="event.preventDefault();newGame()"><span class="icon">🔄</span><span class="label">Retry</span></button>
+    <button id="btnSpeed" ontouchstart="event.preventDefault();toggleSpeed()"><span class="icon">⏩</span><span class="label">Speed</span></button>
   </div>
 </div>
 <div id="shopOverlay">
   <div id="shopBox">
+    <button id="shopCloseBtn" onclick="closeShop()">✕</button>
     <h2>🏪 SkyClan Shop</h2>
     <div style="text-align:center;color:#ffcc44;margin-bottom:8px">EXP: <span id="shopExp">0</span> 💰</div>
     <div id="shopItems"></div>
@@ -630,6 +634,18 @@ function doExpHerb(){initAudio();useExpHerb();}
 function doShop(){initAudio();if(G.state==='shop')closeShop();else if(G.state==='playing')openShop();}
 function doDescend(){initAudio();tryDescend();}
 
+// ─── Speed toggle ───
+var gameSpeed=1; // 1=normal, 2=fast
+function toggleSpeed(){
+  gameSpeed=gameSpeed===1?2:1;
+  var btn=document.getElementById('btnSpeed');
+  if(btn){
+    btn.querySelector('.icon').textContent=gameSpeed===1?'⏩':'⏭️';
+    btn.querySelector('.label').textContent=gameSpeed===1?'Speed':'x2';
+    btn.style.background=gameSpeed===2?'rgba(255,200,0,.15)':'';
+  }
+}
+
 // ─── Touch device detection + Joystick ───
 (function detectTouch(){
   function showTouchControls(){
@@ -677,12 +693,15 @@ function doDescend(){initAudio();tryDescend();}
     lastDir=dir;
     if(dir.dx===0 && dir.dy===0) return;
     doMove(dir.dx,dir.dy);
-    moveInterval=setInterval(function(){
+    function tick(){
       if(lastDir.dx!==0||lastDir.dy!==0) doMove(lastDir.dx,lastDir.dy);
-    },480);
+      var delay=gameSpeed===2?160:320;
+      moveInterval=setTimeout(tick,delay);
+    }
+    moveInterval=setTimeout(tick,gameSpeed===2?160:320);
   }
   function stopMove(){
-    if(moveInterval){clearInterval(moveInterval);moveInterval=null;}
+    if(moveInterval){clearTimeout(moveInterval);moveInterval=null;}
     lastDir={dx:0,dy:0};
   }
 
@@ -751,6 +770,7 @@ document.addEventListener('keydown',e=>{
     else if(k==='e'||k==='E')useExpHerb();
     else if(k==='p'||k==='P')openShop();
     else if(k==='.'||k==='>'||k==='Shift')tryDescend();
+    else if(k==='f'||k==='F')toggleSpeed();
   }
   if(G.state==='dead'||G.state==='won'){
     if(k==='r'||k==='R')newGame();
@@ -1008,6 +1028,7 @@ function updateSidebar(){
     bd.style.display='none';
     bs.style.display='none';
     br.style.display='';
+    document.getElementById('btnSpeed').style.display='none';
   } else if(ba && G.state==='dead'){
     ba.style.display='none';
     bh.style.display='none';
@@ -1015,6 +1036,7 @@ function updateSidebar(){
     bd.style.display='none';
     bs.style.display='none';
     br.style.display='';
+    document.getElementById('btnSpeed').style.display='none';
   } else if(ba && G.state==='won'){
     ba.style.display='none';
     bh.style.display='none';
@@ -1022,6 +1044,7 @@ function updateSidebar(){
     bd.style.display='none';
     bs.style.display='none';
     br.style.display='';
+    document.getElementById('btnSpeed').style.display='none';
   } else if(ba){
     ba.innerHTML='<span class="icon">⚔️</span><span class="label">Attack</span>';
     ba.setAttribute('ontouchstart','event.preventDefault();doAttack()');
