@@ -136,10 +136,10 @@ canvas { image-rendering:pixelated; display:block; }
     </div>
   </div>
   <div id="touchActions">
-    <button ontouchstart="event.preventDefault();doAttack()"><span class="icon">⚔️</span><span class="label">Attack</span></button>
-    <button ontouchstart="event.preventDefault();doHeal()"><span class="icon">🌿</span><span class="label">Heal</span></button>
-    <button ontouchstart="event.preventDefault();doExpHerb()"><span class="icon">✦</span><span class="label">Exp</span></button>
-    <button ontouchstart="event.preventDefault();doDescend()"><span class="icon">▼</span><span class="label">Down</span></button>
+    <button id="btnAttack" ontouchstart="event.preventDefault();doAttack()"><span class="icon">⚔️</span><span class="label">Attack</span></button>
+    <button id="btnHeal" ontouchstart="event.preventDefault();doHeal()"><span class="icon">🌿</span><span class="label">Heal</span></button>
+    <button id="btnExp" ontouchstart="event.preventDefault();doExpHerb()"><span class="icon">✦</span><span class="label">Exp</span></button>
+    <button id="btnDown" ontouchstart="event.preventDefault();doDescend()"><span class="icon">▼</span><span class="label">Down</span></button>
   </div>
 </div>
 <div id="shopOverlay">
@@ -376,6 +376,19 @@ function generateFloor(){
 }
 
 // ─── New game ───
+function revivePlayer(){
+  var p=G.player;
+  if(p.herbs<5){addMsg('Need 5 herbs to revive! You have '+p.herbs+'.','hurt');return;}
+  p.herbs-=5;
+  p.hp=p.maxHp;
+  G.state='playing';
+  sfxLevelUp();
+  addMsg('StarClan grants you another chance! -5 herbs, HP fully restored!','gold');
+  spawnParticles(p.x,p.y,'#ffcc44',20);
+  // stun nearby enemies so player doesn't die instantly again
+  for(var i=0;i<G.enemies.length;i++) G.enemies[i].stunned=true;
+}
+
 function newGame(){
   G.state='playing'; G.floor=1;
   G.player={x:0,y:0,hp:30,maxHp:30,atk:5,exp:0,level:1,herbs:2,expHerbs:0,kills:0,fovBonus:0};
@@ -541,7 +554,8 @@ function enemyTurn(){
       if(p.hp<=0){
         p.hp=0;G.state='dead';
         sfxDeath();
-        addMsg(`💀 You were defeated by a ${e.type.replace(/_/g,' ')}...`,'hurt');
+        addMsg('You were defeated by a '+e.type.replace(/_/g,' ')+'...','hurt');
+        if(p.herbs>=5){addMsg('You have 5+ herbs! Press V to revive.','info');}
         return;
       }
     }else if(dist<=7&&visible(e.x,e.y)){
@@ -738,6 +752,7 @@ document.addEventListener('keydown',e=>{
   }
   if(G.state==='dead'||G.state==='won'){
     if(k==='r'||k==='R')newGame();
+    if(k==='v'||k==='V'&&G.state==='dead')revivePlayer();
   }
 });
 
@@ -927,12 +942,20 @@ function renderMap(){
 function renderDeath(){
   ctx.fillStyle='rgba(20,0,0,0.75)';ctx.fillRect(0,0,canvas.width,canvas.height);
   ctx.fillStyle='#ff4444';ctx.font='bold 28px monospace';ctx.textAlign='center';ctx.textBaseline='middle';
-  ctx.fillText('💀 GAME OVER',canvas.width/2,canvas.height*0.35);
+  ctx.fillText('💀 GAME OVER',canvas.width/2,canvas.height*0.28);
   ctx.fillStyle='#cc8888';ctx.font='14px monospace';
-  ctx.fillText(`Level ${G.player.level} · ${G.player.kills} enemies defeated · Floor ${G.floor}`,canvas.width/2,canvas.height*0.45);
+  ctx.fillText('Level '+G.player.level+' · '+G.player.kills+' enemies defeated · Floor '+G.floor,canvas.width/2,canvas.height*0.37);
   ctx.fillStyle='#888';ctx.font='13px monospace';
-  ctx.fillText('StarClan weeps for you...',canvas.width/2,canvas.height*0.53);
-  ctx.fillStyle=`rgba(200,200,200,${0.5+0.5*Math.sin(animTime*3)})`;
+  ctx.fillText('StarClan weeps for you...',canvas.width/2,canvas.height*0.44);
+  if(G.player.herbs>=5){
+    ctx.fillStyle='rgba(255,204,68,'+(0.6+0.4*Math.sin(animTime*3))+')';
+    ctx.font='15px monospace';
+    ctx.fillText('Press V to revive (-5 herbs)',canvas.width/2,canvas.height*0.54);
+  } else {
+    ctx.fillStyle='#664444';ctx.font='12px monospace';
+    ctx.fillText('Need 5 herbs to revive (have '+G.player.herbs+')',canvas.width/2,canvas.height*0.54);
+  }
+  ctx.fillStyle='rgba(200,200,200,'+(0.5+0.5*Math.sin(animTime*3))+')';
   ctx.font='16px monospace';
   ctx.fillText('Press R to retry',canvas.width/2,canvas.height*0.68);
 }
@@ -968,6 +991,40 @@ function updateSidebar(){
   document.getElementById('sHerb').textContent=p.herbs;
   document.getElementById('sExpH').textContent=p.expHerbs;
   document.getElementById('sFloor').textContent=`${G.floor}/${MAX_FLOOR}`;
+  // Update touch buttons for dead state
+  var ba=document.getElementById('btnAttack');
+  var bh=document.getElementById('btnHeal');
+  var be=document.getElementById('btnExp');
+  var bd=document.getElementById('btnDown');
+  if(ba && G.state==='dead' && p.herbs>=5){
+    ba.innerHTML='<span class="icon">✨</span><span class="label">Revive</span>';
+    ba.setAttribute('ontouchstart','event.preventDefault();revivePlayer()');
+    bh.innerHTML='<span class="icon">🔄</span><span class="label">Retry</span>';
+    bh.setAttribute('ontouchstart','event.preventDefault();newGame()');
+    be.style.display='none';
+    bd.style.display='none';
+  } else if(ba && G.state==='dead' && p.herbs<5){
+    ba.innerHTML='<span class="icon">🔄</span><span class="label">Retry</span>';
+    ba.setAttribute('ontouchstart','event.preventDefault();newGame()');
+    bh.innerHTML='<span class="icon">🌿</span><span class="label">'+p.herbs+'/5</span>';
+    bh.setAttribute('ontouchstart','event.preventDefault();');
+    be.style.display='none';
+    bd.style.display='none';
+  } else if(ba && G.state==='won'){
+    ba.innerHTML='<span class="icon">🔄</span><span class="label">Retry</span>';
+    ba.setAttribute('ontouchstart','event.preventDefault();newGame()');
+    bh.style.display='none'; be.style.display='none'; bd.style.display='none';
+  } else if(ba){
+    ba.innerHTML='<span class="icon">⚔️</span><span class="label">Attack</span>';
+    ba.setAttribute('ontouchstart','event.preventDefault();doAttack()');
+    bh.innerHTML='<span class="icon">🌿</span><span class="label">Heal</span>';
+    bh.setAttribute('ontouchstart','event.preventDefault();doHeal()');
+    be.innerHTML='<span class="icon">✦</span><span class="label">Exp</span>';
+    be.setAttribute('ontouchstart','event.preventDefault();doExpHerb()');
+    bd.innerHTML='<span class="icon">▼</span><span class="label">Down</span>';
+    bd.setAttribute('ontouchstart','event.preventDefault();doDescend()');
+    ba.style.display=''; bh.style.display=''; be.style.display=''; bd.style.display='';
+  }
   // messages
   const log=document.getElementById('msgLog');
   const recent=G.messages.slice(-6);
