@@ -614,6 +614,12 @@ function showShop() {
   buildShop();
 }
 
+function restoreTouchControls() {
+  if (touchActive) {
+    document.getElementById('touchControls').classList.add('active');
+  }
+}
+
 function showConfirmOverlay(title, body, onConfirm, confirmText, onCancel) {
   // Hide any touch/game overlays that might intercept
   var tc = document.getElementById('touchControls');
@@ -628,10 +634,12 @@ function showConfirmOverlay(title, body, onConfirm, confirmText, onCancel) {
   document.getElementById('overlay').classList.add('active');
   document.getElementById('confirmCancel').addEventListener('click', function(){
     document.getElementById('overlay').classList.remove('active');
+    restoreTouchControls();
     if (onCancel) onCancel();
   });
   document.getElementById('confirmOk').addEventListener('click', function(){
     document.getElementById('overlay').classList.remove('active');
+    restoreTouchControls();
     onConfirm();
   });
 }
