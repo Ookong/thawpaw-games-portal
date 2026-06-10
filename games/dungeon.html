@@ -48,22 +48,9 @@ canvas { display:block; border-radius:8px; }
 #side .tip b { color:#ddaaff; }
 #side .tip kbd { background:#2a2a40; border:1px solid #444; border-radius:3px; padding:1px 5px; font-size:10px; color:#fff; }
 
-/* ── Touch controls overlay ── */
-#touchControls { display:none; position:fixed; bottom:0; left:0; right:0; height:200px; z-index:40; pointer-events:none; }
-#touchControls.active { display:block; }
-
-#joystick { position:absolute; bottom:20px; left:20px; width:120px; height:120px; pointer-events:auto; }
-#joystickBase { width:120px; height:120px; background:rgba(255,255,255,.08); border:2px solid rgba(255,255,255,.15); border-radius:50%; position:relative; }
-#joystickKnob { width:50px; height:50px; background:rgba(255,255,255,.25); border:2px solid rgba(255,255,255,.35); border-radius:50%; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); transition:none; }
-
-#touchActions { position:absolute; bottom:20px; right:20px; display:grid; grid-template-columns:repeat(2,1fr); gap:6px; pointer-events:auto; }
-#touchActions button { width:72px; height:60px; background:rgba(255,255,255,.08); border:1.5px solid rgba(255,255,255,.18); border-radius:10px; color:#ccc; font-size:12px; cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1px; }
-#touchActions button:active { background:rgba(255,255,255,.2); border-color:rgba(255,255,255,.35); }
-#touchActions button .icon { font-size:20px; }
-#touchActions button .label { font-size:8px; opacity:.7; }
-
 /* ── Mobile HUD overlay (top bar) ── */
-#mobileHud { display:none; position:fixed; top:0; left:0; right:0; z-index:30; background:rgba(10,10,20,.88); backdrop-filter:blur(4px); padding:6px 10px 7px; font-size:12px; pointer-events:none; }
+#mobileHud { display:none; position:fixed; top:0; left:0; right:0; z-index:30; background:rgba(10,10,20,.82); backdrop-filter:blur(4px); padding:4px 10px 5px; font-size:11px; pointer-events:none; }
+body.touch-active #mobileHud { display:block; }
 #mobileHud .hud-row { display:flex; align-items:center; gap:8px; }
 #mobileHud .hud-label { color:#888; white-space:nowrap; }
 #mobileHud .hud-val { color:#fff; font-weight:700; white-space:nowrap; }
@@ -72,23 +59,52 @@ canvas { display:block; border-radius:8px; }
 #mobileHud .hud-val.def { color:#66aaff; }
 #mobileHud .hud-hpbar { flex:1; height:8px; background:#1a1a2a; border:1px solid #333; border-radius:2px; overflow:hidden; min-width:60px; }
 #mobileHud .hud-hpfill { height:100%; background:linear-gradient(90deg,#44cc44,#88ff88); transition:width .25s; }
-#mobileHud .hud-spacer { flex:1; }
 #mobileHud .hud-msg { color:#aaa; font-size:11px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; max-width:100%; margin-top:3px; }
+
+/* ── Touch controls overlay ── */
+#touchControls { display:none; position:fixed; bottom:0; left:0; right:0; height:200px; z-index:40; pointer-events:none; }
+#touchControls.active { display:block; }
+
+#joystick { position:absolute; bottom:20px; left:20px; width:120px; height:120px; pointer-events:auto; }
+#joystickBase { width:120px; height:120px; background:rgba(255,255,255,.08); border:2px solid rgba(255,255,255,.15); border-radius:50%; position:relative; }
+#joystickKnob { width:50px; height:50px; background:rgba(255,255,255,.25); border:2px solid rgba(255,255,255,.35); border-radius:50%; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); transition:none; }
+
+/* Action buttons: 2×2 grid in bottom-right (Attack / Potion / Bomb / Speed) */
+#touchActions { position:absolute; bottom:20px; right:20px; display:grid; grid-template-columns:repeat(2,1fr); gap:6px; pointer-events:auto; width:150px; }
+#touchActions button { width:72px; height:60px; background:rgba(255,255,255,.08); border:1.5px solid rgba(255,255,255,.18); border-radius:10px; color:#ccc; font-size:12px; cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1px; padding:0; }
+#touchActions button:active { background:rgba(255,255,255,.2); border-color:rgba(255,255,255,.35); }
+#touchActions button .icon { font-size:20px; line-height:1; }
+#touchActions button .label { font-size:8px; opacity:.7; }
+#touchActions button.active-speed { background:rgba(255,200,80,.18); border-color:rgba(255,200,80,.5); color:#ffd866; }
+#touchActions button[hidden] { display:none; }
+
+/* ── Context popup (shop / stairs proximity) ── */
+#contextPopup { display:none; position:fixed; bottom:210px; left:50%; transform:translateX(-50%); z-index:35; pointer-events:auto; gap:8px; }
+#contextPopup.show { display:flex; }
+#contextPopup button { padding:10px 18px; background:rgba(255,255,255,.10); border:1px solid rgba(255,255,255,.22); border-radius:10px; color:#fff; font-size:14px; font-weight:600; cursor:pointer; box-shadow:0 4px 16px rgba(0,0,0,.4); }
+#contextPopup button:active { background:rgba(255,255,255,.22); }
+#contextPopup button.shopBtn { color:#ffd866; border-color:rgba(255,200,80,.4); }
+#contextPopup button.stairsBtn { color:#7fdfff; border-color:rgba(80,180,255,.4); }
+
+/* ── Restart button (top-right, always visible on touch) ── */
+#restartBtn { display:none; position:fixed; top:6px; right:8px; z-index:31; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.15); border-radius:8px; color:#aaa; font-size:14px; padding:5px 8px; cursor:pointer; pointer-events:auto; line-height:1; }
+#restartBtn:active { background:rgba(255,255,255,.18); color:#fff; }
+body.touch-active #restartBtn { display:block; }
 
 /* ── Mobile layout ── */
 @media (max-width:700px) {
   body.touch-active #side { display:none; }
-  body.touch-active #mobileHud { display:block; }
   body.touch-active #wrap { flex-direction:column; }
-  body.touch-active #canvasWrap { padding-top:54px; padding-bottom:200px; }
+  body.touch-active #canvasWrap { padding-top:52px; padding-bottom:210px; }
 }
 @media (max-width:400px) {
   #joystick { bottom:10px; left:10px; width:100px; height:100px; }
   #joystickBase { width:100px; height:100px; }
   #joystickKnob { width:42px; height:42px; }
-  #touchActions { bottom:10px; right:10px; gap:5px; }
+  #touchActions { bottom:10px; right:10px; gap:5px; width:130px; }
   #touchActions button { width:62px; height:52px; }
   #touchActions button .icon { font-size:18px; }
+  #contextPopup { bottom:180px; }
 }
 
 /* ── Shop overlay ── */
@@ -128,9 +144,14 @@ canvas { display:block; border-radius:8px; }
 #overlayBox .prompt { color:#ddd; font-size:.95rem; padding:10px; background:#1a1a2a; border-radius:8px; border:1px solid #2a2a40; margin-top:6px; }
 #overlayBox .prompt kbd { background:#2a2a40; border:1px solid #444; border-radius:4px; padding:2px 6px; font-size:.85rem; color:#fff; margin:0 2px; }
 #overlayBox .legend { color:#888; font-size:11px; margin-top:10px; line-height:1.6; }
+
+/* ── Floating Ice button ── */
+#iceBtn{position:fixed;z-index:999;width:44px;height:44px;border-radius:50%;background:rgba(170,220,255,.18);border:1.5px solid rgba(170,220,255,.35);display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer;touch-action:none;user-select:none;-webkit-user-select:none;transition:background .15s;}
+#iceBtn:active{background:rgba(170,220,255,.35);}
 </style>
 </head>
 <body>
+<div id="iceBtn">❄️</div>
 <!-- Mobile HUD (shown on touch devices) -->
 <div id="mobileHud">
   <div class="hud-row">
@@ -143,11 +164,12 @@ canvas { display:block; border-radius:8px; }
     <span class="hud-label">💰</span><span class="hud-val gold" id="hudGold">0</span>
     <span class="hud-label">⚔️</span><span class="hud-val atk" id="hudAtk">3</span>
     <span class="hud-label">🛡️</span><span class="hud-val def" id="hudDef">1</span>
-    <span class="hud-label">⚔️K</span><span class="hud-val" id="hudKills">0</span>
-    <span class="hud-label">🧪</span><span class="hud-val" id="hudPots">0</span>
   </div>
   <div class="hud-msg" id="hudMsg">Welcome, brave hero!</div>
 </div>
+
+<!-- Restart button (top-right, always visible on touch) -->
+<button id="restartBtn" ontouchstart="event.preventDefault();retry()">🔄</button>
 <a id="back" href="../index.html">← Menu</a>
 <div id="wrap">
   <div id="canvasWrap"><canvas id="game"></canvas></div>
@@ -186,12 +208,13 @@ canvas { display:block; border-radius:8px; }
     <button id="btnAttack" ontouchstart="event.preventDefault();doAttack()"><span class="icon">⚔️</span><span class="label">Attack</span></button>
     <button id="btnPotion" ontouchstart="event.preventDefault();usePotion()"><span class="icon">🧪</span><span class="label">Potion</span></button>
     <button id="btnBomb" ontouchstart="event.preventDefault();useBomb()"><span class="icon">💣</span><span class="label">Bomb</span></button>
-    <button id="btnShop" ontouchstart="event.preventDefault();tryShop()"><span class="icon">🏪</span><span class="label">Shop</span></button>
-    <button id="btnDown" ontouchstart="event.preventDefault();descend()"><span class="icon">▼</span><span class="label">Down</span></button>
     <button id="btnSpeed" ontouchstart="event.preventDefault();toggleSpeed()"><span class="icon">⏩</span><span class="label">Speed</span></button>
     <button id="btnRetry" ontouchstart="event.preventDefault();retry()"><span class="icon">🔄</span><span class="label">Retry</span></button>
   </div>
 </div>
+
+<!-- Context popup: shows when player is on shop/stairs -->
+<div id="contextPopup"></div>
 
 <!-- Shop overlay -->
 <div id="shopOverlay">
@@ -312,7 +335,8 @@ let shopPos = null;
 let pendingAction = null;    // when input arrives while showing an overlay
 let touchActive = false;
 let lastMoveDir = { dx:0, dy:0 };
-let tickMs = 320;            // 320 normal, 160 fast
+let gameSpeed = 1;            // 1 = normal (320ms), 2 = fast (160ms)
+let tickMs = 320;            // 320 normal, 160 fast (used for FOV recompute)
 let fastMode = false;
 let lastTick = 0;
 let rafId = null;
@@ -384,6 +408,70 @@ function setHudMessage(m) {
   hudMessage = m;
   hudMsg.textContent = m;
   hudMsgTimer = performance.now();
+}
+
+// ─── Context popup (shop / stairs proximity) ───
+function updateContextPopup() {
+  const popup = document.getElementById('contextPopup');
+  if (!popup) return;
+  // Hide on title / over / shop
+  if (state !== 'playing' || !player) {
+    popup.classList.remove('show');
+    popup.innerHTML = '';
+    return;
+  }
+  const t = tiles[player.y][player.x];
+  let html = '';
+  if (t === 'shop') {
+    html = '<button class="shopBtn" ontouchstart="event.preventDefault();tryShop()" onclick="tryShop()">🏪 Enter Shop</button>';
+  } else if (t === 'stairs') {
+    html = '<button class="stairsBtn" ontouchstart="event.preventDefault();descend()" onclick="descend()">▼ Descend</button>';
+  }
+  if (html) {
+    popup.innerHTML = html;
+    popup.classList.add('show');
+  } else {
+    popup.classList.remove('show');
+    popup.innerHTML = '';
+  }
+}
+function hideContextPopup() {
+  const popup = document.getElementById('contextPopup');
+  if (!popup) return;
+  popup.classList.remove('show');
+  popup.innerHTML = '';
+}
+
+// Show/hide combat action buttons based on game state
+function updateTouchActions() {
+  const atk = document.getElementById('btnAttack');
+  const pot = document.getElementById('btnPotion');
+  const bmb = document.getElementById('btnBomb');
+  const spd = document.getElementById('btnSpeed');
+  const rtr = document.getElementById('btnRetry');
+  if (!atk) return;
+  if (state === 'over' || !running) {
+    // Death/won: hide attack/potion/bomb, show retry
+    atk.hidden = true;
+    pot.hidden = true;
+    bmb.hidden = true;
+    rtr.hidden = false;
+    if (spd) spd.hidden = true;
+  } else if (state === 'shop') {
+    // Don't show combat actions while shopping
+    atk.hidden = true;
+    pot.hidden = true;
+    bmb.hidden = true;
+    rtr.hidden = true;
+    if (spd) spd.hidden = true;
+  } else {
+    atk.hidden = false;
+    pot.hidden = false;
+    bmb.hidden = false;
+    rtr.hidden = true;
+    if (spd) spd.hidden = false;
+  }
+  updateSpeedBtn();
 }
 
 // ─── Map generation ───
@@ -579,6 +667,8 @@ function openShop() {
   shopCursor = 0;
   renderShop();
   shopOverlay.classList.add('active');
+  hideContextPopup();
+  updateTouchActions();
   pendingAction = null;
 }
 function closeShop() {
@@ -592,6 +682,8 @@ function closeShop() {
     lastTick = 0;
     rafId = requestAnimationFrame(loop);
   }
+  updateTouchActions();
+  updateContextPopup();
 }
 function renderShop() {
   shopGoldEl.textContent = gold;
@@ -683,6 +775,7 @@ function tryMove(dx, dy) {
   if (t === 'stairs') { logMsg('🪜 You see stairs! Press ► to descend.', 'info'); sfxStairs(); }
   if (t === 'shop')   { logMsg('🏪 Shop found! Press E to enter.', 'info'); }
   lastMoveDir = { dx, dy };
+  updateContextPopup();
   return true;
 }
 
@@ -858,9 +951,20 @@ function tryShop() {
 }
 
 function toggleSpeed() {
-  fastMode = !fastMode;
+  gameSpeed = gameSpeed === 1 ? 2 : 1;
+  fastMode = gameSpeed === 2;
   tickMs = fastMode ? 160 : 320;
   logMsg(`⏩ Speed: ${fastMode ? 'FAST' : 'NORMAL'}`, 'info');
+  updateSpeedBtn();
+}
+
+function updateSpeedBtn() {
+  const b = document.getElementById('btnSpeed');
+  if (!b) return;
+  if (fastMode) b.classList.add('active-speed');
+  else b.classList.remove('active-speed');
+  const lab = b.querySelector('.label');
+  if (lab) lab.textContent = fastMode ? 'Fast' : 'Speed';
 }
 
 function retry() {
@@ -1222,6 +1326,8 @@ function newGame(fromRetry) {
   renderMsgLog();
   hideOverlay();
   updateHud();
+  updateTouchActions();
+  updateContextPopup();
   saveGame();
   startLoop();
   resizeCanvas();
@@ -1250,6 +1356,8 @@ function showTitle() {
   `;
   oPrompt.innerHTML = 'Press <kbd>Enter</kbd> to start · <kbd>R</kbd> to continue';
   overlay.style.display = 'flex';
+  hideContextPopup();
+  updateTouchActions();
   draw();
 }
 
@@ -1270,6 +1378,8 @@ function showGameOver() {
   `;
   oPrompt.innerHTML = 'Press <kbd>R</kbd> to retry · <kbd>Esc</kbd> for menu';
   overlay.style.display = 'flex';
+  hideContextPopup();
+  updateTouchActions();
   draw();
 }
 
@@ -1354,7 +1464,30 @@ if ('ontouchstart' in window || navigator.maxTouchPoints > 0) showTouchControls(
   const knob = document.getElementById('joystickKnob');
   const base = document.getElementById('joystickBase');
   let joyActive = false, joyId = null, lastDir = { x:0, y:0 };
-  const deadZone = 12;
+  const deadZone = 15;
+  let moveTimer = null;
+
+  function joyInterval() { return gameSpeed === 2 ? 160 : 320; }
+
+  function startMoveTimer() {
+    stopMoveTimer();
+    moveTimer = setInterval(() => {
+      if (!joyActive) return;
+      if (state !== 'playing' || !running) return;
+      if (lastDir.x === 0 && lastDir.y === 0) return;
+      if (tryMove(lastDir.x, lastDir.y)) {
+        if (running) monsterTurn();
+        updateHud();
+        saveGame();
+        if (!running) stopMoveTimer();
+      } else {
+        // Bumped a wall — still in the direction, just keep ticking
+      }
+    }, joyInterval());
+  }
+  function stopMoveTimer() {
+    if (moveTimer) { clearInterval(moveTimer); moveTimer = null; }
+  }
 
   function getJoyCenter() {
     const r = base.getBoundingClientRect();
@@ -1387,9 +1520,11 @@ if ('ontouchstart' in window || navigator.maxTouchPoints > 0) showTouchControls(
     const dx = t.clientX - c.x, dy = t.clientY - c.y;
     setKnob(dx, dy, c.maxR);
     const d = calcDir(dx, dy);
+    lastDir = d;
     if (d.x !== 0 || d.y !== 0) {
-      lastDir = d;
+      // First move immediately
       if (tryMove(d.x, d.y)) { if (running) monsterTurn(); updateHud(); saveGame(); }
+      startMoveTimer();
     }
   }, { passive: false });
 
@@ -1402,13 +1537,15 @@ if ('ontouchstart' in window || navigator.maxTouchPoints > 0) showTouchControls(
         const dx = t.clientX - c.x, dy = t.clientY - c.y;
         setKnob(dx, dy, c.maxR);
         const d = calcDir(dx, dy);
-        if (d.x !== 0 || d.y !== 0) {
-          if (d.x !== lastDir.x || d.y !== lastDir.y) {
-            lastDir = d;
+        if (d.x !== lastDir.x || d.y !== lastDir.y) {
+          lastDir = d;
+          if (d.x !== 0 || d.y !== 0) {
             if (tryMove(d.x, d.y)) { if (running) monsterTurn(); updateHud(); saveGame(); }
+            // (Re)start the repeat timer for the new direction
+            startMoveTimer();
+          } else {
+            stopMoveTimer();
           }
-        } else {
-          lastDir = { x: 0, y: 0 };
         }
         break;
       }
@@ -1420,6 +1557,7 @@ if ('ontouchstart' in window || navigator.maxTouchPoints > 0) showTouchControls(
     joyActive = false; joyId = null;
     knob.style.transform = 'translate(-50%,-50%)';
     lastDir = { x:0, y:0 };
+    stopMoveTimer();
   }
   document.addEventListener('touchend', e => {
     for (let i = 0; i < e.changedTouches.length; i++) {
@@ -1445,6 +1583,42 @@ function boot() {
   renderMsgLog();
 }
 boot();
+
+// ── Floating Ice button (draggable, snaps to edge) ──
+(function(){
+var b=document.getElementById('iceBtn');if(!b)return;
+var drag=false,moved=false,sx,sy,ox,oy;
+b.addEventListener('pointerdown',function(e){
+  drag=true;moved=false;
+  sx=e.clientX;sy=e.clientY;
+  var r=b.getBoundingClientRect();ox=e.clientX-r.left;oy=e.clientY-r.top;
+  b.setPointerCapture(e.pointerId);e.preventDefault();
+});
+b.addEventListener('pointermove',function(e){
+  if(!drag)return;
+  var dx=e.clientX-sx,dy=e.clientY-sy;
+  if(Math.abs(dx)>4||Math.abs(dy)>4)moved=true;
+  var x=e.clientX-ox,y=e.clientY-oy;
+  b.style.left=x+'px';b.style.top=y+'px';b.style.right='auto';b.style.bottom='auto';
+});
+b.addEventListener('pointerup',function(e){
+  if(!drag)return;drag=false;
+  if(!moved){location.href='../index.html';return;}
+  // snap to nearest edge (left or right)
+  var r=b.getBoundingClientRect();
+  var midY=r.top+r.height/2;
+  if(r.left+r.width/2<window.innerWidth/2){
+    b.style.left='6px';b.style.right='auto';
+  }else{
+    b.style.left='auto';b.style.right='6px';
+  }
+  // clamp vertical
+  var maxY=window.innerHeight-r.height-6;
+  var fy=Math.max(6,Math.min(parseInt(b.style.top)||r.top,maxY));
+  b.style.top=fy+'px';b.style.bottom='auto';
+});
+})();
+
 </script>
 </body>
 </html>
