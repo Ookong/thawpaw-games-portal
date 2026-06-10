@@ -614,7 +614,7 @@ function showShop() {
   buildShop();
 }
 
-function showConfirmOverlay(title, body, onConfirm, confirmText) {
+function showConfirmOverlay(title, body, onConfirm, confirmText, onCancel) {
   // Hide any touch/game overlays that might intercept
   var tc = document.getElementById('touchControls');
   if (tc) tc.classList.remove('active');
@@ -626,16 +626,14 @@ function showConfirmOverlay(title, body, onConfirm, confirmText) {
     '<button class="btn-secondary" id="confirmCancel">取消</button>' +
     '<button class="btn-primary" id="confirmOk">' + (confirmText || '确定') + '</button>';
   document.getElementById('overlay').classList.add('active');
-  // Use addEventListener for reliable touch + click
   document.getElementById('confirmCancel').addEventListener('click', function(){
     document.getElementById('overlay').classList.remove('active');
-    if (window._confirmCancel) window._confirmCancel();
+    if (onCancel) onCancel();
   });
   document.getElementById('confirmOk').addEventListener('click', function(){
     document.getElementById('overlay').classList.remove('active');
     onConfirm();
   });
-  window._confirmCancel = null;
 }
 
 function switchShopTab(tab) {
@@ -689,11 +687,11 @@ function confirmBuySkin(id) {
     '<div style="font-size:2rem;margin:8px 0">' + sk.emoji + ' ' + sk.name + '</div>' +
     '<div style="font-size:1.1rem;color:#ffcc44;margin:8px 0">确定要用 ' + price + ' 苹果购买此皮肤？</div>' +
     '<div style="color:#aaa;font-size:.85rem">当前苹果：' + pState.apples + '</div>';
-  window._confirmCancel = function(){ showShop(); };
+  var cancelFn = function(){ showShop(); };
   if (pState.apples < price) {
-    showConfirmOverlay('\u{1F6D2} 苹果不够', '<div style="color:#ff8866">你没有足够的苹果！<br>需要 ' + price + '，你有 ' + pState.apples + '。</div>', function(){ showShop(); }, '知道了');
+    showConfirmOverlay('\u{1F6D2} 苹果不够', '<div style="color:#ff8866">你没有足够的苹果！<br>需要 ' + price + '，你有 ' + pState.apples + '。</div>', function(){ showShop(); }, '知道了', cancelFn);
   } else {
-    showConfirmOverlay('\u{1F6D2} 购买皮肤', body, function(){ buySkin(id); }, '确定');
+    showConfirmOverlay('\u{1F6D2} 购买皮肤', body, function(){ buySkin(id); }, '确定', cancelFn);
   }
 }
 
@@ -728,11 +726,11 @@ function confirmBuyBoard(id) {
     '<div style="font-size:2rem;margin:8px 0">' + bd.emoji + ' ' + bd.name + '</div>' +
     '<div style="font-size:1.1rem;color:#ffcc44;margin:8px 0">确定要用 ' + price + ' 苹果购买此棋盘？</div>' +
     '<div style="font-size:.85rem;color:#888">你有 ' + pState.apples + ' 苹果</div>';
-  window._confirmCancel = function(){ showShop(); };
+  var cancelFn = function(){ showShop(); };
   if (pState.apples < price) {
-    showConfirmOverlay('\u{1F6D2} 苹果不够', '<div style="color:#ff8866">你没有足够的苹果！<br>需要 ' + price + '，你有 ' + pState.apples + '。</div>', function(){ showShop(); }, '知道了');
+    showConfirmOverlay('\u{1F6D2} 苹果不够', '<div style="color:#ff8866">你没有足够的苹果！<br>需要 ' + price + '，你有 ' + pState.apples + '。</div>', function(){ showShop(); }, '知道了', cancelFn);
   } else {
-    showConfirmOverlay('\u{1F6D2} 购买棋盘', body, function(){ buyBoard(id); }, '确定');
+    showConfirmOverlay('\u{1F6D2} 购买棋盘', body, function(){ buyBoard(id); }, '确定', cancelFn);
   }
 }
 
