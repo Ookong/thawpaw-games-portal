@@ -3,11 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
 <title>Moonstone Quest</title>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
 html { height:100%; }
-body { background:#0a0a14; color:#ccc; font-family:'Courier New',monospace; height:100vh; height:100dvh; display:flex; flex-direction:column; overflow:hidden; }
+body { background:#0a0a14; color:#ccc; font-family:'Courier New',monospace; height:100vh; height:100dvh; display:flex; flex-direction:column; overflow:hidden;
+  padding-top:env(safe-area-inset-top);
+  padding-bottom:env(safe-area-inset-bottom); }
 a { color:#88aaff; }
 #back { position:fixed; top:8px; left:10px; z-index:100; font-size:13px; color:#6688aa; text-decoration:none; }
 #back:hover { color:#aaccff; }
@@ -19,9 +24,13 @@ canvas { display:block; }
 #sidebar .stat { margin:2px 0; }
 #sidebar .stat .label { color:#888; }
 #sidebar .stat .val { color:#ddd; }
-#hpBar { width:100%; height:14px; background:#1a1a2a; border:1px solid #333; border-radius:3px; overflow:hidden; margin:3px 0; }
+#hpBar { width:100%; height:14px; background:#1a1a2a; border:1px solid #333; border-radius:3px; overflow:hidden;
+  padding-top:env(safe-area-inset-top);
+  padding-bottom:env(safe-area-inset-bottom); margin:3px 0; }
 #hpFill { height:100%; background:#44cc44; transition:width .2s; }
-#expBar { width:100%; height:10px; background:#1a1a2a; border:1px solid #333; border-radius:3px; overflow:hidden; margin:2px 0; }
+#expBar { width:100%; height:10px; background:#1a1a2a; border:1px solid #333; border-radius:3px; overflow:hidden;
+  padding-top:env(safe-area-inset-top);
+  padding-bottom:env(safe-area-inset-bottom); margin:2px 0; }
 #expFill { height:100%; background:#aa44ff; transition:width .2s; }
 #msgLog { margin-top:8px; flex:1; overflow-y:auto; }
 #msgLog .msg { color:#aaa; font-size:14px; margin:1px 0; word-wrap:break-word; }
@@ -51,13 +60,19 @@ canvas { display:block; }
 #mobileHud { display:none; position:fixed; top:0; left:0; right:0; z-index:30; background:rgba(10,10,20,.82); backdrop-filter:blur(4px); padding:4px 10px 5px; font-size:11px; pointer-events:none; }
 #mobileHud .hud-row { display:flex; align-items:center; gap:8px; }
 #mobileHud .hud-row+.hud-row { margin-top:2px; }
-#mobileHud .hud-hpbar { flex:1; height:10px; background:#1a1a2a; border:1px solid #333; border-radius:2px; overflow:hidden; }
+#mobileHud .hud-hpbar { flex:1; height:10px; background:#1a1a2a; border:1px solid #333; border-radius:2px; overflow:hidden;
+  padding-top:env(safe-area-inset-top);
+  padding-bottom:env(safe-area-inset-bottom); }
 #mobileHud .hud-hpfill { height:100%; background:#44cc44; transition:width .2s; }
-#mobileHud .hud-expbar { width:80px; height:6px; background:#1a1a2a; border:1px solid #333; border-radius:2px; overflow:hidden; }
+#mobileHud .hud-expbar { width:80px; height:6px; background:#1a1a2a; border:1px solid #333; border-radius:2px; overflow:hidden;
+  padding-top:env(safe-area-inset-top);
+  padding-bottom:env(safe-area-inset-bottom); }
 #mobileHud .hud-expfill { height:100%; background:#aa44ff; transition:width .2s; }
 #mobileHud .hud-label { color:#888; white-space:nowrap; }
 #mobileHud .hud-val { color:#ddd; white-space:nowrap; }
-#mobileHud .hud-msg { color:#aaa; font-size:10px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; max-width:100%; }
+#mobileHud .hud-msg { color:#aaa; font-size:10px; overflow:hidden;
+  padding-top:env(safe-area-inset-top);
+  padding-bottom:env(safe-area-inset-bottom); white-space:nowrap; text-overflow:ellipsis; max-width:100%; }
 /* ── Mobile layout ── */
 @media (max-width:700px) {
   body.touch-active #sidebar { display:none; }
