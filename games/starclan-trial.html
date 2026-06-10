@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
+<title>⚔️ 星族的考验 — StarClan's Trial</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{height:100%}
+body{background:#0a0a14;color:#e0e0ee;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;height:100vh;height:100dvh;display:flex;flex-direction:column;overflow:hidden;user-select:none;-webkit-user-select:none;touch-action:manipulation;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
+button{font-family:inherit;cursor:pointer;border:none;outline:none;border-radius:10px;padding:.7rem 1.2rem;font-size:.95rem;font-weight:600;transition:all .15s}
+button:active{transform:scale(.96)}
+input{font-family:inherit;font-size:1rem;padding:.6rem 1rem;border-radius:8px;border:1px solid #1e1e3a;background:#13132a;color:#e0e0ee;outline:none;width:100%}
+input:focus{border-color:#cc44ff}
+
+.screen{display:none;flex-direction:column;align-items:center;justify-content:center;padding:1.2rem;position:fixed;inset:0;z-index:10;background:#0a0a14;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.screen.active{display:flex}
+.back-link{position:fixed;top:calc(env(safe-area-inset-top) + .5rem);left:.5rem;z-index:100;font-size:.8rem;color:#666;background:rgba(10,10,20,.85);padding:.3rem .7rem;border-radius:6px;backdrop-filter:blur(8px);text-decoration:none}
+.back-link:hover{color:#aaa}
+
+.game-title{font-size:2rem;font-weight:800;background:linear-gradient(135deg,#cc44ff,#ffd866,#8844ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:.3rem;text-align:center}
+.game-sub{color:#888;font-size:.85rem;margin-bottom:1.5rem}
+
+.btn-primary{background:linear-gradient(135deg,#cc44ff,#8844ff);color:#fff;padding:.8rem 2rem;font-size:1.05rem;border-radius:12px;box-shadow:0 4px 20px rgba(204,68,255,.3);width:100%;max-width:300px}
+.btn-secondary{background:#13132a;color:#9ca3af;border:1px solid #1e1e3a;width:100%;max-width:300px}
+.btn-secondary:hover{border-color:#cc44ff;color:#e0e0ee}
+.btn-row{display:flex;gap:10px;width:100%;max-width:300px}
+.btn-row button{flex:1}
+
+.clan-grid{display:grid;gap:.6rem;width:100%;max-width:400px}
+.clan-card{background:#0e0e1a;border:1.5px solid #1e1e3a;border-radius:12px;padding:.8rem 1rem;cursor:pointer;transition:all .15s}
+.clan-card:hover,.clan-card:active{border-color:#cc44ff;background:#13132a}
+.clan-card .emoji{font-size:1.5rem}
+.clan-card .name{font-weight:700;font-size:1rem;margin-top:.2rem}
+.clan-card .bonus{color:#ffd866;font-size:.8rem;margin-top:.1rem}
+.clan-card .desc{color:#888;font-size:.75rem;margin-top:.2rem}
+
+.stats-box{background:#0e0e1a;border:1px solid #1e1e3a;border-radius:10px;padding:.8rem 1rem;width:100%;max-width:400px;margin:.5rem 0}
+.stats-row{display:flex;justify-content:space-between;font-size:.85rem;margin:.15rem 0}
+.stats-row .label{color:#888}
+.stats-row .val{font-weight:700}
+.hp-bar{height:8px;border-radius:4px;background:#1a1a2a;overflow:hidden;margin:.3rem 0}
+.hp-bar-fill{height:100%;border-radius:4px;transition:width .3s}
+
+.area-grid{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;width:100%;max-width:400px}
+.area-card{background:#0e0e1a;border:1.5px solid #1e1e3a;border-radius:10px;padding:.6rem;text-align:center;cursor:pointer;transition:all .15s;font-size:.85rem}
+.area-card:hover{border-color:#cc44ff}
+.area-card.visited{opacity:.6;border-color:#333}
+.area-card .emoji{font-size:1.3rem}
+.area-card .name{margin-top:.15rem;font-weight:600}
+
+.combat-box{width:100%;max-width:400px;text-align:center}
+.enemy-info{background:#1a0a0a;border:1px solid #ff4466;border-radius:12px;padding:.8rem;margin:.5rem 0}
+.enemy-name{font-size:1.1rem;font-weight:700;color:#ff4466}
+.enemy-hp{margin-top:.3rem}
+.player-info{background:#0a0a1a;border:1px solid #4488ff;border-radius:12px;padding:.8rem;margin:.5rem 0}
+.action-grid{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin:.8rem 0}
+.action-btn{background:#0e0e1a;border:1.5px solid #1e1e3a;border-radius:10px;padding:.6rem;text-align:center;cursor:pointer;font-size:.85rem;color:#ccc;transition:all .15s}
+.action-btn:hover{border-color:#cc44ff}
+.action-btn .icon{font-size:1.3rem}
+
+.msg-log{background:#0e0e1a;border:1px solid #1e1e3a;border-radius:10px;padding:.5rem .8rem;width:100%;max-width:400px;max-height:120px;overflow-y:auto;font-size:.8rem;line-height:1.5;margin:.5rem 0}
+.msg-log .msg{margin:.15rem 0 }
+.msg-green{color:#44ff88}
+.msg-red{color:#ff4466}
+.msg-yellow{color:#ffcc44}
+.msg-blue{color:#4488ff}
+.msg-cyan{color:#44ccff}
+.msg-dim{color:#666}
+
+.shop-grid{display:grid;gap:.5rem;width:100%;max-width:400px}
+.shop-item{background:#0e0e1a;border:1.5px solid #1e1e3a;border-radius:10px;padding:.7rem;display:flex;align-items:center;gap:.7rem;cursor:pointer;transition:all .15s}
+.shop-item:hover{border-color:#cc44ff}
+.shop-item .s-emoji{font-size:1.5rem}
+.shop-item .s-info{flex:1}
+.shop-item .s-name{font-weight:700;font-size:.9rem}
+.shop-item .s-desc{color:#888;font-size:.75rem}
+.shop-item .s-price{color:#ffd866;font-weight:700;font-size:.85rem;white-space:nowrap}
+
+.title-box{border:1px solid #1e1e3a;border-radius:14px;padding:1.2rem;background:#0e0e1a;width:100%;max-width:400px;text-align:center;margin:.5rem 0}
+.title-box h2{font-size:1.3rem;margin-bottom:.5rem}
+
+@media(max-width:400px){
+  .game-title{font-size:1.5rem}
+  .area-grid{grid-template-columns:1fr 1fr}
+  .action-grid{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+
+<a class="back-link" href="../index.html">← 主菜单</a>
+
+<!-- Title Screen -->
+<div class="screen active" id="titleScreen">
+  <div class="game-title">⚔️ 星族的考验</div>
+  <div class="game-sub">StarClan's Trial — A Warrior Cats RPG</div>
+  <div style="display:flex;flex-direction:column;gap:10px;width:100%;max-width:300px">
+    <button class="btn-primary" onclick="startNewGame()">🎮 开始冒险</button>
+    <button class="btn-secondary" onclick="showScreen('helpScreen')">📖 游戏说明</button>
+  </div>
+</div>
+
+<!-- Help Screen -->
+<div class="screen" id="helpScreen">
+  <div class="title-box"><h2>📖 游戏说明</h2></div>
+  <div class="stats-box" style="line-height:1.6;font-size:.85rem">
+    <p><b style="color:#cc44ff">故事：</b>你是被星族选中的学徒，探索森林、战斗、收集药草，最终击败虎星之灵！</p>
+    <p style="margin-top:.5rem"><b style="color:#44ccff">玩法：</b></p>
+    <p>· 选择族 → 探索 8 个区域 → 每区域有随机事件</p>
+    <p>· 每探索 2 个区域可去商店</p>
+    <p>· 探索完所有区域 → 最终 Boss 战</p>
+    <p style="margin-top:.5rem"><b style="color:#ff8844">战斗：</b></p>
+    <p>· ⚔️ 攻击 · 🛡️ 防御 · 🌿 药草 · 🏃 逃跑</p>
+    <p>· 暴击率 15%，暴击 2x 伤害</p>
+    <p style="margin-top:.5rem"><b style="color:#ffd866">族特长：</b></p>
+    <p>⚡ 雷族 ATK+1 · 🌑 影族安全逃跑 · 💨 风族 30%双倍行动</p>
+    <p>🌊 河族 +5 HP · 🐾 天族可爬树找宝藏</p>
+  </div>
+  <button class="btn-secondary" onclick="showScreen('titleScreen')" style="margin-top:1rem">← 返回</button>
+</div>
+
+<!-- Clan Select -->
+<div class="screen" id="clanScreen">
+  <div class="title-box"><h2>🐱 选择你的族</h2></div>
+  <div class="clan-grid" id="clanGrid"></div>
+</div>
+
+<!-- Name Input -->
+<div class="screen" id="nameScreen">
+  <div class="title-box"><h2 id="clanChosen"></h2></div>
+  <div style="width:100%;max-width:300px;margin:.8rem 0">
+    <div style="color:#888;font-size:.85rem;margin-bottom:.3rem">输入你的武士名字：</div>
+    <input id="nameInput" placeholder="你的名字..." maxlength="12">
+  </div>
+  <button class="btn-primary" onclick="confirmName()">确认 →</button>
+</div>
+
+<!-- Main Map -->
+<div class="screen" id="mapScreen">
+  <div class="title-box"><h2>🌍 选择探索区域</h2></div>
+  <div class="stats-box" id="mapStats"></div>
+  <div class="area-grid" id="areaGrid"></div>
+  <div style="display:flex;gap:8px;margin-top:.8rem;width:100%;max-width:400px">
+    <button class="btn-secondary" style="flex:1" onclick="openShop()">🏪 商店</button>
+    <button class="btn-secondary" style="flex:1" onclick="showStats()">📊 状态</button>
+  </div>
+</div>
+
+<!-- Event Screen -->
+<div class="screen" id="eventScreen">
+  <div class="title-box" id="eventTitle"></div>
+  <div id="eventDesc" style="max-width:400px;font-size:.9rem;line-height:1.5;margin:.5rem 0"></div>
+  <div id="eventActions" style="width:100%;max-width:400px"></div>
+</div>
+
+<!-- Combat Screen -->
+<div class="screen" id="combatScreen">
+  <div class="combat-box">
+    <div class="enemy-info" id="enemyInfo"></div>
+    <div class="player-info" id="combatPlayerInfo"></div>
+    <div class="msg-log" id="combatLog"></div>
+    <div class="action-grid" id="combatActions"></div>
+  </div>
+</div>
+
+<!-- Shop Screen -->
+<div class="screen" id="shopScreen">
+  <div class="title-box"><h2>🏪 商店</h2></div>
+  <div class="stats-box" id="shopStats"></div>
+  <div class="shop-grid" id="shopGrid"></div>
+  <button class="btn-secondary" onclick="showScreen('mapScreen');renderMap()" style="margin-top:.8rem">← 返回地图</button>
+</div>
+
+<!-- Ending Screen -->
+<div class="screen" id="endScreen">
+  <div class="title-box" id="endTitle"></div>
+  <div id="endStats" class="stats-box" style="margin:.8rem 0"></div>
+  <div style="display:flex;flex-direction:column;gap:10px;width:100%;max-width:300px;margin-top:.5rem">
+    <button class="btn-primary" onclick="startNewGame()">🔄 再来一次</button>
+    <button class="btn-secondary" onclick="showScreen('titleScreen')">← 主菜单</button>
+  </div>
+</div>
+
+<script>
+// ─── Game Data ───
+var CLANS = [
+  {id:'1',name:'雷族',en:'ThunderClan',emoji:'⚡',bonus:'战斗伤害 +1',desc:'像雷电一样勇猛！每次攻击额外 +1 伤害'},
+  {id:'2',name:'影族',en:'ShadowClan',emoji:'🌑',bonus:'可安全逃跑',desc:'如暗影般狡猾！战斗中可无惩罚逃跑'},
+  {id:'3',name:'风族',en:'WindClan',emoji:'💨',bonus:'30% 双倍行动',desc:'似疾风般迅速！30% 几率一回合行动两次'},
+  {id:'4',name:'河族',en:'RiverClan',emoji:'🌊',bonus:'初始 +5 HP',desc:'河水赐予生命力！初始额外 +5 最大HP'},
+  {id:'5',name:'天族',en:'SkyClan',emoji:'🐾',bonus:'可攀树探秘',desc:'天族猫擅长爬树！探索时可发现隐藏宝藏'}
+];
+
+var ENEMIES = [
+  {name:'老鼠',emoji:'🐭',hp:8,atk:2,def:0,xp:5,desc:'一只肥硕的老鼠从草丛里窜出来！'},
+  {name:'松鼠',emoji:'🐿️',hp:6,atk:3,def:0,xp:4,desc:'一只敏捷的松鼠跳到面前！'},
+  {name:'蝙蝠',emoji:'🦇',hp:10,atk:4,def:1,xp:7,desc:'黑暗中传来扑翅声——蝙蝠来袭！'},
+  {name:'狐狸',emoji:'🦊',hp:18,atk:6,def:2,xp:12,desc:'危险！一只狐狸龇着牙逼近！'},
+  {name:'蛇',emoji:'🐍',hp:15,atk:8,def:1,xp:14,desc:'嘶嘶——一条毒蛇拦住了去路！'},
+  {name:'鹰',emoji:'🦅',hp:20,atk:7,def:3,xp:16,desc:'天空暗下来——巨鹰俯冲而下！'},
+  {name:'狼',emoji:'🐺',hp:30,atk:10,def:4,xp:25,desc:'月下狼嚎——独狼向你发起挑战！'},
+  {name:'暗森林猫',emoji:'👹',hp:40,atk:12,def:5,xp:40,desc:'暗森林的邪恶猫出现了！'}
+];
+
+var AREAS = [
+  {name:'松树林',emoji:'🌲',desc:'高大的松树遮天蔽日，空气中弥漫着树脂的香味。',enemies:[0,1,2],diff:1},
+  {name:'河边',emoji:'🌊',desc:'河水潺潺，鱼群在浅滩游弋。',enemies:[0,1],diff:1},
+  {name:'两脚兽地盘',emoji:'🏔️',desc:'两脚兽的巢穴散发着奇怪的气味。',enemies:[2,3],diff:2},
+  {name:'月光空地',emoji:'🌙',desc:'月光洒在空地上，仿佛星族的猫在注视着你。',enemies:[3,4],diff:2},
+  {name:'药草园',emoji:'🌿',desc:'各种药草在这里茂盛生长。',enemies:[0,1,2],diff:1},
+  {name:'狐狸洞穴',emoji:'🦊',desc:'洞穴深处传来低沉的咆哮声。',enemies:[3,4,5],diff:3},
+  {name:'彩虹瀑布',emoji:'🌈',desc:'瀑布在阳光下绽放出七彩光芒。',enemies:[4,5,6],diff:3},
+  {name:'暗森林边缘',emoji:'🌑',desc:'黑暗笼罩着这里，空气中充满恐惧。',enemies:[5,6,7],diff:4}
+];
+
+var SHOP = [
+  {name:'药草',emoji:'🌿',price:5,desc:'恢复 15 HP',effect:'herb'},
+  {name:'利爪石',emoji:'🗡️',price:10,desc:'ATK 永久 +2',effect:'atk'},
+  {name:'硬毛甲',emoji:'🛡️',price:8,desc:'DEF 永久 +1',effect:'def'},
+  {name:'星族祝福',emoji:'⭐',price:15,desc:'完全恢复 HP',effect:'heal'},
+  {name:'幸运护符',emoji:'🍀',price:12,desc:'暴击率 +10%',effect:'crit'}
+];
+
+// ─── State ───
+var G = null; // game state
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active')});
+  document.getElementById(id).classList.add('active');
+}
+
+// ─── Audio ───
+var audioCtx;
+function initAudio(){if(!audioCtx)try{audioCtx=new(window.AudioContext||window.webkitAudioContext)}catch(e){}}
+function playTone(f,d,t,v){
+  if(!audioCtx)return;
+  try{var o=audioCtx.createOscillator(),g=audioCtx.createGain();
+  o.type=t||'square';o.frequency.value=f;g.gain.value=v||.08;
+  g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+d);
+  o.connect(g);g.connect(audioCtx.destination);o.start();o.stop(audioCtx.currentTime+d)}catch(e){}
+}
+function sfxAttack(){playTone(220,.1,'sawtooth',.1);setTimeout(function(){playTone(180,.08,'sawtooth',.08)},50)}
+function sfxHit(){playTone(120,.15,'square',.12)}
+function sfxHeal(){playTone(440,.1,'sine',.08);setTimeout(function(){playTone(660,.15,'sine',.08)},80)}
+function sfxCrit(){playTone(330,.06,'sawtooth',.12);setTimeout(function(){playTone(440,.1,'sawtooth',.1)},60)}
+function sfxWin(){playTone(523,.1,'sine',.1);setTimeout(function(){playTone(659,.1,'sine',.1)},120);setTimeout(function(){playTone(784,.2,'sine',.1)},240)}
+function sfxLose(){playTone(220,.2,'sine',.1);setTimeout(function(){playTone(165,.3,'sine',.1)},200)}
+function sfxBuy(){playTone(500,.08,'sine',.08);setTimeout(function(){playTone(700,.12,'sine',.08)},60)}
+
+// ─── New Game ───
+function startNewGame(){
+  initAudio();
+  renderClans();
+  showScreen('clanScreen');
+}
+
+function renderClans(){
+  var g=document.getElementById('clanGrid');
+  g.innerHTML=CLANS.map(function(c){
+    return '<div class="clan-card" onclick="selectClan(\''+c.id+'\')">'+
+      '<div class="emoji">'+c.emoji+'</div>'+
+      '<div class="name">'+c.name+' ('+c.en+')</div>'+
+      '<div class="bonus">'+c.bonus+'</div>'+
+      '<div class="desc">'+c.desc+'</div></div>';
+  }).join('');
+}
+
+var selectedClan=null;
+function selectClan(id){
+  selectedClan=CLANS.find(function(c){return c.id===id});
+  document.getElementById('clanChosen').textContent=selectedClan.emoji+' '+selectedClan.name+' — 确认';
+  document.getElementById('nameInput').value='';
+  showScreen('nameScreen');
+  setTimeout(function(){document.getElementById('nameInput').focus()},100);
+}
+
+function confirmName(){
+  var name=document.getElementById('nameInput').value.trim();
+  if(!name)name='无名猫';
+  G={
+    name:name,clan:selectedClan,
+    maxHp:25,hp:25,atk:5,def:2,speed:5,
+    herbs:2,freshKill:10,xp:0,level:1,critBonus:0,
+    areasExplored:0,enemiesDefeated:0,totalDmg:0,itemsUsed:0,
+    visited:{}
+  };
+  // Clan bonuses
+  if(selectedClan.id==='1')G.atk+=1;
+  if(selectedClan.id==='4'){G.maxHp+=5;G.hp+=5}
+  renderMap();
+  showScreen('mapScreen');
+}
+
+// ─── Map ───
+function renderMap(){
+  updateMapStats();
+  var g=document.getElementById('areaGrid');
+  g.innerHTML=AREAS.map(function(a,i){
+    var visited=G.visited[i];
+    return '<div class="area-card'+(visited?' visited':'')+'" onclick="exploreArea('+i+')">'+
+      '<div class="emoji">'+a.emoji+'</div>'+
+      '<div class="name">'+(visited?'✅ ':'')+a.name+'</div></div>';
+  }).join('');
+}
+
+function updateMapStats(){
+  var pct=Math.round(G.hp/G.maxHp*100);
+  var col=pct>60?'#44ff88':pct>30?'#ffcc44':'#ff4466';
+  document.getElementById('mapStats').innerHTML=
+    '<div style="font-weight:700;margin-bottom:.3rem">'+G.clan.emoji+' '+G.name+' — Lv.'+G.level+' '+G.clan.name+'</div>'+
+    '<div class="hp-bar"><div class="hp-bar-fill" style="width:'+pct+'%;background:'+col+'"></div></div>'+
+    '<div class="stats-row"><span class="label">HP</span><span class="val" style="color:'+col+'">'+G.hp+'/'+G.maxHp+'</span></div>'+
+    '<div class="stats-row"><span class="label">ATK</span><span class="val">'+G.atk+'</span><span class="label">DEF</span><span class="val">'+G.def+'</span></div>'+
+    '<div class="stats-row"><span class="label">🌿 药草</span><span class="val">'+G.herbs+'</span><span class="label">🍖 猎物</span><span class="val">'+G.freshKill+'</span></div>'+
+    '<div class="stats-row"><span class="label">XP</span><span class="val">'+G.xp+'/'+xpToNext()+'</span></div>';
+}
+
+function showStats(){updateMapStats()} // map already shows stats
+
+function xpToNext(){return G.level*15}
+
+function gainXp(amt){
+  G.xp+=amt;
+  var leveled=false;
+  while(G.xp>=xpToNext()){
+    G.xp-=xpToNext();
+    G.level++;G.maxHp+=5;G.hp=Math.min(G.hp+10,G.maxHp);
+    G.atk+=1;G.def+=1;G.speed+=1;
+    leveled=true;
+  }
+  return leveled;
+}
+
+function heal(amt){var old=G.hp;G.hp=Math.min(G.hp+amt,G.maxHp);return G.hp-old}
+
+// ─── Explore ───
+function exploreArea(idx){
+  var area=AREAS[idx];
+
+  // SkyClan tree bonus
+  var treeMsg='';
+  if(G.clan.id==='5'&&Math.random()<0.3){
+    var r=Math.random();
+    if(r<0.33){G.herbs+=2;treeMsg='<div class="msg msg-cyan">🐾 你爬上了一棵大树，发现了隐藏的宝藏！</div><div class="msg msg-green">🌿 在树洞里找到了 2 个药草！</div>'}
+    else if(r<0.66){var fk=3+Math.floor(Math.random()*6);G.freshKill+=fk;treeMsg='<div class="msg msg-cyan">🐾 你爬上了一棵大树，发现了隐藏的宝藏！</div><div class="msg msg-yellow">🍖 在树枝上发现了 '+fk+' 猎物！</div>'}
+    else{var h=heal(10);treeMsg='<div class="msg msg-cyan">🐾 你爬上了一棵大树，发现了隐藏的宝藏！</div><div class="msg msg-green">💚 树上的露水治愈了你 '+h+' HP！</div>'}
+  }
+
+  var roll=Math.random();
+  if(roll<0.30){
+    // Enemy encounter
+    var ei=area.enemies[Math.floor(Math.random()*area.enemies.length)];
+    startCombat(ENEMIES[ei],false,idx);
+    return;
+  }
+  if(roll<0.50){
+    var found=1+Math.floor(Math.random()*3);
+    G.herbs+=found;
+    showEvent(area.emoji+' '+area.name,area.desc+treeMsg,
+      '<div class="msg msg-green">🌿 你发现了 '+found+' 个药草！</div>',
+      [{text:'继续',action:function(){afterExplore(idx)}}]);
+  }else if(roll<0.65){
+    var fk2=3+Math.floor(Math.random()*6)+area.diff*2;
+    G.freshKill+=fk2;
+    showEvent(area.emoji+' '+area.name,area.desc+treeMsg,
+      '<div class="msg msg-yellow">🍖 获得了 '+fk2+' 猎物！</div>',
+      [{text:'继续',action:function(){afterExplore(idx)}}]);
+  }else if(roll<0.78){
+    // Meet other clan cat
+    var otherClan=CLANS.filter(function(c){return c.id!==G.clan.id});
+    var oc=otherClan[Math.floor(Math.random()*otherClan.length)];
+    showEvent(area.emoji+' '+area.name,
+      area.desc+treeMsg+'<div class="msg" style="margin-top:.5rem">🐾 你遇到了一位'+oc.emoji+oc.name+'的猫！</div><div class="msg msg-dim">「你好，'+G.name+'。要不要交换些物资？」</div>','',
+      [{text:'🤝 交易(3猎物)',action:function(){doTrade(idx,area)}},
+       {text:'⚔️ 挑战',action:function(){var ei=area.enemies[Math.floor(Math.random()*area.enemies.length)];startCombat(ENEMIES[ei],false,idx)}},
+       {text:'👋 离开',action:function(){afterExplore(idx)}}]);
+  }else if(roll<0.90){
+    // StarClan vision
+    var vr=Math.random();
+    var vmsg='';
+    if(vr<0.4){var vh=heal(8+Math.floor(Math.random()*8));vmsg='<div class="msg msg-green">🌟 星族的温暖光芒治愈了你 '+vh+' HP！</div>'}
+    else if(vr<0.7){G.herbs+=1;vmsg='<div class="msg msg-green">🌿 星族赐予你 1 个神圣药草！</div>'}
+    else{var b=['atk','def','speed'][Math.floor(Math.random()*3)];
+      if(b==='atk'){G.atk+=1;vmsg='<div class="msg msg-green">⚔️ 星族赐予你力量！ATK +1！</div>'}
+      else if(b==='def'){G.def+=1;vmsg='<div class="msg msg-green">🛡️ 星族护佑着你！DEF +1！</div>'}
+      else{G.speed+=1;vmsg='<div class="msg msg-green">💨 星族使你更加敏捷！Speed +1！</div>'}
+    }
+    showEvent(area.emoji+' '+area.name,
+      area.desc+treeMsg+'<div class="msg msg-blue" style="margin-top:.5rem">✨ 一道银光闪过——星族的幻象出现了！</div>',vmsg,
+      [{text:'继续',action:function(){afterExplore(idx)}}]);
+  }else{
+    var nothings=['这里很安静...只有风声和鸟鸣。','你四处搜寻，但没有发现什么特别的。','一阵微风吹过，树叶沙沙作响。','你看到了远处的松鼠，但它跑太快了。'];
+    showEvent(area.emoji+' '+area.name,area.desc+treeMsg,'<div class="msg msg-dim">'+nothings[Math.floor(Math.random()*nothings.length)]+'</div>',
+      [{text:'继续',action:function(){afterExplore(idx)}}]);
+  }
+}
+
+function doTrade(idx,area){
+  if(G.freshKill<3){
+    showEvent('交易','<div class="msg msg-red">猎物不够交易...</div>','',[{text:'返回',action:function(){afterExplore(idx)}}]);
+    return;
+  }
+  G.freshKill-=3;
+  var r=Math.random();
+  var msg='';
+  if(r<0.25){G.herbs+=2;msg='<div class="msg msg-green">🌿 获得 2 个药草！</div>'}
+  else if(r<0.5){var h=heal(15);msg='<div class="msg msg-green">💚 恢复 '+h+' HP！</div>'}
+  else if(r<0.75){G.freshKill+=6;msg='<div class="msg msg-yellow">🍖 获得 6 猎物！</div>'}
+  else{G.atk+=1;msg='<div class="msg msg-green">🗡️ 对方分享了战斗技巧，ATK +1！</div>'}
+  sfxBuy();
+  showEvent('🤝 交易成功',msg,'',[{text:'继续',action:function(){afterExplore(idx)}}]);
+}
+
+function showEvent(title,desc,extra,actions){
+  document.getElementById('eventTitle').innerHTML='<h2>'+title+'</h2>';
+  document.getElementById('eventDesc').innerHTML=desc+extra;
+  document.getElementById('eventActions').innerHTML=actions.map(function(a,i){
+    return '<button class="btn-primary" style="max-width:400px;margin:.3rem 0" onclick="eventActions['+i+']()">'+a.text+'</button>';
+  }).join('');
+  window.eventActions=actions.map(function(a){return a.action});
+  showScreen('eventScreen');
+}
+
+function afterExplore(idx){
+  G.visited[idx]=true;
+  G.areasExplored++;
+  // Check shop prompt
+  if(G.areasExplored%2===0){
+    showEvent('🏪 商店开放！','<div class="msg msg-yellow">你已经探索了 '+G.areasExplored+' 个区域。要不要去商店补给？</div>','',
+      [{text:'🏪 去商店',action:function(){openShop()}},{text:'不了',action:function(){checkBoss()}}]);
+  }else{
+    checkBoss();
+  }
+}
+
+function checkBoss(){
+  var allVisited=AREAS.every(function(a,i){return G.visited[i]});
+  if(allVisited){
+    showEvent('🌟 所有区域已探索！',
+      '<div class="msg msg-blue">🌟 星族的声音回响在森林中——</div>'+
+      '<div class="msg msg-blue">「勇敢的猫，你已经证明了自己的勇气。」</div>'+
+      '<div class="msg msg-blue">「现在，是时候面对最终的考验了...」</div>'+
+      '<div class="msg msg-red">「虎星之灵正在暗森林等你。」</div>','',
+      [{text:'⚔️ 迎战虎星之灵！',action:function(){startBossBattle()}},{text:'再准备一下',action:function(){renderMap();showScreen('mapScreen')}}]);
+  }else{
+    renderMap();showScreen('mapScreen');
+  }
+}
+
+// ─── Combat ───
+var combatEnemy=null;
+var combatIsBoss=false;
+var combatDefending=false;
+var combatTurn=0;
+var combatAreaIdx=-1;
+var bossPhase=0;
+var combatLog=[];
+
+function startCombat(enemyData,isBoss,areaIdx){
+  combatEnemy={name:enemyData.name,emoji:enemyData.emoji,hp:enemyData.hp,maxHp:enemyData.hp,atk:enemyData.atk,def:enemyData.def,xp:enemyData.xp,desc:enemyData.desc};
+  combatIsBoss=isBoss;
+  combatAreaIdx=areaIdx;
+  combatDefending=false;
+  combatTurn=0;
+  combatLog=[];
+  addCombatLog(enemyData.desc,'msg-red');
+  renderCombat();
+  showScreen('combatScreen');
+}
+
+function addCombatLog(msg,cls){
+  combatLog.push('<div class="msg '+(cls||'')+'">'+msg+'</div>');
+  if(combatLog.length>20)combatLog.shift();
+}
+
+function renderCombat(){
+  var e=combatEnemy;
+  var ePct=Math.round(e.hp/e.maxHp*100);
+  var eCol=ePct>60?'#44ff88':ePct>30?'#ffcc44':'#ff4466';
+  document.getElementById('enemyInfo').innerHTML=
+    '<div class="enemy-name">'+e.emoji+' '+e.name+'</div>'+
+    '<div class="enemy-hp"><div class="hp-bar"><div class="hp-bar-fill" style="width:'+ePct+'%;background:'+eCol+'"></div></div>'+
+    '<div style="font-size:.8rem;color:'+eCol+'">'+e.hp+'/'+e.maxHp+' HP</div></div>'+
+    '<div style="font-size:.75rem;color:#888">ATK '+e.atk+' · DEF '+e.def+'</div>';
+
+  var pPct=Math.round(G.hp/G.maxHp*100);
+  var pCol=pPct>60?'#44ff88':pPct>30?'#ffcc44':'#ff4466';
+  document.getElementById('combatPlayerInfo').innerHTML=
+    '<div style="font-weight:700;font-size:.9rem;color:#4488ff">'+G.clan.emoji+' '+G.name+' Lv.'+G.level+'</div>'+
+    '<div class="hp-bar"><div class="hp-bar-fill" style="width:'+pPct+'%;background:'+pCol+'"></div></div>'+
+    '<div style="font-size:.8rem;color:'+pCol+'">'+G.hp+'/'+G.maxHp+' HP</div>'+
+    '<div style="font-size:.75rem;color:#888">ATK '+G.atk+' · DEF '+G.def+' · 🌿 '+G.herbs+'</div>';
+
+  document.getElementById('combatLog').innerHTML=combatLog.join('');
+
+  // Actions
+  var acts=[
+    {text:'⚔️ 攻击',id:'atk'},
+    {text:'🛡️ 防御',id:'def'},
+    {text:'🌿 药草('+G.herbs+')',id:'herb'},
+    {text:'🏃 逃跑',id:'flee'}
+  ];
+  if(combatIsBoss&&G.level>=3){
+    acts.push({text:'⭐ 星族之力',id:'star'});
+  }
+  document.getElementById('combatActions').innerHTML=acts.map(function(a){
+    return '<div class="action-btn" onclick="combatAction(\''+a.id+'\')"><div class="icon">'+a.text.split(' ')[0]+'</div><div>'+a.text.split(' ').slice(1).join(' ')+'</div></div>';
+  }).join('');
+
+  // scroll log to bottom
+  var logEl=document.getElementById('combatLog');
+  logEl.scrollTop=logEl.scrollHeight;
+}
+
+function combatAction(action){
+  // WindClan double action
+  var actions=1;
+  if(G.clan.id==='3'&&Math.random()<0.3){
+    actions=2;
+    addCombatLog('💨 风族的速度！你可以行动两次！','msg-yellow');
+  }
+  combatDefending=false;
+
+  for(var i=0;i<actions;i++){
+    if(combatEnemy.hp<=0)break;
+    doAction(action);
+    if(combatEnemy.hp<=0)break;
+  }
+
+  // Enemy turn
+  if(combatEnemy.hp>0&&G.hp>0){
+    var eDmg=Math.max(1,combatEnemy.atk-Math.floor(G.def/2)+Math.floor(Math.random()*3)-1);
+    if(combatDefending){eDmg=Math.max(1,Math.floor(eDmg/2));addCombatLog('🛡️ 防御减半了伤害！','msg-cyan')}
+    G.hp-=eDmg;
+    if(G.hp<0)G.hp=0;
+    sfxHit();
+    addCombatLog(combatEnemy.emoji+' '+combatEnemy.name+' 攻击你，造成 '+eDmg+' 点伤害！','msg-red');
+    combatDefending=false;
+  }
+
+  // Check results
+  if(combatEnemy.hp<=0){
+    sfxWin();
+    var killReward=2+Math.floor(Math.random()*5)+Math.floor(combatEnemy.xp/3);
+    G.freshKill+=killReward;
+    addCombatLog('🎉 击败了 '+combatEnemy.emoji+' '+combatEnemy.name+'！','msg-green');
+    addCombatLog('🍖 获得 '+killReward+' 猎物 · ✨ '+combatEnemy.xp+' 经验','msg-yellow');
+    var leveled=gainXp(combatEnemy.xp);
+    if(leveled)addCombatLog('🎉 升级！你现在是 Lv.'+G.level+'！','msg-green');
+    G.enemiesDefeated++;
+    renderCombat();
+    setTimeout(function(){
+      if(combatIsBoss&&bossPhase<2){
+        bossPhase++;
+        var healAmt=Math.min(8,G.maxHp-G.hp);
+        if(healAmt>0){G.hp+=healAmt;addCombatLog('🌟 星族之力为你恢复 '+healAmt+' HP','msg-green')}
+        addCombatLog('⚡ 虎星之灵变形了！进入第 '+(bossPhase+1)+'/3 阶段！','msg-yellow');
+        setTimeout(function(){
+          var phases=[
+            {name:'虎星之灵（狂暴）',hp:35,atk:15,def:5,desc:'「可恶...我不会输给一个小学徒！」'},
+            {name:'虎星之灵（终极形态）',hp:30,atk:18,def:5,desc:'「我要用尽全力毁灭你！！！」'}
+          ];
+          var p=phases[bossPhase-1];
+          combatEnemy={name:p.name,emoji:'🌑',hp:p.hp,maxHp:p.hp,atk:p.atk,def:p.def,xp:30,desc:p.desc};
+          addCombatLog(p.desc,'msg-red');
+          renderCombat();
+        },1500);
+      }else if(combatIsBoss){
+        showEnding(true);
+      }else{
+        afterExplore(combatAreaIdx);
+      }
+    },1500);
+    return;
+  }
+  if(G.hp<=0){
+    sfxLose();
+    addCombatLog('💀 你被击败了...','msg-red');
+    renderCombat();
+    setTimeout(function(){
+      if(combatIsBoss){showEnding(false)}
+      else{showEnding(false)}
+    },1500);
+    return;
+  }
+
+  combatTurn++;
+  renderCombat();
+}
+
+function doAction(action){
+  if(action==='atk'){
+    var base=G.atk-Math.floor(combatEnemy.def/2);
+    var dmg=Math.max(1,base+Math.floor(Math.random()*4)-1);
+    var crit=Math.random()<(0.15+G.critBonus);
+    if(crit){dmg*=2;addCombatLog('💥 暴击！','msg-yellow');sfxCrit()}
+    combatEnemy.hp-=dmg;
+    if(combatEnemy.hp<0)combatEnemy.hp=0;
+    G.totalDmg+=dmg;
+    sfxAttack();
+    addCombatLog('你挥出利爪，造成 '+dmg+' 点伤害！','msg-cyan');
+  }else if(action==='def'){
+    combatDefending=true;
+    addCombatLog('🛡️ 你摆出防御姿态，下次受到伤害减半！','msg-cyan');
+  }else if(action==='herb'){
+    if(G.herbs<=0){addCombatLog('没有药草了！','msg-red');return}
+    G.herbs--;G.itemsUsed++;
+    var h=heal(15);sfxHeal();
+    addCombatLog('🌿 使用药草，恢复了 '+h+' HP！','msg-green');
+  }else if(action==='flee'){
+    if(combatIsBoss){addCombatLog('无法从 Boss 战中逃跑！','msg-red');return}
+    var chance=G.clan.id==='2'?0.7:0.4;
+    if(Math.random()<chance){
+      addCombatLog('🏃 你成功逃跑了！','msg-green');
+      setTimeout(function(){renderMap();showScreen('mapScreen')},1000);
+      return;
+    }else{addCombatLog('🏃 逃跑失败！','msg-red')}
+  }else if(action==='star'){
+    var dmg=G.atk*2;
+    combatEnemy.hp-=dmg;if(combatEnemy.hp<0)combatEnemy.hp=0;
+    G.totalDmg+=dmg;
+    addCombatLog('⭐ 星族之力降临！造成 '+dmg+' 点神圣伤害！','msg-yellow');
+    var h2=heal(5);
+    addCombatLog('星光治愈了你 5 HP！','msg-green');
+    sfxCrit();
+  }
+}
+
+// ─── Boss Battle ───
+function startBossBattle(){
+  bossPhase=0;
+  var bossData={name:'虎星之灵（第一阶段）',emoji:'🌑',hp:40,atk:12,def:4,xp:30,
+    desc:'「愚蠢的小猫...你以为星族会救你吗？」'};
+  combatLog=[];
+  addCombatLog('🌑 大地颤抖，黑暗降临...','msg-red');
+  addCombatLog('🌟 星族的声音：「不要害怕，勇敢的猫...我们一直与你同在！」','msg-blue');
+  startCombat(bossData,true,-1);
+}
+
+// ─── Shop ───
+function openShop(){
+  document.getElementById('shopStats').innerHTML=
+    '<div class="stats-row"><span class="label">🍖 猎物</span><span class="val" style="color:#ffd866">'+G.freshKill+'</span></div>'+
+    '<div class="stats-row"><span class="label">🌿 药草</span><span class="val">'+G.herbs+'</span></div>';
+  document.getElementById('shopGrid').innerHTML=SHOP.map(function(item,i){
+    return '<div class="shop-item" onclick="buyItem('+i+')">'+
+      '<div class="s-emoji">'+item.emoji+'</div>'+
+      '<div class="s-info"><div class="s-name">'+item.name+'</div><div class="s-desc">'+item.desc+'</div></div>'+
+      '<div class="s-price">'+item.price+' 🍖</div></div>';
+  }).join('');
+  showScreen('shopScreen');
+}
+
+function buyItem(i){
+  var item=SHOP[i];
+  if(G.freshKill<item.price){alert('猎物不够！需要 '+item.price+'，你只有 '+G.freshKill);return}
+  G.freshKill-=item.price;
+  if(item.effect==='herb'){G.herbs++;G.itemsUsed++}
+  else if(item.effect==='atk'){G.atk+=2}
+  else if(item.effect==='def'){G.def+=1}
+  else if(item.effect==='heal'){G.hp=G.maxHp}
+  else if(item.effect==='crit'){G.critBonus+=0.1}
+  sfxBuy();
+  openShop(); // refresh
+}
+
+// ─── Ending ───
+function showEnding(won){
+  var title=document.getElementById('endTitle');
+  if(won){
+    title.innerHTML='<h2 style="color:#44ff88">🎉🎉🎉 胜利！🎉🎉🎉</h2>'+
+      '<div style="font-size:.9rem;color:#4488ff;margin-top:.5rem">🌟 星族荣光！'+G.name+'，你是真正的武士！</div>';
+    sfxWin();
+  }else{
+    title.innerHTML='<h2 style="color:#ff4466">💀💀💀 失败...💀💀💀</h2>'+
+      '<div style="font-size:.9rem;color:#888;margin-top:.5rem">星族为你流泪...但你的精神将永远延续。</div>';
+    sfxLose();
+  }
+  document.getElementById('endStats').innerHTML=
+    '<div class="stats-row"><span class="label">🐱 角色</span><span class="val">'+G.clan.emoji+' '+G.name+' ('+G.clan.name+')</span></div>'+
+    '<div class="stats-row"><span class="label">📊 等级</span><span class="val">Lv.'+G.level+'</span></div>'+
+    '<div class="stats-row"><span class="label">🌍 探索区域</span><span class="val">'+G.areasExplored+'</span></div>'+
+    '<div class="stats-row"><span class="label">⚔️ 击败敌人</span><span class="val">'+G.enemiesDefeated+'</span></div>'+
+    '<div class="stats-row"><span class="label">💥 总伤害</span><span class="val">'+G.totalDmg+'</span></div>'+
+    '<div class="stats-row"><span class="label">🍖 最终猎物</span><span class="val">'+G.freshKill+'</span></div>'+
+    '<div class="stats-row"><span class="label">结果</span><span class="val" style="color:'+(won?'#44ff88':'#ff4466')+'">'+(won?'🌟 胜利！':'🌑 失败')+'</span></div>';
+  showScreen('endScreen');
+}
+</script>
+</body>
+</html>
