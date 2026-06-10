@@ -107,6 +107,67 @@ const THUMB_ART = {
       <circle cx="155" cy="35" r="1.1" fill="#fff" opacity=".45"/>
       <circle cx="80" cy="30" r=".7" fill="#fff" opacity=".35"/>
     </svg>`
+  },
+  snake: {
+    bg: 'linear-gradient(135deg, #0d1a0d 0%, #1a3a1a 40%, #0d1a0d 100%)',
+    svg: `<svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="sg" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#66ee66"/>
+          <stop offset="100%" stop-color="#228822"/>
+        </linearGradient>
+        <radialGradient id="fg" cx="40%" cy="40%" r="60%">
+          <stop offset="0%" stop-color="#ffd070"/>
+          <stop offset="60%" stop-color="#ff7a3c"/>
+          <stop offset="100%" stop-color="#cc2a1a"/>
+        </radialGradient>
+        <radialGradient id="fglow" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="rgba(255,90,40,0.7)"/>
+          <stop offset="100%" stop-color="rgba(255,90,40,0)"/>
+        </radialGradient>
+      </defs>
+      <!-- Grid lines (very subtle) -->
+      <g stroke="rgba(255,255,255,0.04)" stroke-width="1">
+        <line x1="0" y1="50" x2="200" y2="50"/>
+        <line x1="0" y1="100" x2="200" y2="100"/>
+        <line x1="0" y1="150" x2="200" y2="150"/>
+        <line x1="50" y1="0" x2="50" y2="200"/>
+        <line x1="100" y1="0" x2="100" y2="200"/>
+        <line x1="150" y1="0" x2="150" y2="200"/>
+      </g>
+      <!-- Food glow + apple -->
+      <circle cx="155" cy="60" r="22" fill="url(#fglow)"/>
+      <circle cx="155" cy="60" r="14" fill="url(#fg)"/>
+      <ellipse cx="151" cy="55" rx="3" ry="2" fill="rgba(255,255,255,0.6)"/>
+      <path d="M155 47 q3 -5 7 -4" stroke="#5a3a1a" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <!-- Snake body (S-curve of rounded segments) -->
+      <g fill="url(#sg)" stroke="#1a5a1a" stroke-width="1">
+        <rect x="22" y="138" width="26" height="26" rx="6"/>
+        <rect x="46" y="138" width="26" height="26" rx="6"/>
+        <rect x="70" y="138" width="26" height="26" rx="6"/>
+        <rect x="70" y="112" width="26" height="26" rx="6"/>
+        <rect x="70" y="86"  width="26" height="26" rx="6"/>
+        <rect x="70" y="60"  width="26" height="26" rx="6"/>
+        <rect x="70" y="34"  width="26" height="26" rx="6"/>
+        <rect x="96" y="34"  width="26" height="26" rx="6"/>
+        <rect x="96" y="60"  width="26" height="26" rx="6"/>
+        <rect x="96" y="86"  width="26" height="26" rx="6"/>
+        <rect x="96" y="112" width="26" height="26" rx="6"/>
+      </g>
+      <!-- Head -->
+      <rect x="96" y="112" width="32" height="32" rx="8" fill="#44cc44" stroke="#1a5a1a" stroke-width="1"/>
+      <!-- Eyes on head -->
+      <circle cx="108" cy="120" r="3.2" fill="#fff"/>
+      <circle cx="120" cy="120" r="3.2" fill="#fff"/>
+      <circle cx="108" cy="121" r="1.5" fill="#000"/>
+      <circle cx="120" cy="121" r="1.5" fill="#000"/>
+      <!-- Tongue -->
+      <path d="M128 128 q6 0 8 -4 q-2 2 -4 1 q3 1 4 5" stroke="#ff3344" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+      <!-- Subtle motion dots -->
+      <circle cx="160" cy="120" r="1" fill="#44cc44" opacity=".5"/>
+      <circle cx="170" cy="135" r="1" fill="#44cc44" opacity=".35"/>
+      <circle cx="178" cy="150" r="1" fill="#44cc44" opacity=".2"/>
+    </svg>`
   }
 };
 
