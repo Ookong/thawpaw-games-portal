@@ -2,11 +2,12 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Moonstone Quest</title>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
-body { background:#0a0a14; color:#ccc; font-family:'Courier New',monospace; height:100vh; display:flex; flex-direction:column; overflow:hidden; }
+body { background:#0a0a14; color:#ccc; font-family:'Courier New',monospace; height:100vh; display:flex; flex-direction:column; overflow:hidden; -webkit-fill-available: height 100vh; }
+body { height:100dvh; }
 a { color:#88aaff; }
 #back { position:fixed; top:8px; left:10px; z-index:100; font-size:13px; color:#6688aa; text-decoration:none; }
 #back:hover { color:#aaccff; }
@@ -662,7 +663,7 @@ function doDescend(){initAudio();tryDescend();}
     doMove(dir.dx,dir.dy);
     moveInterval=setInterval(function(){
       if(lastDir.dx!==0||lastDir.dy!==0) doMove(lastDir.dx,lastDir.dy);
-    },180);
+    },320);
   }
   function stopMove(){
     if(moveInterval){clearInterval(moveInterval);moveInterval=null;}
