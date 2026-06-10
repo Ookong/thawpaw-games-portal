@@ -495,8 +495,6 @@ function showMainMenu() {
   alive = false;
   hideAllScreens();
   document.getElementById('overlay').classList.remove('active');
-  var tc = document.getElementById('touchControls');
-  if (tc) tc.classList.remove('active');
   document.getElementById('menuScreen').classList.add('active');
   updateMenuStats();
   document.getElementById('back').style.display = 'none';
@@ -625,8 +623,6 @@ var _pendingConfirm = null;
 var _pendingCancel = null;
 
 function showConfirmOverlay(title, body, onConfirm, confirmText, onCancel) {
-  var tc = document.getElementById('touchControls');
-  if (tc) tc.classList.remove('active');
   _pendingConfirm = onConfirm;
   _pendingCancel = onCancel || null;
   document.getElementById('oTitle').textContent = title;
@@ -641,13 +637,11 @@ function showConfirmOverlay(title, body, onConfirm, confirmText, onCancel) {
 
 function _doConfirmOk() {
   document.getElementById('overlay').classList.remove('active');
-  restoreTouchControls();
   if (_pendingConfirm) { var fn = _pendingConfirm; _pendingConfirm = null; _pendingCancel = null; fn(); }
 }
 
 function _doConfirmCancel() {
   document.getElementById('overlay').classList.remove('active');
-  restoreTouchControls();
   if (_pendingCancel) { var fn = _pendingCancel; _pendingConfirm = null; _pendingCancel = null; fn(); }
 }
 
