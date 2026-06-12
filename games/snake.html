@@ -772,7 +772,7 @@ let joystickCenter = {x:0,y:0};
 const JOYSTICK_RADIUS = 35;
 
 if(isTouchDevice){
-  joystickZone.classList.add('visible');
+  // Joystick starts hidden, only shows on game page via showPage()
   joystickBase.addEventListener('touchstart', e=>{
     e.preventDefault();
     joystickActive = true;
