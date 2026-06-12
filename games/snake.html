@@ -620,15 +620,17 @@ function showDetail(item){
 // ===== GAME =====
 let canvas, ctx;
 let snake, food, direction, gameLoop, gameActive;
-let gridSize, cellSize, speed;
+let gridSize, cellSize, speed, speedIndex;
 const BOARD_SIZES = [15,20,25];
 const SPEEDS = [200,130,80];
+const GOLD_PER_FOOD = [1,2,4];
 
 function startGame(){
   const bs = parseInt(document.getElementById('board-size').value)-1;
   const sp = parseInt(document.getElementById('game-speed').value)-1;
   gridSize = BOARD_SIZES[bs];
   speed = SPEEDS[sp];
+  speedIndex = sp;
   canvas = document.getElementById('game-canvas');
   ctx = canvas.getContext('2d');
   const maxPx = Math.min(window.innerWidth-20, window.innerHeight-100);
@@ -666,10 +668,11 @@ function gameTick(){
   if(snake.some(s=>s.x===head.x&&s.y===head.y)){gameOver();return;}
   snake.unshift(head);
   if(head.x===food.x&&head.y===food.y){
-    player.gold += 2;
+    const goldEarned = GOLD_PER_FOOD[speedIndex];
+    player.gold += goldEarned;
     player.apples += 1;
     player.exp += 5;
-    document.getElementById('game-score').textContent = parseInt(document.getElementById('game-score').textContent)+2;
+    document.getElementById('game-score').textContent = parseInt(document.getElementById('game-score').textContent)+goldEarned;
     document.getElementById('game-apples').textContent = parseInt(document.getElementById('game-apples').textContent)+1;
     document.getElementById('game-length').textContent = snake.length;
     placeFood();
