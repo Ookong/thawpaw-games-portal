@@ -633,7 +633,11 @@ function startGame(){
   speedIndex = sp;
   canvas = document.getElementById('game-canvas');
   ctx = canvas.getContext('2d');
-  const maxPx = Math.min(window.innerWidth-20, window.innerHeight-100);
+  // Maximize canvas: use almost all screen width & available height
+  // Leave 10px side padding, 60px top (score bar + back btn) + 56px bottom bar
+  const maxW = window.innerWidth - 10;
+  const maxH = window.innerHeight - 130;
+  const maxPx = Math.min(maxW, maxH);
   cellSize = Math.floor(maxPx / gridSize);
   canvas.width = cellSize * gridSize;
   canvas.height = cellSize * gridSize;
