@@ -1650,8 +1650,4 @@ b.addEventListener('pointerup',function(e){
   var fy=Math.max(6,Math.min(parseInt(b.style.top)||r.top,maxY));
   b.style.top=fy+'px';b.style.bottom='auto';
 });
-})();
-
-</script>
-</body>
-</html>
+})();// ===== AUTO FULLSCREEN =====function tryFullscreen(){  const el = document.documentElement;  const rfs = el.requestFullscreen || el.webkitRequestFullscreen || el.msRequestFullscreen;  if(rfs){    rfs.call(el).catch(()=>{});  }}let fullscreenDone = false;document.addEventListener('click', ()=>{  if(!fullscreenDone){fullscreenDone=true; tryFullscreen();}}, {once:true});document.addEventListener('touchstart', ()=>{  if(!fullscreenDone){fullscreenDone=true; tryFullscreen();}}, {once:true});</script></body></html>
