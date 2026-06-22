@@ -811,7 +811,7 @@ function submitFeedback(){
   // 发送到后端
   showFbStatus('发送中...', 'success');
   try {
-    var cfBase = 'https://tpg-hq.icepaw.workers.dev';
+    var cfBase = 'https://tpg-hq.thawflow.com';
     try { var u = localStorage.getItem('tpgCfBackendUrl'); if(u) cfBase = u.replace(/\/+$/, ''); } catch(e){}
     fetch(cfBase + '/addFeedback', {
       method: 'POST',
