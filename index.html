@@ -86,7 +86,40 @@ footer{position:relative;z-index:1;text-align:center;padding:2rem;color:var(--di
   .games-grid{grid-template-columns:repeat(2,1fr)}
 }
 
-/* ── Modal (shared) ── */
+/* ── Login screen ── */
+body.no-user header.top-bar{display:none}
+body.no-user footer{display:none}
+.login-page{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;position:relative;z-index:1}
+.login-card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:36px 32px;max-width:420px;width:100%;text-align:center;box-shadow:0 12px 48px rgba(0,0,0,.5)}
+.login-card h1{font-size:28px;margin-bottom:8px;background:linear-gradient(135deg,#6c63ff,#48c6ef);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-weight:700}
+.login-card .sub{color:var(--text2);font-size:13px;margin-bottom:24px;line-height:1.5}
+.login-card .lock-icon{font-size:48px;margin-bottom:12px;display:block}
+.login-input{width:100%;padding:14px 16px;background:var(--card2);border:2px solid var(--border);border-radius:10px;color:var(--gold);font-size:20px;font-family:monospace;font-weight:700;text-align:center;letter-spacing:.15em;outline:none;transition:border-color .2s}
+.login-input:focus{border-color:var(--accent)}
+.login-input::placeholder{color:var(--dim);font-weight:400;letter-spacing:0}
+.login-btn{width:100%;margin-top:14px;padding:14px;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;transition:opacity .2s,transform .1s;font-family:inherit}
+.login-btn-primary{background:linear-gradient(135deg,#6c63ff,#48c6ef);color:#fff}
+.login-btn-primary:hover{opacity:.92}
+.login-btn-primary:active{transform:scale(.98)}
+.login-btn-ghost{background:var(--card2);color:var(--text);border:1px solid var(--border);margin-top:8px}
+.login-btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
+.login-error{margin-top:12px;padding:10px;border-radius:8px;font-size:13px;background:rgba(255,85,119,.15);color:#ff7a99;display:none}
+.login-error.show{display:block}
+.login-confirm{margin-top:16px;padding:14px;background:rgba(108,99,255,.12);border:1px solid var(--accent);border-radius:10px;font-size:13px;color:var(--text);display:none;text-align:left;line-height:1.6}
+.login-confirm.show{display:block}
+.login-confirm .who{color:var(--gold);font-weight:700;font-size:15px;font-family:monospace;margin:0 4px}
+.login-confirm .actions{display:flex;gap:8px;margin-top:10px}
+.login-confirm .actions .login-btn{flex:1;margin:0;padding:10px;font-size:13px}
+.login-nickname-step{display:none;margin-top:14px;text-align:left}
+.login-nickname-step.show{display:block}
+.login-nickname-step label{display:block;font-size:12px;color:var(--text2);margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+.login-nickname-input{width:100%;padding:12px 14px;background:var(--card2);border:2px solid var(--border);border-radius:8px;color:var(--text);font-size:15px;font-family:inherit;outline:none}
+.login-nickname-input:focus{border-color:var(--accent)}
+.login-hint{font-size:11px;color:var(--dim);margin-top:18px;line-height:1.5}
+
+/* Logout button in profile */
+.logout-btn{margin-top:14px;padding:8px 18px;background:rgba(255,85,119,.12);color:#ff7a99;border:1px solid rgba(255,85,119,.3);border-radius:8px;font-size:13px;cursor:pointer;transition:opacity .2s;font-family:inherit}
+.logout-btn:hover{opacity:.85;background:rgba(255,85,119,.2)}
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;align-items:center;justify-content:center;padding:20px}
 .modal-overlay.active{display:flex}
 .modal{background:var(--card);border-radius:14px;padding:22px;width:100%;position:relative;box-shadow:0 12px 48px rgba(0,0,0,.5);border:1px solid var(--border)}
@@ -159,8 +192,45 @@ footer{position:relative;z-index:1;text-align:center;padding:2rem;color:var(--di
   <div class="top-logo">Thawpaw Games<span>portal</span></div>
 </header>
 
+<!-- ===== LOGIN PAGE (shown when no active player) ===== -->
+<div id="page-login" class="page active">
+  <div class="login-page">
+    <div class="login-card">
+      <span class="lock-icon">🐾</span>
+      <h1>Thawpaw Games</h1>
+      <div class="sub">输入你的 8 位游戏 ID 登录，<br>或创建一个新账号</div>
+
+      <input type="text" id="login-id-input" class="login-input" placeholder="8 位数字 ID" maxlength="8" inputmode="numeric" pattern="[0-9]*" autocomplete="off">
+      <button class="login-btn login-btn-primary" onclick="onLoginSubmit()">🔑 登录</button>
+      <button class="login-btn login-btn-ghost" onclick="onGenerateNewId()">🎲 随机生成新 ID</button>
+
+      <div class="login-error" id="login-error"></div>
+
+      <div class="login-confirm" id="login-confirm">
+        <div>这是<span class="who" id="login-confirm-name"></span>的账号，确定登录？</div>
+        <div class="actions">
+          <button class="login-btn login-btn-primary" onclick="confirmLoginExisting()">✅ 确定登录</button>
+          <button class="login-btn login-btn-ghost" onclick="cancelLoginConfirm()">取消</button>
+        </div>
+      </div>
+
+      <div class="login-nickname-step" id="login-nickname-step">
+        <label for="login-nickname-input">给新账号起个名字吧：</label>
+        <input type="text" id="login-nickname-input" class="login-nickname-input" placeholder="昵称（最多 12 字）" maxlength="12">
+        <button class="login-btn login-btn-primary" style="margin-top:10px" onclick="confirmCreateNew()">✨ 创建账号</button>
+        <button class="login-btn login-btn-ghost" onclick="cancelCreateNew()">取消</button>
+      </div>
+
+      <div class="login-hint">
+        🔒 游戏 ID 永久不变，同一 ID 在所有游戏中通用。<br>
+        记住你的 ID，换设备后重新输入即可恢复。
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ===== HOME PAGE ===== -->
-<div id="page-home" class="page active">
+<div id="page-home" class="page">
   <div class="hero">
     <h1>Thawpaw Games</h1>
     <p>Warrior Cats adventures await. Pick a game and begin your quest.</p>
@@ -184,11 +254,13 @@ footer{position:relative;z-index:1;text-align:center;padding:2rem;color:var(--di
       <div class="player-id" id="profile-player-id">游戏ID：--------</div>
     </div>
     <div class="bio" id="profile-bio" onclick="editBio()" title="点击设置简介">点击设置简介</div>
-    <div class="id-section" onclick="copyPlayerId()" title="点击复制" style="cursor:pointer">
-      <span class="id-label">🎮 游戏ID</span>
+    <div class="id-section" onclick="copyPlayerId()" title="点击复制 · ID永久不变" style="cursor:pointer">
+      <span class="id-label">🔒 游戏ID</span>
       <span class="id-value" id="profile-id-value">--------</span>
-      <span class="id-copy-hint">点击复制</span>
+      <span class="id-copy-hint">点击复制 · 永久不变</span>
+      <button class="id-backup-btn" onclick="event.stopPropagation();backupPlayerId()" title="备份ID到文件 · 换设备后可恢复">💾</button>
     </div>
+    <button class="logout-btn" onclick="onLogout()">🚪 退出登录</button>
   </div>
 </div>
 
@@ -356,28 +428,91 @@ const DEFAULT_THUMB = {
 
 // ── 统一玩家 ID（8 位数字）──
 function getPlayerId(){
-  let id = localStorage.getItem('thawpawPlayerId');
-  if(!id){
-    id = String(Math.floor(10000000 + Math.random() * 90000000));
-    localStorage.setItem('thawpawPlayerId', id);
-  }
-  return id;
+  // 兼容旧代码 —— 现在返回活动 ID
+  return getActiveId();
 }
+// === 新多账号系统 ===
+const PLAYERS_KEY = 'thawpawPlayers';   // { [id]: { nickname, avatar, bio, firstSeen, lastSeen } }
+const ACTIVE_KEY = 'thawpawActiveId';   // 当前登录的 ID
+const LEGACY_PROFILE = 'thawpawPlayer'; // 老的单账号 profile
+
+function getPlayers(){
+  try{ return JSON.parse(localStorage.getItem(PLAYERS_KEY) || '{}'); }
+  catch(e){ return {}; }
+}
+function savePlayers(p){
+  localStorage.setItem(PLAYERS_KEY, JSON.stringify(p));
+}
+function getActiveId(){
+  let id = localStorage.getItem(ACTIVE_KEY);
+  if(id && getPlayers()[id]) return id;
+  return null; // 未登录
+}
+function setActiveId(id){
+  localStorage.setItem(ACTIVE_KEY, id);
+  // 记为已见过
+  const players = getPlayers();
+  if(players[id]){
+    players[id].lastSeen = Date.now();
+    savePlayers(players);
+  }
+}
+function getActiveProfile(){
+  const id = getActiveId();
+  if(!id) return null;
+  const p = getPlayers()[id];
+  if(!p) return null;
+  return {id, ...p};
+}
+function generateRandomId(){
+  return String(Math.floor(10000000 + Math.random() * 90000000));
+}
+function isValidId(s){
+  return /^\d{8}$/.test(s);
+}
+function migrateLegacyData(){
+  // 兼容老数据：thawpawPlayerId + thawpawPlayer 迁到新格式
+  const players = getPlayers();
+  const oldId = localStorage.getItem('thawpawPlayerId');
+  const oldProfile = localStorage.getItem(LEGACY_PROFILE);
+  if(oldId && !players[oldId]){
+    let p = {nickname:'未命名',avatar:'🐾',bio:'',firstSeen:Date.now(),lastSeen:Date.now()};
+    if(oldProfile){
+      try{ p = {...p, ...JSON.parse(oldProfile)}; }catch(e){}
+    }
+    players[oldId] = p;
+    savePlayers(players);
+    localStorage.removeItem(LEGACY_PROFILE);
+    // 如果还没设活动 ID，设上
+    if(!localStorage.getItem(ACTIVE_KEY)){
+      localStorage.setItem(ACTIVE_KEY, oldId);
+    }
+  }
+}
+
 function getPortalProfile(){
-  try{
-    const s = localStorage.getItem('thawpawPlayer');
-    if(s) return {...{nickname:'未命名',avatar:'🐾',bio:''},...JSON.parse(s)};
-  }catch(e){}
-  return {nickname:'未命名',avatar:'🐾',bio:''};
+  const p = getActiveProfile();
+  if(!p) return {nickname:'未命名',avatar:'🐾',bio:'',id:''};
+  return {nickname:p.nickname,avatar:p.avatar||'🐾',bio:p.bio||'',id:p.id};
 }
 function savePortalProfile(p){
-  localStorage.setItem('thawpawPlayer', JSON.stringify(p));
+  const id = getActiveId();
+  if(!id) return;
+  const players = getPlayers();
+  if(players[id]){
+    players[id].nickname = p.nickname;
+    players[id].avatar = p.avatar || '🐾';
+    players[id].bio = p.bio || '';
+    players[id].lastSeen = Date.now();
+    savePlayers(players);
+  }
 }
 
 // ── 填充主页气泡 ──
 function refreshPortal(){
   const prof = getPortalProfile();
-  const id = getPlayerId();
+  const id = getActiveId();
+  if(!id) return;
   // 顶栏
   document.getElementById('portal-avatar').textContent = prof.avatar;
   document.getElementById('portal-nickname').textContent = prof.nickname;
@@ -400,6 +535,146 @@ function showPage(name){
   // 主页时同步顶栏 ID 颜色
   if(name === 'profile') refreshPortal();
 }
+
+// ===== LOGIN / LOGOUT FLOW =====
+let pendingLoginId = null;
+
+function showLoginScreen(){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-login').classList.add('active');
+  document.body.classList.add('no-user');
+  // 重置所有阶段
+  hideLoginError();
+  hideLoginConfirm();
+  hideLoginNickname();
+  document.getElementById('login-id-input').value = '';
+  setTimeout(()=>document.getElementById('login-id-input').focus(), 100);
+}
+function showHomeAfterLogin(){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-home').classList.add('active');
+  document.body.classList.remove('no-user');
+}
+function showLoginError(msg){
+  const el = document.getElementById('login-error');
+  el.textContent = msg;
+  el.classList.add('show');
+}
+function hideLoginError(){
+  document.getElementById('login-error').classList.remove('show');
+}
+function showLoginConfirm(id, nickname){
+  pendingLoginId = id;
+  document.getElementById('login-confirm-name').textContent = nickname;
+  document.getElementById('login-confirm').classList.add('show');
+}
+function hideLoginConfirm(){
+  document.getElementById('login-confirm').classList.remove('show');
+  pendingLoginId = null;
+}
+function showLoginNicknameStep(){
+  document.getElementById('login-nickname-step').classList.add('show');
+  setTimeout(()=>document.getElementById('login-nickname-input').focus(), 100);
+}
+function hideLoginNickname(){
+  document.getElementById('login-nickname-step').classList.remove('show');
+}
+
+function onLoginSubmit(){
+  hideLoginError();
+  hideLoginConfirm();
+  hideLoginNickname();
+  const input = document.getElementById('login-id-input').value.trim();
+  if(!input){
+    showLoginError('请输入游戏 ID');
+    return;
+  }
+  if(!isValidId(input)){
+    showLoginError('ID 必须是 8 位数字');
+    return;
+  }
+  const players = getPlayers();
+  if(players[input]){
+    // 已存在 —— 询问是否登录此账号
+    showLoginConfirm(input, players[input].nickname);
+  } else {
+    // 新账号 —— 询问昵称
+    pendingLoginId = input;
+    showLoginNicknameStep();
+  }
+}
+function onGenerateNewId(){
+  const id = generateRandomId();
+  document.getElementById('login-id-input').value = id;
+  hideLoginError();
+  hideLoginConfirm();
+  hideLoginNickname();
+  onLoginSubmit();
+}
+function confirmLoginExisting(){
+  if(!pendingLoginId) return;
+  setActiveId(pendingLoginId);
+  hideLoginConfirm();
+  pendingLoginId = null;
+  finishLogin();
+}
+function cancelLoginConfirm(){
+  pendingLoginId = null;
+  hideLoginConfirm();
+}
+function confirmCreateNew(){
+  if(!pendingLoginId) return;
+  const nickname = document.getElementById('login-nickname-input').value.trim();
+  if(!nickname){
+    showLoginError('请输入昵称');
+    return;
+  }
+  const players = getPlayers();
+  players[pendingLoginId] = {
+    nickname: nickname.slice(0, 12),
+    avatar: '🐾',
+    bio: '',
+    firstSeen: Date.now(),
+    lastSeen: Date.now(),
+  };
+  savePlayers(players);
+  setActiveId(pendingLoginId);
+  hideLoginNickname();
+  pendingLoginId = null;
+  finishLogin();
+}
+function cancelCreateNew(){
+  pendingLoginId = null;
+  hideLoginNickname();
+}
+function finishLogin(){
+  showHomeAfterLogin();
+  refreshPortal();
+}
+function onLogout(){
+  if(!confirm('🚪 退出登录？\n\n你的 ID 和进度会保留在设备上，下次重新输入 ID 就能恢复。')) return;
+  localStorage.removeItem(ACTIVE_KEY);
+  showLoginScreen();
+}
+
+// 登录页输入框：只允许数字，回车提交
+document.addEventListener('DOMContentLoaded', ()=>{
+  const idInput = document.getElementById('login-id-input');
+  if(idInput){
+    idInput.addEventListener('input', e=>{
+      e.target.value = e.target.value.replace(/\D/g,'').slice(0,8);
+    });
+    idInput.addEventListener('keydown', e=>{
+      if(e.key === 'Enter') onLoginSubmit();
+    });
+  }
+  const nickInput = document.getElementById('login-nickname-input');
+  if(nickInput){
+    nickInput.addEventListener('keydown', e=>{
+      if(e.key === 'Enter') confirmCreateNew();
+    });
+  }
+});
 
 // ── 改昵称 ──
 function editNickname(){
@@ -444,8 +719,14 @@ function copyPlayerId(){
 // ── 点击顶栏气泡 → 进入主页 ──
 document.getElementById('profile-bubble').addEventListener('click', () => showPage('profile'));
 
-// ── 初始填充 ──
-refreshPortal();
+// ── 初始检查登录状态 ──
+migrateLegacyData();
+if(getActiveId()){
+  showHomeAfterLogin();
+  refreshPortal();
+} else {
+  showLoginScreen();
+}
 
 // ── Load manifest & build cards ──
 (async function(){
