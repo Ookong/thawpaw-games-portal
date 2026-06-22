@@ -221,6 +221,7 @@ body.solo-touch #joystickP2{display:none;}
 /* Game canvas wrapper layout */
 .game-layout{display:flex;flex:1;min-height:0;width:100%;}
 .game-canvas-wrap{flex:1;display:flex;align-items:center;justify-content:center;min-width:0;position:relative;}
+.game-canvas-wrap canvas{margin:auto;display:block;}
 
 /* Shop overlay (in-game) */
 #shopOverlay{display:none;position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.85);backdrop-filter:blur(4px);justify-content:center;align-items:center;}
@@ -2029,6 +2030,13 @@ function newGame(fromRetry){
   saveGame();
   startLoop();
   resizeCanvas();
+  // Wire attack button (uniquely - all other buttons already wired via inline onclick)
+  const atkBtn=document.getElementById('btnAttack');
+  if(atkBtn && !atkBtn.dataset.wired){
+    atkBtn.addEventListener('click',()=>doAttack(0));
+    atkBtn.addEventListener('touchend',e=>{e.preventDefault();doAttack(0);});
+    atkBtn.dataset.wired='1';
+  }
 }
 function showGameOver(){
   state='over';
