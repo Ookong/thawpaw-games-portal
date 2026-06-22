@@ -749,12 +749,15 @@ let profile = {
   nickname: '未命名',
   avatar: '🧒',
   bio: '点击设置简介',
-  explorerId: generateExplorerId(),
+  explorerId: getUnifiedPlayerId(),
 };
-function generateExplorerId(){
-  const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  let id='';
-  for(let i=0;i<8;i++) id+=chars[Math.floor(Math.random()*chars.length)];
+// 统一 ID：优先用 portal 的 8 位数字 ID
+function getUnifiedPlayerId(){
+  let id = localStorage.getItem('thawpawPlayerId');
+  if(!id){
+    id = String(Math.floor(10000000 + Math.random() * 90000000));
+    localStorage.setItem('thawpawPlayerId', id);
+  }
   return id;
 }
 
@@ -1152,7 +1155,10 @@ function editNickname(){
 function saveHome(){try{localStorage.setItem(HOME_KEY,JSON.stringify(homeData));}catch(e){}}
 function loadHome(){try{const d=localStorage.getItem(HOME_KEY);if(d){const o=JSON.parse(d);homeData.maps=o.maps||0;homeData.booms=o.booms||0;}}catch(e){}}
 function saveProfile(){try{localStorage.setItem(PROFILE_KEY,JSON.stringify(profile));}catch(e){}}
-function loadProfile(){try{const d=localStorage.getItem(PROFILE_KEY);if(d){const o=JSON.parse(d);profile=Object.assign(profile,o);}}catch(e){}}
+function loadProfile(){try{const d=localStorage.getItem(PROFILE_KEY);if(d){const o=JSON.parse(d);profile=Object.assign(profile,o);}}catch(e){}
+  // 强制用统一 ID（覆盖旧的游戏内独立 ID）
+  profile.explorerId = getUnifiedPlayerId();
+}
 function saveMode(){try{localStorage.setItem(MODE_KEY,mode);}catch(e){}}
 function loadMode(){
   try{

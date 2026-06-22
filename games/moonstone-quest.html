@@ -683,13 +683,15 @@ let profile = {
   nickname: '未命名',
   avatar: '🐾',
   bio: '点击设置简介',
-  explorerId: generateExplorerId(),
+  explorerId: getUnifiedPlayerId(),
 };
-function generateExplorerId(){
-  // 8-char random alphanumeric
-  const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  let id='';
-  for(let i=0;i<8;i++) id+=chars[Math.floor(Math.random()*chars.length)];
+// 统一 ID：优先用 portal 的 8 位数字 ID
+function getUnifiedPlayerId(){
+  let id = localStorage.getItem('thawpawPlayerId');
+  if(!id){
+    id = String(Math.floor(10000000 + Math.random() * 90000000));
+    localStorage.setItem('thawpawPlayerId', id);
+  }
   return id;
 }
 
@@ -1054,6 +1056,8 @@ function loadProfile(){
     const d=localStorage.getItem('moonstone_profile');
     if(d){const o=JSON.parse(d);profile=Object.assign(profile,o);}
   }catch(e){}
+  // 强制用统一 ID（覆盖旧的游戏内独立 ID）
+  profile.explorerId = getUnifiedPlayerId();
 }
 function saveMode(){try{localStorage.setItem('moonstone_mode',mode);}catch(e){}}
 function loadMode(){

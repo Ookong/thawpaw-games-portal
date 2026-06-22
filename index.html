@@ -6,16 +6,21 @@
 <title>Thawpaw Games</title>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{--bg:#0f0f1a;--card:#1a1a2e;--border:#2a2a40;--accent:#6c63ff;--silver:#9ca3af;--text:#f0f0f5;--dim:#555}
+:root{--bg:#0f0f1a;--card:#1a1a2e;--card2:#22223a;--border:#2a2a40;--accent:#6c63ff;--gold:#ffcc44;--silver:#9ca3af;--text:#f0f0f5;--text2:#888;--dim:#555}
 html{scroll-behavior:smooth}
 body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
 canvas#stars{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:0}
 
-/* ── Nav ── */
-nav{position:sticky;top:0;z-index:10;background:rgba(15,15,26,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:.75rem 2rem;display:flex;align-items:center;gap:1rem}
-nav .logo{font-size:1.25rem;font-weight:800;letter-spacing:-.02em;background:linear-gradient(135deg,#6c63ff,#48c6ef);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-nav .logo span{-webkit-text-fill-color:#f0f0f5;font-weight:400;opacity:.5;margin-left:.25rem}
-nav .nav-links{margin-left:auto;display:flex;gap:1.25rem;font-size:.85rem;color:var(--silver)}
+/* ── Top Bar (主页气泡) ── */
+.top-bar{position:sticky;top:0;z-index:10;background:rgba(15,15,26,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:10px 16px;display:flex;align-items:center;gap:12px;min-height:56px}
+.profile-bubble{display:flex;align-items:center;gap:10px;flex:1;min-width:0;cursor:pointer}
+.profile-bubble:hover{opacity:.9}
+.avatar{width:40px;height:40px;border-radius:50%;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:20px;border:2px solid var(--accent);flex-shrink:0}
+.profile-info{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.nickname{font-size:15px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px}
+.player-id{font-size:12px;color:var(--text2);font-family:monospace;letter-spacing:.04em}
+.top-logo{font-size:1.1rem;font-weight:800;letter-spacing:-.02em;background:linear-gradient(135deg,#6c63ff,#48c6ef);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-left:auto;white-space:nowrap}
+.top-logo span{-webkit-text-fill-color:#f0f0f5;font-weight:400;opacity:.5;margin-left:.25rem}
 
 /* ── Hero ── */
 .hero{position:relative;z-index:1;text-align:center;padding:3.5rem 1.5rem 2rem}
@@ -62,12 +67,16 @@ footer{position:relative;z-index:1;text-align:center;padding:2rem;color:var(--di
 <body>
 <canvas id="stars"></canvas>
 
-<nav>
-  <div class="logo">Thawpaw Games<span>portal</span></div>
-  <div class="nav-links">
-    <a href="#" style="color:inherit;text-decoration:none">All Games</a>
+<header class="top-bar">
+  <div class="profile-bubble" id="profile-bubble" title="点击复制游戏ID">
+    <div class="avatar" id="portal-avatar">🐾</div>
+    <div class="profile-info">
+      <span class="nickname" id="portal-nickname">未命名</span>
+      <span class="player-id" id="portal-player-id">游戏ID：--------</span>
+    </div>
   </div>
-</nav>
+  <div class="top-logo">Thawpaw Games<span>portal</span></div>
+</header>
 
 <div class="hero">
   <h1>Thawpaw Games</h1>
@@ -190,6 +199,44 @@ const DEFAULT_THUMB = {
   function resize(){c.width=innerWidth;c.height=innerHeight;stars=[];for(let i=0;i<100;i++)stars.push({x:Math.random()*c.width,y:Math.random()*c.height,r:Math.random()*1.3+.4,p:Math.random()*6.28,s:Math.random()*.003+.001})}
   function draw(){ctx.clearRect(0,0,c.width,c.height);for(const s of stars){s.p+=s.s;const a=.1+.3*(.5+.5*Math.sin(s.p));ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,6.28);ctx.fillStyle=`rgba(160,180,255,${a})`;ctx.fill()}requestAnimationFrame(draw)}
   addEventListener('resize',resize);resize();draw();
+})();
+
+// ── 统一玩家 ID（8 位数字）──
+function getPlayerId(){
+  let id = localStorage.getItem('thawpawPlayerId');
+  if(!id){
+    id = String(Math.floor(10000000 + Math.random() * 90000000));
+    localStorage.setItem('thawpawPlayerId', id);
+  }
+  return id;
+}
+function getPortalProfile(){
+  try{
+    const s = localStorage.getItem('thawpawPlayer');
+    if(s) return {...{nickname:'未命名',avatar:'🐾'},...JSON.parse(s)};
+  }catch(e){}
+  return {nickname:'未命名',avatar:'🐾'};
+}
+function savePortalProfile(p){
+  localStorage.setItem('thawpawPlayer', JSON.stringify(p));
+}
+
+// ── 填充主页气泡 ──
+(function(){
+  const prof = getPortalProfile();
+  document.getElementById('portal-avatar').textContent = prof.avatar;
+  document.getElementById('portal-nickname').textContent = prof.nickname;
+  document.getElementById('portal-player-id').textContent = '游戏ID：' + getPlayerId();
+  // 点击气泡复制 ID
+  document.getElementById('profile-bubble').addEventListener('click', ()=>{
+    const id = getPlayerId();
+    navigator.clipboard?.writeText(id);
+    const el = document.getElementById('portal-player-id');
+    const orig = el.textContent;
+    el.textContent = '已复制 ' + id + ' ✓';
+    el.style.color = 'var(--gold)';
+    setTimeout(()=>{ el.textContent = orig; el.style.color = ''; }, 1500);
+  });
 })();
 
 // ── Load manifest & build cards ──
