@@ -401,14 +401,23 @@ let player = {
   inventory: {},
 };
 
+// 统一 ID：优先用 portal 的 8 位数字 ID
+function getUnifiedPlayerId(){
+  let id = localStorage.getItem('thawpawPlayerId');
+  if(!id){
+    id = String(Math.floor(10000000 + Math.random() * 90000000));
+    localStorage.setItem('thawpawPlayerId', id);
+  }
+  return id;
+}
+
 function loadPlayer(){
   try{
     const s = localStorage.getItem('snake_player');
     if(s) player = {...player,...JSON.parse(s)};
   }catch(e){}
-  if(!player.snakeId){
-    player.snakeId = String(Math.floor(10000000+Math.random()*90000000));
-  }
+  // 强制用统一 ID（覆盖旧的独立 ID）
+  player.snakeId = getUnifiedPlayerId();
   savePlayer();
 }
 function savePlayer(){
