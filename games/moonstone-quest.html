@@ -446,7 +446,7 @@ a{color:#88aaff;}
   <div class="game-exit" onclick="confirmExitGame()">退出</div>
   <div id="wrap" style="display:flex;flex:1;width:100%;min-height:0;">
     <div id="canvasWrap" style="flex:1;display:flex;align-items:center;justify-content:center;min-width:0;position:relative;">
-      <canvas id="game"></canvas>
+      <canvas id="game" style="margin:auto;display:block;"></canvas>
     </div>
     <div id="game-sidebar">
       <h2>🐾 猫武士大冒险</h2>
@@ -931,7 +931,7 @@ function refreshHomeUI(){
   if(mode==='text_explore'){
     const txSave=!!localStorage.getItem('text_explore_save');
     document.getElementById('zone-start-title').textContent = txSave && !TX.finished ? '继续探索' : '开始探索';
-    document.getElementById('zone-start-desc').textContent = '📖 文字探索模式：10 站巡逻，猎物换月亮石。需要 1 张入场券 🎟️';
+    document.getElementById('zone-start-desc').textContent = '📖 文字探索模式：10 站巡逻，猎物换月亮石。需要 1 张入场券 🎟️'; // 文字探索需要入场券
   }else{
     document.getElementById('zone-start-title').textContent = hasSave ? '继续探索' : '开始探索';
     document.getElementById('zone-start-desc').textContent = hasSave ? `当前进度：第 ${G.maxFloorReached} / ${MAX_FLOOR} 层` : '踏入神秘地下，搜寻月亮石 🔮';
@@ -951,14 +951,7 @@ function onClickExplore(){
     startTextExplore();
     return;
   }
-  // 入场券检查（duo 免票）
-  if(homeData.tickets<1){
-    showToast('🎟️ 入场券不够！去商店买一个');
-    return;
-  }
-  homeData.tickets-=1;
-  saveHome();
-  refreshHomeUI();
+  // 经典模式 + 双人模式都不需要入场券
   showPage('levelmap');
 }
 
@@ -1479,7 +1472,8 @@ function renderMoreModes(){
   const list=document.getElementById('moremodes-list');
   list.innerHTML='';
   const modes=[
-    {key:'duo', icon:'🐾🐼', name:'双人模式', desc:'和伙伴一起冒险，轮流行动，共享资源。', needsTicket:false},
+    {key:'solo', icon:'🐾', name:'经典模式', desc:'踏入神秘地下，搜寻月亮石 🔮。免票！', needsTicket:false},
+    {key:'duo', icon:'🐾🐼', name:'双人模式', desc:'和伙伴一起冒险，轮流行动，共享资源。免票！', needsTicket:false},
     {key:'text_explore', icon:'📖', name:'文字探索模式', desc:'探索 10 个地点，收集猎物换月亮石。需要 1 张入场券 🎟️。', needsTicket:true},
   ];
   modes.forEach(m=>{
