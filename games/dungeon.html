@@ -819,12 +819,43 @@ let profile = {
 };
 // 统一 ID：优先用 portal 的 8 位数字 ID
 function getUnifiedPlayerId(){
+  const activeId = localStorage.getItem('thawpawActiveId');
+  if(activeId) return activeId;
   let id = localStorage.getItem('thawpawPlayerId');
   if(!id){
     id = String(Math.floor(10000000 + Math.random() * 90000000));
     localStorage.setItem('thawpawPlayerId', id);
   }
   return id;
+}
+// 统一昵称：从 portal 共享 profile 读
+function getSharedNickname(){
+  const id = getUnifiedPlayerId();
+  try{
+    const players = JSON.parse(localStorage.getItem('thawpawPlayers') || '{}');
+    if(players[id] && players[id].nickname) return players[id].nickname;
+  }catch(e){}
+  try{
+    const old = JSON.parse(localStorage.getItem('thawpawPlayer') || '{}');
+    if(old.nickname) return old.nickname;
+  }catch(e){}
+  return '未命名';
+}
+function setSharedNickname(nickname){
+  const id = getUnifiedPlayerId();
+  let players;
+  try{ players = JSON.parse(localStorage.getItem('thawpawPlayers') || '{}'); }
+  catch(e){ players = {}; }
+  if(!players[id]){
+    players[id] = {nickname, avatar:'🧒', bio:'', firstSeen:Date.now(), lastSeen:Date.now()};
+  } else {
+    players[id].nickname = nickname;
+    players[id].lastSeen = Date.now();
+  }
+  localStorage.setItem('thawpawPlayers', JSON.stringify(players));
+  if(!localStorage.getItem('thawpawActiveId')){
+    localStorage.setItem('thawpawActiveId', id);
+  }
 }
 
 // ===== MODE =====
@@ -958,7 +989,7 @@ function refreshHomeUI(){
   document.getElementById('home-level-bar').style.width=Math.min(100,(kills%10)*10)+'%';
   document.getElementById('home-maps').textContent=homeData.maps;
   document.getElementById('home-booms').textContent=homeData.booms;
-  const hasSave = !!localStorage.getItem(SAVE_KEY);
+  const hasSave = !!localStorage.getItem(SAVE_KEY+'_'+getUnifiedPlayerId());
   document.getElementById('zone-start-title').textContent = hasSave ? '继续探索' : '开始探索';
   document.getElementById('zone-start-desc').textContent = hasSave ? `当前深度：第 ${level} 层` : '无尽地下城，越深越危险';
 }
@@ -1023,7 +1054,7 @@ function enterLevel(n){
   });
 }
 function enterCurrentLevel(){
-  if(running && localStorage.getItem(SAVE_KEY)){
+  if(running && localStorage.getItem(SAVE_KEY+'_'+getUnifiedPlayerId())){
     // Continue
     loadGame();
     showPage('game');
@@ -1036,7 +1067,7 @@ function enterCurrentLevel(){
 }
 function confirmRestart(){
   showConfirm('确定重新开始？\n所有进度将被清空。',()=>{
-    try{localStorage.removeItem(SAVE_KEY);}catch(e){}
+    try{localStorage.removeItem(SAVE_KEY+'_'+getUnifiedPlayerId());}catch(e){}
     level=1; maxLevelReached=1;
     gold=0; kills=0; potions=0; bigPotions=0; bombs=0;
     homeData.maps=0; homeData.booms=0;
@@ -1170,7 +1201,7 @@ function renderMoreModes(){
       showConfirm('切换模式会清除当前存档，确定吗？',()=>{
         mode=m.key; isDuo=(m.key==='duo');
         saveMode();
-        try{localStorage.removeItem(SAVE_KEY);}catch(e){}
+        try{localStorage.removeItem(SAVE_KEY+'_'+getUnifiedPlayerId());}catch(e){}
         level=1; maxLevelReached=1;
         gold=0; kills=0; potions=0; bigPotions=0; bombs=0;
         homeData.maps=0; homeData.booms=0;
@@ -1208,7 +1239,9 @@ function openAvatarPicker(){openModal('modal-avatar');}
 function editNickname(){
   const n=prompt('给自己起个名字吧：',profile.nickname);
   if(n && n.trim()){
-    profile.nickname=n.trim().slice(0,12);
+    const trimmed = n.trim().slice(0,12);
+    profile.nickname = trimmed;
+    setSharedNickname(trimmed); // 同步到 portal 共享 profile
     saveProfile();
     refreshProfileUI();
     refreshHomeUI();
@@ -1220,10 +1253,26 @@ function editNickname(){
 // ============================================================
 function saveHome(){try{localStorage.setItem(HOME_KEY,JSON.stringify(homeData));}catch(e){}}
 function loadHome(){try{const d=localStorage.getItem(HOME_KEY);if(d){const o=JSON.parse(d);homeData.maps=o.maps||0;homeData.booms=o.booms||0;}}catch(e){}}
-function saveProfile(){try{localStorage.setItem(PROFILE_KEY,JSON.stringify(profile));}catch(e){}}
-function loadProfile(){try{const d=localStorage.getItem(PROFILE_KEY);if(d){const o=JSON.parse(d);profile=Object.assign(profile,o);}}catch(e){}
+function saveProfile(){try{localStorage.setItem(PROFILE_KEY+'_'+getUnifiedPlayerId(),JSON.stringify(profile));}catch(e){}}
+function loadProfile(){
+  const id = getUnifiedPlayerId();
+  try{
+    let d = localStorage.getItem(PROFILE_KEY+'_'+id);
+    if(!d){
+      // 迁移老 profile
+      const old = localStorage.getItem(PROFILE_KEY);
+      if(old){
+        localStorage.setItem(PROFILE_KEY+'_'+id, old);
+        localStorage.removeItem(PROFILE_KEY);
+        d = old;
+      }
+    }
+    if(d){const o=JSON.parse(d);profile=Object.assign(profile,o);}
+  }catch(e){}
   // 强制用统一 ID（覆盖旧的游戏内独立 ID）
   profile.explorerId = getUnifiedPlayerId();
+  // 同步 portal 共享昵称
+  profile.nickname = getSharedNickname();
 }
 function saveMode(){try{localStorage.setItem(MODE_KEY,mode);}catch(e){}}
 function loadMode(){
@@ -1238,12 +1287,22 @@ function saveGame(){
       mode,level,maxLevelReached,gold,kills,potions,bigPotions,bombs,
       weaponName,armorName,players,running,
     };
-    localStorage.setItem(SAVE_KEY,JSON.stringify(data));
+    localStorage.setItem(SAVE_KEY+'_'+getUnifiedPlayerId(),JSON.stringify(data));
   }catch(e){}
 }
 function loadGame(){
   try{
-    const s=localStorage.getItem(SAVE_KEY);
+    const id = getUnifiedPlayerId();
+    let s=localStorage.getItem(SAVE_KEY+'_'+id);
+    if(!s){
+      // 迁移老存档
+      const old=localStorage.getItem(SAVE_KEY);
+      if(old){
+        localStorage.setItem(SAVE_KEY+'_'+id, old);
+        localStorage.removeItem(SAVE_KEY);
+        s=old;
+      }
+    }
     if(!s)return false;
     const d=JSON.parse(s);
     if(d.mode && d.mode!==mode) return false;

@@ -465,6 +465,10 @@ function toggleSetting(key){
 
 // 统一 ID：优先用 portal 的 8 位数字 ID
 function getUnifiedPlayerId(){
+  // 优先用 portal 的活动 ID（多账号系统）
+  const activeId = localStorage.getItem('thawpawActiveId');
+  if(activeId) return activeId;
+  // 兼容老格式
   let id = localStorage.getItem('thawpawPlayerId');
   if(!id){
     id = String(Math.floor(10000000 + Math.random() * 90000000));
@@ -473,17 +477,69 @@ function getUnifiedPlayerId(){
   return id;
 }
 
-function loadPlayer(){
+// 统一昵称：从 thawpawPlayers[id].nickname 读
+function getSharedNickname(){
+  const id = getUnifiedPlayerId();
   try{
-    const s = localStorage.getItem('snake_player');
-    if(s) player = {...player,...JSON.parse(s)};
+    const players = JSON.parse(localStorage.getItem('thawpawPlayers') || '{}');
+    if(players[id] && players[id].nickname) return players[id].nickname;
   }catch(e){}
-  // 强制用统一 ID（覆盖旧的独立 ID）
+  // 兼容老格式
+  try{
+    const old = JSON.parse(localStorage.getItem('thawpawPlayer') || '{}');
+    if(old.nickname) return old.nickname;
+  }catch(e){}
+  return '未命名';
+}
+function setSharedNickname(nickname){
+  const id = getUnifiedPlayerId();
+  let players;
+  try{ players = JSON.parse(localStorage.getItem('thawpawPlayers') || '{}'); }
+  catch(e){ players = {}; }
+  if(!players[id]){
+    players[id] = {nickname, avatar:'🐾', bio:'', firstSeen:Date.now(), lastSeen:Date.now()};
+  } else {
+    players[id].nickname = nickname;
+    players[id].lastSeen = Date.now();
+  }
+  localStorage.setItem('thawpawPlayers', JSON.stringify(players));
+  // 同时设为活动 ID（首次设昵称时）
+  if(!localStorage.getItem('thawpawActiveId')){
+    localStorage.setItem('thawpawActiveId', id);
+  }
+}
+
+// 存档 key 加 ID 后缀，防止多账号冲突
+function getSaveKey(){
+  return 'snake_save_' + getUnifiedPlayerId();
+}
+
+function loadPlayer(){
+  // 优先从共享 profile 读昵称
+  player.nickname = getSharedNickname();
+  // 存档按 ID 分开
+  try{
+    const s = localStorage.getItem(getSaveKey());
+    if(s){
+      const saved = JSON.parse(s);
+      player = {...player, ...saved, nickname: getSharedNickname(), snakeId: getUnifiedPlayerId()};
+    }
+  }catch(e){}
+  // 迁移老存档
+  try{
+    const old = localStorage.getItem('snake_save');
+    if(old && !localStorage.getItem(getSaveKey())){
+      localStorage.setItem(getSaveKey(), old);
+      localStorage.removeItem('snake_save');
+    }
+  }catch(e){}
   player.snakeId = getUnifiedPlayerId();
   savePlayer();
 }
 function savePlayer(){
-  localStorage.setItem('snake_player',JSON.stringify(player));
+  // 存档按 ID 分开保存
+  const toSave = {...player};
+  localStorage.setItem(getSaveKey(), JSON.stringify(toSave));
 }
 
 // ===== PAGES =====
@@ -525,7 +581,9 @@ function refreshProfile(){
 function editNickname(){
   const name = prompt('输入昵称：', player.nickname);
   if(name !== null && name.trim()){
-    player.nickname = name.trim();
+    const trimmed = name.trim().slice(0, 12);
+    player.nickname = trimmed;
+    setSharedNickname(trimmed); // 同步到 portal 共享 profile
     savePlayer();
     refreshProfile();
     refreshHome();
