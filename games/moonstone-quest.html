@@ -118,6 +118,26 @@ a{color:#88aaff;}
 .action-btn:hover{transform:scale(1.05);}
 .action-btn.secondary{background:var(--card2);color:var(--text);}
 
+/* ===== TEXT EXPLORATION PAGE ===== */
+.textexp-page{padding:12px 16px 80px;display:flex;flex-direction:column;gap:12px;max-width:560px;margin:0 auto;position:relative;z-index:1;}
+.textexp-header{text-align:center;margin-top:6px;}
+.textexp-header h1{font-size:20px;color:var(--accent);font-weight:700;}
+.textexp-header p{color:var(--text2);font-size:12px;margin-top:4px;}
+.textexp-stats{display:flex;justify-content:space-around;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px 8px;}
+.textexp-stat{font-size:13px;font-weight:600;color:var(--text);font-family:monospace;}
+.textexp-loc{text-align:center;font-size:18px;font-weight:700;color:var(--gold);margin-top:4px;}
+.textexp-desc{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 16px;line-height:1.6;font-size:14px;min-height:90px;}
+.textexp-choices{display:grid;grid-template-columns:1fr;gap:8px;}
+.textexp-choices button{background:var(--card2);color:var(--text);border:1px solid var(--border);padding:12px 14px;border-radius:10px;font-size:14px;cursor:pointer;text-align:left;transition:all .15s;}
+.textexp-choices button:hover{background:var(--accent);color:#000;border-color:var(--accent);transform:translateX(4px);}
+.textexp-choices button:disabled{opacity:.5;cursor:not-allowed;}
+.textexp-log{background:rgba(0,0,0,.4);border:1px solid var(--border);border-radius:10px;padding:10px 12px;max-height:160px;overflow-y:auto;font-size:12px;color:var(--text2);font-family:monospace;line-height:1.5;}
+.textexp-log .log-prey{color:var(--gold);}
+.textexp-log .log-hurt{color:#ff6644;}
+.textexp-log .log-heal{color:#66ee66;}
+.textexp-log .log-boss{color:#ff8866;font-weight:700;}
+.mm-ticket{display:inline-block;background:rgba(255,204,68,.18);color:var(--gold);font-size:10px;padding:2px 6px;border-radius:8px;margin-left:4px;font-weight:600;}
+
 /* ===== GAME PAGE ===== */
 .game-page{align-items:center;justify-content:center;position:relative;background:#0a0a14;}
 .game-page canvas{border:2px solid var(--card2);border-radius:8px;background:#0a0a1a;}
@@ -301,6 +321,8 @@ a{color:#88aaff;}
     </div>
     <div class="home-currency-bubble">🔮 <span id="home-moonstones">0</span></div>
     <div class="home-currency-bubble">🪨 <span id="home-gravel">0</span></div>
+    <div class="home-currency-bubble">🐾 <span id="home-stonecarvings">0</span></div>
+    <div class="home-currency-bubble">🎟️ <span id="home-tickets">0</span></div>
   </div>
 
   <div class="home-content">
@@ -380,6 +402,26 @@ a{color:#88aaff;}
     <div class="levelmap-actions">
       <button class="action-btn secondary" onclick="resetProgress()">↻ 重置进度</button>
     </div>
+  </div>
+</div>
+
+<!-- ===== TEXT EXPLORATION PAGE ===== -->
+<div id="page-textexp" class="page">
+  <div class="back-btn" onclick="exitTextExplore()">←</div>
+  <div class="textexp-page">
+    <div class="textexp-header">
+      <h1>📖 文字探索模式</h1>
+      <p>走遍 10 个地点，带回多少猎物 = 多少月亮石 · BOSS +5 🔮</p>
+    </div>
+    <div class="textexp-stats" id="textexp-stats">
+      <div class="textexp-stat">📍 <span id="tx-station">1</span>/10</div>
+      <div class="textexp-stat">❤️ <span id="tx-hp">5</span>/5</div>
+      <div class="textexp-stat">🐾 <span id="tx-prey">0</span></div>
+    </div>
+    <div class="textexp-loc" id="textexp-loc">—</div>
+    <div class="textexp-desc" id="textexp-desc">选择下方按钮开始你的巡逻。</div>
+    <div class="textexp-choices" id="textexp-choices"></div>
+    <div class="textexp-log" id="textexp-log"></div>
   </div>
 </div>
 
@@ -502,6 +544,14 @@ a{color:#88aaff;}
           <button onclick="bankCompose()">合成 🪨→🔮</button>
         </div>
         <div class="bank-balance">余额：🔮 <span id="bank-bal-moon">0</span> · 🪨 <span id="bank-bal-rock">0</span></div>
+      </div>
+      <div class="bank-exchange" style="margin-top:18px;border-top:1px dashed #333;padding-top:14px;">
+        <div class="bank-rate">🔮 月亮石 + 🪨 碎石 <span class="arrow">→</span> 🐾 石刻</div>
+        <div style="text-align:center;font-size:12px;color:var(--text2);margin-bottom:10px;">汇率：3 🔮 + 30 🪨 ＝ 1 🐾</div>
+        <div class="bank-btns">
+          <button onclick="bankExchangeCarving()">兑换 1 🐾（-3🔮 -30🪨）</button>
+        </div>
+        <div class="bank-balance">石刻余额：🐾 <span id="bank-bal-paw">0</span></div>
       </div>
     </div>
   </div>
@@ -657,7 +707,7 @@ const SHOP=[
 
 // === Home 商店商品 (用 🔮 月亮石购买) ===
 const SHOP_ITEMS = [
-  // { category: '道具', name: '示例道具', icon: '🗡️', desc: '描述', price: 10, currency: '🔮' },
+  { category: '工具', name: '入场券', icon: '🎟️', desc: '开启一次探索（双人模式除外）。', price: 2, currency: '🐾' },
 ];
 
 // === Home 活动 ===
@@ -676,7 +726,7 @@ const BAG_ITEMS = [
 ];
 
 // ===== HOME CURRENCIES (持久化) =====
-let homeData = { moonstones: 0, gravel: 0 };
+let homeData = { moonstones: 0, gravel: 0, stoneCarvings: 0, tickets: 0 };
 
 // ===== PROFILE (持久化) =====
 let profile = {
@@ -809,10 +859,18 @@ function refreshHomeUI(){
   document.getElementById('home-level-bar').style.width=Math.min(100,(G.shared.exp/expToNext()*100))+'%';
   document.getElementById('home-moonstones').textContent=homeData.moonstones;
   document.getElementById('home-gravel').textContent=homeData.gravel;
+  document.getElementById('home-stonecarvings').textContent=homeData.stoneCarvings;
+  document.getElementById('home-tickets').textContent=homeData.tickets;
   // Update start/continue button
   const hasSave = !!localStorage.getItem('moonstone_save');
-  document.getElementById('zone-start-title').textContent = hasSave ? '继续探索' : '开始探索';
-  document.getElementById('zone-start-desc').textContent = hasSave ? `当前进度：第 ${G.maxFloorReached} / ${MAX_FLOOR} 层` : '踏入神秘地下，搜寻月亮石 🔮';
+  if(mode==='text_explore'){
+    const txSave=!!localStorage.getItem('text_explore_save');
+    document.getElementById('zone-start-title').textContent = txSave && !TX.finished ? '继续探索' : '开始探索';
+    document.getElementById('zone-start-desc').textContent = '📖 文字探索模式：10 站巡逻，猎物换月亮石。需要 1 张入场券 🎟️';
+  }else{
+    document.getElementById('zone-start-title').textContent = hasSave ? '继续探索' : '开始探索';
+    document.getElementById('zone-start-desc').textContent = hasSave ? `当前进度：第 ${G.maxFloorReached} / ${MAX_FLOOR} 层` : '踏入神秘地下，搜寻月亮石 🔮';
+  }
 }
 function refreshProfileUI(){
   document.getElementById('profile-avatar').textContent=profile.avatar;
@@ -824,7 +882,18 @@ function refreshProfileUI(){
   document.getElementById('profile-level-bar').style.width=Math.min(100,(G.shared.exp/expToNext()*100))+'%';
 }
 function onClickExplore(){
-  // Start or continue game → go to level map
+  if(mode==='text_explore'){
+    startTextExplore();
+    return;
+  }
+  // 入场券检查（duo 免票）
+  if(homeData.tickets<1){
+    showToast('🎟️ 入场券不够！去商店买一个');
+    return;
+  }
+  homeData.tickets-=1;
+  saveHome();
+  refreshHomeUI();
   showPage('levelmap');
 }
 
@@ -872,11 +941,341 @@ function resetProgress(){
 }
 
 // ============================================================
+// 📖 TEXT EXPLORATION MODE
+// ============================================================
+const TX_LOCATIONS = [
+  {name:'高岩', icon:'⚡', desc:'雷族的领地。高高的岩石上闪电般的身影，空气中充满战争的回忆。'},
+  {name:'沼泽地', icon:'🌑', desc:'影族的领地。潮湿的草丛下藏着未知的危险。'},
+  {name:'高地平原', icon:'💨', desc:'风族的领地。荒原上的风带着猎物奔跑的脚步声。'},
+  {name:'河边', icon:'🌊', desc:'河族的领地。水边的鱼在闪着银光。'},
+  {name:'枝头', icon:'🌿', desc:'天族的领地。树枝上眺望远方，发现另一处荒野。'},
+  {name:'古树洞', icon:'🌳', desc:'一棵千年老树的空洞，里面隐约有低鸣声。'},
+  {name:'荆棘丛', icon:'🥀', desc:'利刺凛冽的荆棘丛。谨慎你会划伤。'},
+  {name:'鸦窝', icon:'🪶', desc:'悬崖上的鸦窝。鸦蛋是上好的补给。'},
+  {name:'原鼠山', icon:'⛰️', desc:'小山顶上的原鼠窝。果腹的好地方。'},
+  {name:'迷雾林', icon:'🌫️', desc:'会走丢的迷雾森林。战斗谨慎。'},
+  {name:'月亮石洞', icon:'🔮', desc:'传说中的月亮石洞。陰冷而神秘。'},
+  {name:'鹰巢', icon:'🦅', desc:'悬崖边上的鹰巢。那里可能镶着金器。'},
+  {name:'倒下的橡树', icon:'🪵', desc:'一棵倒塌的古橡树。树干下可能藏着草药。'},
+  {name:'小溪', icon:'💧', desc:'山间小溪。水声清亮，能听到生物的动静。'},
+  {name:'野苗圃', icon:'🌱', desc:'肥沃的土壤里生长着野苗。可能有惊喜。'},
+];
+
+const TX_EVENTS = [
+  {id:'hunt', desc:'看到一只肥美的田鼠！', choices:[
+    {label:'⚔️ 悄悄扑上去', prey:1, hpDelta:0, success:0.75},
+    {label:'💨 从草丛中迂回', prey:1, hpDelta:0, success:0.6},
+  ]},
+  {id:'hunt2', desc:'一只飞鸟低空掠过！', choices:[
+    {label:'🏹 跳起拍击', prey:1, hpDelta:0, success:0.55},
+    {label:'🌿 设置陷阱', prey:1, hpDelta:0, success:0.7},
+  ]},
+  {id:'fish', desc:'岸边有鱼在游动。', choices:[
+    {label:'🐟 静等咬钩', prey:1, hpDelta:0, success:0.8},
+    {label:'🦷 徒手抓鱼', prey:1, hpDelta:-1, success:0.5},
+  ]},
+  {id:'herb', desc:'发现了藥草！', choices:[
+    {label:'🌿 采集药草', prey:0, hpDelta:1, success:1},
+  ]},
+  {id:'trap', desc:'一个狐狸陷阱出现了！', choices:[
+    {label:'🛡️ 小心避开', prey:0, hpDelta:0, success:0.7},
+    {label:'💨 跳过陷阱', prey:0, hpDelta:-1, success:0.4},
+  ]},
+  {id:'rival', desc:'遇到另一只武士在巡逻。', choices:[
+    {label:'🐾 共享猎物', prey:1, hpDelta:0, success:0.7},
+    {label:'🤝 交谈', prey:0, hpDelta:0, success:0.9, special:'hint'},
+  ]},
+  {id:'strange', desc:'奇怪的脚步声从草丛中传来。', choices:[
+    {label:'🔍 仔细察看', prey:1, hpDelta:-1, success:0.5},
+    {label:'🏃 赶紧走开', prey:0, hpDelta:0, success:0.9},
+  ]},
+  {id:'cache', desc:'发现一个隐藏的猎物堆！', choices:[
+    {label:'📦 查看内容', prey:1, hpDelta:0, success:0.7},
+    {label:'🚫 不打扰走开', prey:0, hpDelta:0, success:1},
+  ]},
+];
+
+const TX_BOSSES = [
+  {name:'🐉 巨蛇', icon:'🐉', hp:5, dmg:1, atk:1, def:1},
+  {name:'🦅 黑鹰', icon:'🦅', hp:6, dmg:1, atk:2, def:1},
+  {name:'🐺 狼王', icon:'🐺', hp:7, dmg:2, atk:1, def:2},
+  {name:'👹 暗森林猫', icon:'👹', hp:8, dmg:2, atk:2, def:2},
+];
+
+let TX = {
+  state:'idle', // idle, station, boss, finished, dead
+  station:0,
+  hp:5, maxHp:5,
+  prey:0,
+  bossKills:0,
+  boss:null,
+  bossHp:0,
+  loc:null,
+  event:null,
+  log:[],
+  finished:false,
+};
+
+function txInit(){
+  const save=localStorage.getItem('text_explore_save');
+  if(save){
+    try{ TX=Object.assign(TX,JSON.parse(save)); }catch(e){ txReset(false); }
+  }else{
+    txReset(false);
+  }
+}
+function txReset(consumeTicket){
+  if(consumeTicket && homeData.tickets<1){
+    showToast('🎟️ 入场券不够！去商店买一个');
+    return false;
+  }
+  if(consumeTicket){
+    homeData.tickets-=1;
+    saveHome();
+    refreshHomeUI();
+  }
+  TX={
+    state:'station', station:0, hp:5, maxHp:5, prey:0,
+    bossKills:0, boss:null, bossHp:0,
+    loc:null, event:null, log:[], finished:false,
+  };
+  txSave();
+  return true;
+}
+function txSave(){try{localStorage.setItem('text_explore_save',JSON.stringify(TX));}catch(e){}}
+function txLog(msg,cls){
+  const el=document.getElementById('textexp-log');
+  if(!el) return;
+  const time=new Date().toLocaleTimeString('zh-CN',{hour12:false,hour:'2-digit',minute:'2-digit'});
+  const span=document.createElement('div');
+  span.innerHTML=`<span style="color:#555">[${time}]</span> <span class="${cls||''}">${msg}</span>`;
+  el.appendChild(span);
+  el.scrollTop=el.scrollHeight;
+}
+function txRender(){
+  document.getElementById('tx-station').textContent=TX.station;
+  document.getElementById('tx-hp').textContent=Math.max(0,TX.hp);
+  document.getElementById('tx-prey').textContent=TX.prey;
+  document.getElementById('textexp-loc').textContent=TX.loc?`${TX.loc.icon} ${TX.loc.name}`:'—';
+}
+function txStartStation(){
+  TX.station+=1;
+  // BOSS 站: 5 和 10
+  if(TX.station===5 || TX.station===10){
+    TX.boss=TX_BOSSES[Math.floor(Math.random()*TX_BOSSES.length)];
+    TX.bossHp=TX.boss.hp;
+    TX.state='boss';
+    txSave();
+    txRender();
+    document.getElementById('textexp-desc').innerHTML=`<b>⚠️ BOSS 出现！</b><br>${TX.boss.name} 挡住了去路！<br>BOSS 生命：${'🔴'.repeat(TX.bossHp)}`;
+    txLog(`⚠️ BOSS 战！${TX.boss.name}（${TX.boss.hp} 血）`,'log-boss');
+    txShowBossChoices();
+    return;
+  }
+  // 普通站
+  TX.loc=TX_LOCATIONS[Math.floor(Math.random()*TX_LOCATIONS.length)];
+  TX.event=TX_EVENTS[Math.floor(Math.random()*TX_EVENTS.length)];
+  TX.state='station';
+  txSave();
+  txRender();
+  document.getElementById('textexp-desc').textContent=`${TX.loc.icon} ${TX.loc.name} — ${TX.loc.desc}\n\n${TX.event.desc}`;
+  txLog(`📍 第 ${TX.station} 站：${TX.loc.name} — ${TX.event.desc}`);
+  const choicesEl=document.getElementById('textexp-choices');
+  choicesEl.innerHTML='';
+  TX.event.choices.forEach((c,i)=>{
+    const btn=document.createElement('button');
+    btn.textContent=c.label;
+    btn.onclick=()=>txChooseStation(i);
+    choicesEl.appendChild(btn);
+  });
+}
+function txChooseStation(i){
+  const c=TX.event.choices[i];
+  const roll=Math.random();
+  const success=c.success>=1 || roll<c.success;
+  if(c.special==='hint'){
+    // 与其交互后的提示
+    if(success){
+      txLog('🐾 那位武士分享了一些猎物的位置！+1 🐾','log-prey');
+      TX.prey+=1;
+    }else{
+      txLog('他只是点了点头。','log-prey');
+    }
+  }else if(success){
+    if(c.prey>0){ txLog(`✅ 成功！+${c.prey} 🐾`,'log-prey'); TX.prey+=c.prey; }
+    if(c.hpDelta>0){ txLog(`💚 +${c.hpDelta} ❤️`,'log-heal'); TX.hp=Math.min(TX.maxHp,TX.hp+c.hpDelta); }
+  }else{
+    if(c.hpDelta<0){ txLog(`❌ 失败了… ${c.hpDelta} ❤️`,'log-hurt'); TX.hp+=c.hpDelta; }
+    else { txLog('❌ 这次没有收获。','log-hurt'); }
+  }
+  // 扣血判定
+  if(TX.hp<=0){
+    TX.state='dead';
+    txSave();
+    txRender();
+    setTimeout(()=>txEnd(false),400);
+    return;
+  }
+  txSave();
+  txRender();
+  // 下一站或结束
+  setTimeout(()=>{
+    if(TX.station>=10){ txEnd(true); }
+    else { txStartStation(); }
+  },800);
+}
+function txShowBossChoices(){
+  const choicesEl=document.getElementById('textexp-choices');
+  choicesEl.innerHTML='';
+  const opts=[
+    {label:'⚔️ 攻击', action:'attack'},
+    {label:'🛡️ 防御反击', action:'defend'},
+    {label:'💨 闪避', action:'dodge'},
+  ];
+  opts.forEach(o=>{
+    const btn=document.createElement('button');
+    btn.textContent=o.label;
+    btn.onclick=()=>txBossAction(o.action);
+    choicesEl.appendChild(btn);
+  });
+}
+function txBossAction(act){
+  const b=TX.boss;
+  let playerDmg=0;
+  if(act==='attack'){
+    playerDmg=Math.max(1, b.atk - 1 + Math.floor(Math.random()*2));
+    txLog(`⚔️ 你攻击！造成 ${playerDmg} 点伤害`,'log-boss');
+  }else if(act==='defend'){
+    if(Math.random()<0.6){
+      playerDmg=Math.max(1,b.atk-1);
+      txLog(`🛡️ 防御成功！反击 ${playerDmg} 点`,'log-boss');
+    }else{
+      txLog('🛡️ 防御被突破！','log-hurt');
+    }
+  }else if(act==='dodge'){
+    if(Math.random()<0.5){
+      playerDmg=Math.max(2,b.atk);
+      txLog(`💨 闪避成功！造成 ${playerDmg} 点伤害！`,'log-boss');
+    }else{
+      txLog('💨 闪避失败！','log-hurt');
+    }
+  }
+  TX.bossHp-=playerDmg;
+  // BOSS 攻击
+  if(TX.bossHp>0){
+    let bossDmg=Math.max(1,b.dmg - (act==='defend'&&Math.random()<0.6?1:0) + Math.floor(Math.random()*b.dmg));
+    if(act==='dodge'&&Math.random()<0.5) bossDmg=0;
+    if(bossDmg>0){
+      TX.hp-=bossDmg;
+      txLog(`💥 BOSS 反击！-${bossDmg} ❤️`,'log-hurt');
+    }
+  }
+  txSave(); txRender();
+  // 胜负判定
+  if(TX.bossHp<=0){
+    txLog(`🎉 击败 BOSS！+5 🔮`,'log-boss');
+    TX.bossKills+=1;
+    homeData.moonstones+=5;
+    saveHome();
+    refreshHomeUI();
+    if(TX.station>=10){ setTimeout(()=>txEnd(true),500); }
+    else { setTimeout(txStartStation,800); }
+    return;
+  }
+  if(TX.hp<=0){
+    TX.state='dead';
+    txSave(); txRender();
+    setTimeout(()=>txEnd(false),500);
+    return;
+  }
+  // 继续 BOSS 战
+  document.getElementById('textexp-desc').innerHTML=`<b>⚠️ ${b.name}</b> · 剩余 ${Math.max(0,TX.bossHp)} 血<br>你：${'★'.repeat(Math.max(0,TX.hp))}${'☆'.repeat(TX.maxHp-Math.max(0,TX.hp))}<br>BOSS：${'🔴'.repeat(Math.max(0,TX.bossHp))}`;
+}
+function txEnd(success){
+  TX.state=success?'finished':'dead';
+  TX.finished=true;
+  txSave();
+  txRender();
+  const choicesEl=document.getElementById('textexp-choices');
+  choicesEl.innerHTML='';
+  let title, msg, moonGained=TX.prey;
+  if(success){
+    title='🎉 巡逻成功！';
+    msg=`你完成了 10 站巡逻！<br>🐾 带回了 <b>${TX.prey}</b> 份猎物 → +${TX.prey} 🔮<br>💀 击败 BOSS ×${TX.bossKills} → +${TX.bossKills*5} 🔮<br>🔮 合计获得 <b>${moonGained+TX.bossKills*5}</b> 月亮石`;
+    homeData.moonstones+=TX.prey;
+  }else{
+    title='💀 巡逻失败…';
+    msg=`你在第 ${TX.station} 站倒下了…<br>🐾 带回了 <b>${TX.prey}</b> 份猎物 → +${TX.prey} 🔮<br>💀 击败 BOSS ×${TX.bossKills} → +${TX.bossKills*5} 🔮<br>🔮 合计获得 <b>${moonGained+TX.bossKills*5}</b> 月亮石`;
+    homeData.moonstones+=TX.prey;
+  }
+  saveHome(); refreshHomeUI();
+  document.getElementById('textexp-desc').innerHTML=`<b>${title}</b><br>${msg}`;
+  // 操作按钮
+  const btn1=document.createElement('button');
+  btn1.textContent='🔄 再来一次（消耗 1 🎟️）';
+  btn1.onclick=()=>{
+    if(!txReset(true)) return;
+    document.getElementById('textexp-log').innerHTML='';
+    txStartStation();
+  };
+  choicesEl.appendChild(btn1);
+  const btn2=document.createElement('button');
+  btn2.textContent='🏠 回到首页';
+  btn2.onclick=()=>{ exitTextExplore(); };
+  choicesEl.appendChild(btn2);
+}
+function startTextExplore(){
+  if(mode!=='text_explore'){ showToast('请先在更多模式中选择「文字探索模式」'); return; }
+  txInit();
+  txRender();
+  showPage('textexp');
+  document.getElementById('textexp-log').innerHTML='';
+  if(TX.station===0 || TX.finished){
+    // 还没开始或上次完成了
+    if(!txReset(true)) return; // 消耗入场券
+    document.getElementById('textexp-log').innerHTML='';
+    txLog('🌙 文字探索模式开始！','log-boss');
+    txStartStation();
+  }else{
+    // 继续（不消耗入场券）
+    document.getElementById('textexp-log').innerHTML='';
+    txLog('🌙 继续上次巡逻…','log-boss');
+    if(TX.state==='station' && TX.event){
+      // 重渲染当前站（不递增 station）
+      txRender();
+      document.getElementById('textexp-desc').textContent=`${TX.loc.icon} ${TX.loc.name} — ${TX.loc.desc}\n\n${TX.event.desc}`;
+      const choicesEl=document.getElementById('textexp-choices');
+      choicesEl.innerHTML='';
+      TX.event.choices.forEach((c,i)=>{
+        const btn=document.createElement('button');
+        btn.textContent=c.label;
+        btn.onclick=()=>txChooseStation(i);
+        choicesEl.appendChild(btn);
+      });
+    }else if(TX.state==='boss' && TX.boss){
+      txRender();
+      document.getElementById('textexp-desc').innerHTML=`<b>⚠️ BOSS 出现！</b><br>${TX.boss.name} 挡住了去路！<br>BOSS 生命：${'🔴'.repeat(Math.max(0,TX.bossHp))}`;
+      txShowBossChoices();
+    }else{
+      // 状态异常，重置
+      if(!txReset(true)) return;
+      txLog('🌙 文字探索模式开始！','log-boss');
+      txStartStation();
+    }
+  }
+}
+function exitTextExplore(){
+  showPage('home');
+}
+
+// ============================================================
 // 🏦 BANK
 // ============================================================
 function refreshBankUI(){
   document.getElementById('bank-bal-moon').textContent=homeData.moonstones;
   document.getElementById('bank-bal-rock').textContent=homeData.gravel;
+  const pawEl=document.getElementById('bank-bal-paw');
+  if(pawEl) pawEl.textContent=homeData.stoneCarvings;
   updateBankPreview();
 }
 function updateBankPreview(){
@@ -906,6 +1305,35 @@ function bankCompose(){
   refreshBankUI();
   refreshHomeUI();
   showToast('✅ 合成成功：-'+cost+' 🪨 → +'+amt+' 🔮');
+}
+function bankExchangeCarving(){
+  // 3 🔮 + 30 🪨 = 1 🐾
+  const needMoon=3, needRock=30;
+  if(homeData.moonstones<needMoon){showToast('🔮 月亮石不够！需要 '+needMoon);return;}
+  if(homeData.gravel<needRock){showToast('🪨 碎石不够！需要 '+needRock);return;}
+  homeData.moonstones-=needMoon;
+  homeData.gravel-=needRock;
+  homeData.stoneCarvings+=1;
+  saveHome();
+  refreshBankUI();
+  refreshHomeUI();
+  showToast('✅ 兑换成功：-3 🔮 -30 🪨 → +1 🐾');
+}
+
+function buyShopItem(it){
+  // 入坳券：2 🐾
+  if(it.name==='入场券' && it.currency==='🐾'){
+    if(homeData.stoneCarvings<it.price){showToast('🐾 石刻不够！需要 '+it.price);return;}
+    homeData.stoneCarvings-=it.price;
+    homeData.tickets=(homeData.tickets||0)+1;
+    saveHome();
+    refreshHomeUI();
+    if(typeof refreshBankUI==='function') refreshBankUI();
+    showToast('✅ 购买成功：-2 🐾 → +1 🎟️');
+    return;
+  }
+  // Future: other items
+  showToast('💡 这个商品暂未开售');
 }
 
 // ============================================================
@@ -960,7 +1388,7 @@ function renderCatItems(which, cat){
   }
   filtered.forEach(it=>{
     const el=document.createElement('div');
-    el.className='cat-item';
+    el.className='cat-item'+(it.price!=null?' clickable':'');
     let priceLine='';
     if(it.price!=null) priceLine=`<div class="item-price">${it.currency||'🔮'} ${it.price}</div>`;
     else if(it.reward) priceLine=`<div class="item-price">${it.reward}</div>`;
@@ -971,6 +1399,10 @@ function renderCatItems(which, cat){
       <div class="item-desc">${it.desc||''}</div>
       ${priceLine}
     `;
+    // 出售商品可点击购买（仅限 home 的 SHOP_ITEMS）
+    if(which==='shop' && it.price!=null){
+      el.onclick=()=>buyShopItem(it);
+    }
     cont.appendChild(el);
   });
 }
@@ -982,14 +1414,16 @@ function renderMoreModes(){
   const list=document.getElementById('moremodes-list');
   list.innerHTML='';
   const modes=[
-    {key:'duo', icon:'🐾🐼', name:'双人模式', desc:'和伙伴一起冒险，轮流行动，共享资源。'},
+    {key:'duo', icon:'🐾🐼', name:'双人模式', desc:'和伙伴一起冒险，轮流行动，共享资源。', needsTicket:false},
+    {key:'text_explore', icon:'📖', name:'文字探索模式', desc:'探索 10 个地点，收集猎物换月亮石。需要 1 张入场券 🎟️。', needsTicket:true},
   ];
   modes.forEach(m=>{
     const el=document.createElement('div');
     el.className='moremodes-item'+(mode===m.key?' active':'');
+    const ticketBadge=m.needsTicket?'<span class="mm-ticket">🎟️×1</span>':'';
     el.innerHTML=`
       <div class="mm-icon">${m.icon}</div>
-      <div class="mm-name">${m.name}${mode===m.key?' ✓':''}</div>
+      <div class="mm-name">${m.name}${mode===m.key?' ✓':''} ${ticketBadge}</div>
       <div class="mm-desc">${m.desc}</div>
     `;
     el.onclick=()=>{
@@ -1003,6 +1437,7 @@ function renderMoreModes(){
         saveMode();
         document.body.classList.toggle('duo-mode',isDuo());
         try{localStorage.removeItem('moonstone_save');}catch(e){}
+        try{localStorage.removeItem('text_explore_save');}catch(e){}
         G.floor=1;G.maxFloorReached=1;
         G.shared={hp:30,maxHp:30,atk:5,exp:0,level:1,herbs:2,expHerbs:0,kills:0,fovBonus:0};
         closeModal('modal-moremodes');
@@ -1049,7 +1484,7 @@ function editNickname(){
 // 💾 PERSISTENCE
 // ============================================================
 function saveHome(){try{localStorage.setItem('moonstone_home',JSON.stringify(homeData));}catch(e){}}
-function loadHome(){try{const d=localStorage.getItem('moonstone_home');if(d){const o=JSON.parse(d);homeData.moonstones=o.moonstones||0;homeData.gravel=o.gravel||0;}}catch(e){}}
+function loadHome(){try{const d=localStorage.getItem('moonstone_home');if(d){const o=JSON.parse(d);homeData.moonstones=o.moonstones||0;homeData.gravel=o.gravel||0;homeData.stoneCarvings=o.stoneCarvings||0;homeData.tickets=o.tickets||0;}}catch(e){}}
 function saveProfile(){try{localStorage.setItem('moonstone_profile',JSON.stringify(profile));}catch(e){}}
 function loadProfile(){
   try{
@@ -1063,7 +1498,7 @@ function saveMode(){try{localStorage.setItem('moonstone_mode',mode);}catch(e){}}
 function loadMode(){
   try{
     const m=localStorage.getItem('moonstone_mode');
-    if(m==='solo'||m==='duo') mode=m;
+    if(m==='solo'||m==='duo'||m==='text_explore') mode=m;
   }catch(e){}
 }
 function saveGame(){
@@ -1098,7 +1533,7 @@ function loadGame(){
     G.grid=s.grid;G.rooms=s.rooms;G.stairsPos=s.stairsPos;
     G.enemies=s.enemies||[];G.items=s.items||[];G.seen=s.seen||[];
     G.shopMsg='';
-    if(s.mode==='solo'||s.mode==='duo'){mode=s.mode;saveMode();}
+    if(s.mode==='solo'||s.mode==='duo'||s.mode==='text_explore'){mode=s.mode;saveMode();}
     syncPlayerAlias();
     document.body.classList.toggle('duo-mode',isDuo());
     return true;
@@ -2180,6 +2615,7 @@ loadHome();
 loadProfile();
 syncPlayerAlias();
 document.body.classList.toggle('duo-mode',isDuo());
+txInit();
 
 // Try load saved game
 if(loadGame()){
