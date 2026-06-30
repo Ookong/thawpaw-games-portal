@@ -909,6 +909,9 @@ function showPage(page){
     state='playing';
     startLoop();
     showTouchControls();
+    // 🐛 FIX: desktop canvas was 0×0 because showTouchControls() only
+    // triggers resize on touch devices. Now resizeCanvas runs unconditionally.
+    if(typeof resizeCanvas==='function') setTimeout(resizeCanvas,50);
   }else{
     hideTouchControls();
     if(page==='depth'){
@@ -2154,26 +2157,28 @@ function updateHud(){
   sPots.textContent=potions;
   sBigP.textContent=bigPotions;
   sBombs.textContent=bombs;
-  hudHp.textContent=`${p1.hp}/${p1.maxHp}`;
-  hudHpFill.style.width=hpPct1+'%';
-  hudHpFill.style.background=hpPct1>50?'linear-gradient(90deg,#44cc44,#88ff88)':hpPct1>25?'linear-gradient(90deg,#ddaa22,#ffd866)':'linear-gradient(90deg,#cc3333,#ff6666)';
+  // 🐛 FIX: hud* elements are mobile-only; guard each ref so missing
+  // elements (e.g. hudAtk/hudDef not in slim mobile HUD) don't throw.
+  if(hudHp)     { hudHp.textContent=`${p1.hp}/${p1.maxHp}`; }
+  if(hudHpFill) { hudHpFill.style.width=hpPct1+'%';
+                  hudHpFill.style.background=hpPct1>50?'linear-gradient(90deg,#44cc44,#88ff88)':hpPct1>25?'linear-gradient(90deg,#ddaa22,#ffd866)':'linear-gradient(90deg,#cc3333,#ff6666)'; }
   if(isDuo&&players[1]){
     const p2=players[1];
-    hudP2Icon.style.display='';
-    hudHpBar2.style.display='';
-    hudHp2.style.display='';
+    if(hudP2Icon)  hudP2Icon.style.display='';
+    if(hudHpBar2)  hudHpBar2.style.display='';
+    if(hudHp2)     hudHp2.style.display='';
     const hpPct2=Math.max(0,p2.hp/p2.maxHp)*100;
-    hudHp2.textContent=`${p2.hp}/${p2.maxHp}`;
-    hudHpFill2.style.width=hpPct2+'%';
+    if(hudHp2)     hudHp2.textContent=`${p2.hp}/${p2.maxHp}`;
+    if(hudHpFill2) hudHpFill2.style.width=hpPct2+'%';
   }else{
-    hudP2Icon.style.display='none';
-    hudHpBar2.style.display='none';
-    hudHp2.style.display='none';
+    if(hudP2Icon)  hudP2Icon.style.display='none';
+    if(hudHpBar2)  hudHpBar2.style.display='none';
+    if(hudHp2)     hudHp2.style.display='none';
   }
-  hudLv.textContent=level;
-  hudGold.textContent=gold;
-  hudAtk.textContent=p1.atk;
-  hudDef.textContent=p1.defense;
+  if(hudLv)   hudLv.textContent=level;
+  if(hudGold) hudGold.textContent=gold;
+  if(hudAtk)  hudAtk.textContent=p1.atk;
+  if(hudDef)  hudDef.textContent=p1.defense;
 }
 
 // ─── Rendering ───

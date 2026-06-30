@@ -891,6 +891,9 @@ function showPage(page){
   if(page==='game'){
     G.state='playing';
     showTouchControls();
+    // 🐛 FIX: desktop canvas was 0×0 because showTouchControls() only
+    // triggers resize on touch devices. Now resizeCanvas runs unconditionally.
+    if(typeof resizeCanvas==='function') setTimeout(resizeCanvas,50);
   }else{
     hideTouchControls();
     if(page==='levelmap'){G.state='levelmap';renderLevelMap();}
