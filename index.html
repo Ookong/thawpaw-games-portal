@@ -85,6 +85,14 @@ footer{position:relative;z-index:1;text-align:center;padding:2rem;color:var(--di
 @media(min-width:769px) and (max-width:1024px){
   .games-grid{grid-template-columns:repeat(2,1fr)}
 }
+.guest-banner{background:linear-gradient(90deg,rgba(255,184,108,.15),rgba(108,99,255,.15));border:1px solid rgba(255,184,108,.35);border-radius:12px;padding:10px 16px;margin:0 1.25rem 1rem;display:flex;align-items:center;gap:12px;font-size:.9rem;color:var(--text);flex-wrap:wrap}
+.guest-banner .guest-icon{font-size:20px}
+.guest-banner .guest-msg{flex:1;min-width:200px;line-height:1.45}
+.guest-banner .guest-msg strong{color:var(--gold)}
+.guest-banner button{background:rgba(108,99,255,.18);border:1px solid var(--accent);color:var(--text);padding:6px 14px;border-radius:8px;font-size:.82rem;cursor:pointer;font-weight:600;white-space:nowrap}
+.guest-banner button:hover{background:rgba(108,99,255,.3)}
+body.guest-mode .top-bar{background:rgba(255,184,108,.08);border-bottom-color:rgba(255,184,108,.25)}
+body.guest-mode header.top-bar .profile-bubble{cursor:pointer}
 
 /* ── Login screen ── */
 body.no-user header.top-bar{display:none}
@@ -192,8 +200,8 @@ body.no-user footer{display:none}
   <div class="top-logo">Thawpaw Games<span>portal</span></div>
 </header>
 
-<!-- ===== LOGIN PAGE (shown when no active player) ===== -->
-<div id="page-login" class="page active">
+<!-- ===== LOGIN PAGE (shown only when user clicks "Sign in") ===== -->
+<div id="page-login" class="page">
   <div class="login-page">
     <div class="login-card">
       <span class="lock-icon">🐾</span>
@@ -230,7 +238,16 @@ body.no-user footer{display:none}
 </div>
 
 <!-- ===== HOME PAGE ===== -->
-<div id="page-home" class="page">
+<div id="page-home" class="page active">
+  <div class="guest-banner" id="guest-banner" style="display:none">
+    <span class="guest-icon">🐾</span>
+    <span class="guest-msg">
+      <strong>Guest mode · 游客模式</strong> — Playing without an account. Your progress won't be saved.
+      <br>登录或注册以保存游戏进度 / Sign in to save progress across devices.
+    </span>
+    <button onclick="showLoginScreen()">🔑 Sign in / 登录</button>
+    <button onclick="onGenerateNewId()" style="background:rgba(72,198,239,.18);border-color:var(--blue)">✨ Create account / 注册</button>
+  </div>
   <div class="hero">
     <h1>Thawpaw Games</h1>
     <p>Warrior Cats adventures await. Pick a game and begin your quest.</p>
@@ -554,6 +571,18 @@ function showHomeAfterLogin(){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.getElementById('page-home').classList.add('active');
   document.body.classList.remove('no-user');
+  document.body.classList.remove('guest-mode');
+  const gb = document.getElementById('guest-banner');
+  if(gb) gb.style.display = 'none';
+}
+function enterGuestMode(){
+  // 🚀 P0 fix (2026-06-30): new visitors see games, not a login wall.
+  // Default to home with guest banner so teachers / reviewers can browse
+  // without registering first. Login is opt-in.
+  showHomeAfterLogin();
+  document.body.classList.add('guest-mode');
+  const gb = document.getElementById('guest-banner');
+  if(gb) gb.style.display = 'flex';
 }
 function showLoginError(msg){
   const el = document.getElementById('login-error');
@@ -716,8 +745,14 @@ function copyPlayerId(){
   }, 1500);
 }
 
-// ── 点击顶栏气泡 → 进入主页 ──
-document.getElementById('profile-bubble').addEventListener('click', () => showPage('profile'));
+// ── 点击顶栏气泡 → 游客模式跳登录页；已登录进 profile ──
+document.getElementById('profile-bubble').addEventListener('click', () => {
+  if(document.body.classList.contains('guest-mode')){
+    showLoginScreen();
+  } else {
+    showPage('profile');
+  }
+});
 
 // ── 初始检查登录状态 ──
 migrateLegacyData();
@@ -725,7 +760,9 @@ if(getActiveId()){
   showHomeAfterLogin();
   refreshPortal();
 } else {
-  showLoginScreen();
+  // 无 ID → 游客模式（默认展示游戏，不挡新访客）
+  enterGuestMode();
+  refreshPortal();
 }
 
 // ── Load manifest & build cards ──
