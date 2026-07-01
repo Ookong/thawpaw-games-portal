@@ -429,11 +429,12 @@ tr:hover td{background:var(--card2)}
       <div class="add-admin-section" id="add-member-section">
         <h3>➕ 添加聊天室成员</h3>
         <div class="add-admin-row">
-          <input type="text" id="new-member-name" placeholder="成员名称（如 如意）" maxlength="32">
-          <input type="text" id="new-member-platform" placeholder="平台（如 macOS/Win）" maxlength="32">
+          <input type="text" id="new-member-id" placeholder="8 位 ID" maxlength="8" style="max-width:120px">
+          <input type="text" id="new-member-name" placeholder="昵称（如 如意）" maxlength="32">
+          <input type="text" id="new-member-platform" placeholder="平台（如 macOS）" maxlength="32">
           <button onclick="addChatroomMember()">添加</button>
         </div>
-        <div style="font-size:.78rem;color:var(--dim);margin-top:.5rem">添加后会生成成员 ID 和 Token，只显示一次</div>
+        <div style="font-size:.78rem;color:var(--dim);margin-top:.5rem">成员 ID 必须是 8 位数字，与 TPG 玩家体系共用。添加后生成 API Token（只显示一次）</div>
       </div>
     </div>
 
@@ -889,21 +890,21 @@ function loadChatroomMembers(){
     el.innerHTML = members.map(m => {
       const statusColor = m.status === 'active' ? 'var(--green)' : 'var(--dim)';
       const statusText = m.status === 'active' ? '在线' : '已移除';
-      const created = m.createdAt ? new Date(m.createdAt).toLocaleDateString('zh-CN') : '';
-      const lastSeen = m.lastSeen ? new Date(m.lastSeen).toLocaleString('zh-CN') : '从未';
+      const created = m.created_at ? new Date(m.created_at).toLocaleDateString('zh-CN') : '';
+      const lastSeen = m.last_seen ? new Date(m.last_seen).toLocaleString('zh-CN') : '从未';
       return '<div class="admin-card">' +
         '<div class="admin-info">' +
           '<div class="admin-avatar">💬</div>' +
           '<div class="admin-details">' +
-            '<div class="admin-name">' + escapeHtml(m.name) + '</div>' +
-            '<div class="admin-id">MID: ' + escapeHtml(m.mid) + ' · 平台: ' + escapeHtml(m.platform || 'unknown') + '</div>' +
+            '<div class="admin-name">' + escapeHtml(m.nickname) + '</div>' +
+            '<div class="admin-id">ID: ' + escapeHtml(m.member_id) + ' · 平台: ' + escapeHtml(m.platform || 'unknown') + '</div>' +
             '<div class="admin-id" style="color:var(--dim)">加入: ' + created + ' · 最后活跃: ' + lastSeen + '</div>' +
           '</div>' +
         '</div>' +
         '<div style="display:flex;align-items:center;gap:.5rem">' +
           '<span class="admin-role ' + (m.status === 'active' ? 'sub' : 'super') + '" style="background:' + statusColor + '20;color:' + statusColor + '">' + statusText + '</span>' +
-          (m.status === 'active' ? '<button class="remove-admin-btn" onclick="regenMemberToken(\'' + m.mid + '\',\'' + escapeHtml(m.name) + '\')" style="background:var(--accent);color:#fff;margin-right:4px">🔄 Token</button>' : '') +
-          (m.status === 'active' ? '<button class="remove-admin-btn" onclick="removeChatroomMember(\'' + m.mid + '\',\'' + escapeHtml(m.name) + '\')">移除</button>' : '') +
+          (m.status === 'active' ? '<button class="remove-admin-btn" onclick="regenMemberToken(\'' + m.member_id + '\',\'' + escapeHtml(m.nickname) + '\')" style="background:var(--accent);color:#fff;margin-right:4px">🔄 Token</button>' : '') +
+          (m.status === 'active' ? '<button class="remove-admin-btn" onclick="removeChatroomMember(\'' + m.member_id + '\',\'' + escapeHtml(m.nickname) + '\')">移除</button>' : '') +
         '</div>' +
       '</div>';
     }).join('');
@@ -913,24 +914,28 @@ function loadChatroomMembers(){
 }
 
 function addChatroomMember(){
-  const name = document.getElementById('new-member-name').value.trim();
+  const memberId = document.getElementById('new-member-id').value.trim();
+  const memberNickname = document.getElementById('new-member-name').value.trim();
   const platform = document.getElementById('new-member-platform').value.trim() || 'unknown';
-  if(!name){ alert('请输入成员名称'); return; }
+  if(!memberId || !memberNickname){ alert('请输入成员 ID 和昵称'); return; }
+  if(!/^\d{8}$/.test(memberId)){ alert('成员 ID 必须是 8 位数字'); return; }
 
   apiPost('chatroom/addMember', {
     id: session.id,
     nickname: session.nickname,
-    name: name,
+    memberId: memberId,
+    memberNickname: memberNickname,
     platform: platform
   }).then(res => {
     if(res.ok){
       // Show token in a copyable alert
-      const msg = '✅ 成员已添加\n\n名称: ' + res.name + '\nMID: ' + res.mid + '\nToken: ' + res.token + '\n\n⚠️ Token 只显示这一次，请立即复制保存！';
+      const msg = '✅ 成员已添加\n\nID: ' + res.member_id + '\n昵称: ' + res.nickname + '\nAPI Token: ' + res.api_token + '\n\n⚠️ Token 只显示这一次，请立即复制保存！';
       alert(msg);
       // Also copy to clipboard
-      navigator.clipboard.writeText(res.token).then(() => {
+      navigator.clipboard.writeText(res.api_token).then(() => {
         console.log('[TPG] Token copied to clipboard');
       }).catch(() => {});
+      document.getElementById('new-member-id').value = '';
       document.getElementById('new-member-name').value = '';
       document.getElementById('new-member-platform').value = '';
       loadChatroomMembers();
@@ -940,12 +945,12 @@ function addChatroomMember(){
   }).catch(err => alert('❌ 网络错误'));
 }
 
-function removeChatroomMember(mid, name){
-  if(!confirm('确定移除聊天室成员「' + name + '」(' + mid + ')？\n移除后 Token 立即失效。')) return;
+function removeChatroomMember(memberId, name){
+  if(!confirm('确定移除聊天室成员「' + name + '」(' + memberId + ')？\n移除后 API Token 立即失效。')) return;
   apiPost('chatroom/removeMember', {
     id: session.id,
     nickname: session.nickname,
-    mid: mid
+    memberId: memberId
   }).then(res => {
     if(res.ok){
       alert('✅ 已移除');
@@ -956,13 +961,13 @@ function removeChatroomMember(mid, name){
   }).catch(err => alert('❌ 网络错误'));
 }
 
-function regenMemberToken(mid, name){
-  if(!confirm('重新生成「' + name + '」的 Token？旧 Token 会立即失效。')) return;
-  apiGet('chatroom/regenerateToken', { id: session.id, nickname: session.nickname, mid: mid }).then(res => {
+function regenMemberToken(memberId, name){
+  if(!confirm('重新生成「' + name + '」的 API Token？旧 Token 会立即失效。')) return;
+  apiGet('chatroom/regenerateToken', { id: session.id, nickname: session.nickname, member_id: memberId }).then(res => {
     if(res.ok){
-      const msg = '✅ Token 已重新生成\n\n名称: ' + name + '\nMID: ' + mid + '\n新 Token: ' + res.token + '\n\n⚠️ 请立即复制保存！';
+      const msg = '✅ Token 已重新生成\n\nID: ' + memberId + '\n新 API Token: ' + res.api_token + '\n\n⚠️ 请立即复制保存！';
       alert(msg);
-      navigator.clipboard.writeText(res.token).then(() => {
+      navigator.clipboard.writeText(res.api_token).then(() => {
         console.log('[TPG] New token copied to clipboard');
       }).catch(() => {});
     } else {
