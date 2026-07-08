@@ -191,7 +191,9 @@ body.touch-active #mobileHud{display:block;}
 #touchActions button .label{font-size:8px;opacity:.7;}
 #touchActions button.active-speed{background:rgba(255,200,80,.18);border-color:rgba(255,200,80,.5);color:#ffd866;}
 #touchActions button[hidden]{display:none;}
-body.solo-touch #touchActions{left:auto;right:20px;transform:none;}
+/* Duo: keep centered 4-col */
+body.solo-touch #touchActions{left:auto;right:20px;transform:none;grid-template-columns:1fr;gap:6px;bottom:20px;}
+body.solo-touch #touchActions button{width:56px;height:52px;}
 body.solo-touch #joystickP2{display:none;}
 
 #contextPopup{display:none;position:fixed;bottom:210px;left:50%;transform:translateX(-50%);z-index:35;pointer-events:auto;gap:8px;}
@@ -512,7 +514,7 @@ body.solo-touch #joystickP2{display:none;}
     </div>
   </div>
   <div id="touchActions">
-    <button id="btnAttack" hidden><span class="icon">⚔️</span><span class="label">Attack</span></button>
+    <button id="btnAttack" hidden ontouchstart="event.preventDefault();doAttack(0)"><span class="icon">⚔️</span><span class="label">Attack</span></button>
     <button id="btnPotion" hidden ontouchstart="event.preventDefault();usePotion()"><span class="icon">🧪</span><span class="label">Potion</span></button>
     <button id="btnBomb" hidden ontouchstart="event.preventDefault();useBomb()"><span class="icon">💣</span><span class="label">Bomb</span></button>
     <button id="btnSpeed" hidden ontouchstart="event.preventDefault();toggleSpeed()"><span class="icon">⏩</span><span class="label">Speed</span></button>
@@ -881,7 +883,7 @@ let shopPos = null;
 let touchActive = false; // legacy flag; touch controls visibility now tracked via #touchControls.active
 let lastMoveDir = [ {dx:0,dy:0}, {dx:0,dy:0} ];
 let gameSpeed = 1;
-let tickMs = 320;
+let tickMs = 400; // 减慢默认速度 (was 320)
 let fastMode = false;
 let lastTick = 0;
 let rafId = null;
@@ -2442,8 +2444,8 @@ document.addEventListener('keydown',e=>{
 });
 
 function toggleSpeed(){
-  if(gameSpeed===1){gameSpeed=2;tickMs=160;}
-  else{gameSpeed=1;tickMs=320;}
+  if(gameSpeed===1){gameSpeed=2;tickMs=200;}
+  else{gameSpeed=1;tickMs=400;}
   updateSpeedBtn();
 }
 
@@ -2496,10 +2498,10 @@ var touchSupported=false;
       tryMove(pi,dir.dx,dir.dy);
       function tick(){
         if(lastDir.dx!==0||lastDir.dy!==0) tryMove(pi,lastDir.dx,lastDir.dy);
-        var delay=gameSpeed===2?160:320;
+        var delay=gameSpeed===2?200:400;
         moveIv=setTimeout(tick,delay);
       }
-      moveIv=setTimeout(tick,gameSpeed===2?160:320);
+      moveIv=setTimeout(tick,gameSpeed===2?200:400);
     }
     function stopMove(){
       if(moveIv){clearTimeout(moveIv);moveIv=null;}
@@ -2579,10 +2581,10 @@ var touchSupported=false;
       tryMove(0,dir.dx,dir.dy);
       function tick(){
         if(lastDir.dx!==0||lastDir.dy!==0) tryMove(0,lastDir.dx,lastDir.dy);
-        var delay=gameSpeed===2?160:320;
+        var delay=gameSpeed===2?200:400;
         moveIv=setTimeout(tick,delay);
       }
-      moveIv=setTimeout(tick,gameSpeed===2?160:320);
+      moveIv=setTimeout(tick,gameSpeed===2?200:400);
     }
     jp1b.addEventListener('touchstart',function(ev){
       ev.preventDefault();initAudio();
