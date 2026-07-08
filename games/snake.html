@@ -993,5 +993,20 @@ document.addEventListener('touchstart', ()=>{
   if(!fullscreenDone){fullscreenDone=true; tryFullscreen();}
 }, {once:true});
 </script>
+<script src="tutorial.js"></script>
+<script>
+// 🐾 新手教程 第一步：贪吃蛇
+(function(){
+  if(isNewPlayer() && !tutorialCheck('snake','step1')){
+    setTimeout(function(){
+      var card = document.querySelector('#page-home .col-rc .mode-card');
+      if(!card) return;
+      showTutorialStep(card, '🐍', '点击经典模式吃苹果！', function(){
+        tutorialDone('snake','step1');
+      });
+    }, 600);
+  }
+})();
+</script>
 </body>
 </html>

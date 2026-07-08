@@ -2826,5 +2826,20 @@ document.addEventListener('touchstart',()=>{if(!fullscreenDone){fullscreenDone=t
 refreshHomeUI();
 console.log('🐾 猫武士大冒险 loaded');
 </script>
+<script src="tutorial.js"></script>
+<script>
+// 🐾 新手教程 第一步：猫武士大冒险
+(function(){
+  if(isNewPlayer() && !tutorialCheck('moonstone','step1')){
+    setTimeout(function(){
+      var zone = document.getElementById('zone-start');
+      if(!zone) return;
+      showTutorialStep(zone, '🐱', '点击经典模式开始冒险！', function(){
+        tutorialDone('moonstone','step1');
+      });
+    }, 600);
+  }
+})();
+</script>
 </body>
 </html>
