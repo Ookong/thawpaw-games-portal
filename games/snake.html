@@ -100,7 +100,8 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .game-page canvas{border:2px solid var(--card2);border-radius:8px;background:#0a0a1a;margin:auto;display:block;}
 .game-page .score-bar{position:absolute;top:10px;left:50%;transform:translateX(-50%);display:flex;gap:20px;font-size:14px;font-weight:600;}
 .game-page .score-bar span{background:var(--card);padding:4px 12px;border-radius:20px;}
-.game-back{position:absolute;top:10px;left:10px;cursor:pointer;font-size:22px;z-index:10;}
+.game-back{position:absolute;top:10px;left:10px;cursor:pointer;font-size:26px;z-index:10;opacity:.85;transition:opacity .2s;}
+.game-back:hover{opacity:1;}
 
 /* ===== JOYSTICK ===== */
 .joystick-zone{display:none;position:fixed;bottom:30px;left:30px;z-index:300;}
@@ -296,7 +297,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 
 <!-- ===== GAME PAGE ===== -->
 <div id="page-game" class="page game-page">
-  <div class="game-back" onclick="endGame()">←</div>
+  <div class="game-back" onclick="goPortal()" title="返回 Portal">❄️</div>
   <div class="score-bar">
     <span>💰 <span id="game-score">0</span></span>
     <span>🍎 <span id="game-apples">0</span></span>
@@ -879,6 +880,10 @@ function endGame(){
   clearInterval(gameLoop);
   savePlayer();
   showPage('home');
+}
+function goPortal(){
+  if(gameActive){ gameActive=false; clearInterval(gameLoop); savePlayer(); }
+  location.href = '../index.html';
 }
 
 // Controls
