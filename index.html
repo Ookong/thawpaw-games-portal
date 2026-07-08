@@ -453,6 +453,87 @@ const PLAYERS_KEY = 'thawpawPlayers';   // { [id]: { nickname, avatar, bio, firs
 const ACTIVE_KEY = 'thawpawActiveId';   // 当前登录的 ID
 const LEGACY_PROFILE = 'thawpawPlayer'; // 老的单账号 profile
 
+// === 云端存档 ===
+const CF_BASE = (function(){ try{ const u=localStorage.getItem('tpgCfBackendUrl'); return u?u.replace(/\/+$/,''):'https://tpg-hq.thawflow.com'; }catch(e){ return 'https://tpg-hq.thawflow.com'; } })();
+const SAVE_KEYS_SUFFIX = ['snake_save_','moonstone_save_solo_','moonstone_save_duo_','text_explore_save_','thawpaw.dungeon.save.v2_','snake_profile_','moonstone_profile_','dungeon_profile_','text_profile_'];
+let cloudBusy = false; // 防止并发存档
+
+async function cfApi(path, body){
+  const ctrl = new AbortController();
+  const tid = setTimeout(()=>ctrl.abort(), 8000);
+  try{
+    const r = await fetch(CF_BASE + path, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(body),
+      signal: ctrl.signal,
+      mode:'cors',
+      keepalive: true
+    });
+    return await r.json();
+  } catch(e){
+    return { ok:false, error: '网络错误：'+(e.message||e) };
+  } finally{ clearTimeout(tid); }
+}
+
+// 收集当前 ID 的所有存档数据
+function collectSaves(id){
+  const data = {};
+  for(let i=0; i<localStorage.length; i++){
+    const key = localStorage.key(i);
+    // 匹配 <prefix><id> 或以 _<id> 结尾的 key
+    if(key && key.indexOf(id) !== -1 && key !== PLAYERS_KEY && key !== ACTIVE_KEY){
+      const val = localStorage.getItem(key);
+      if(val && val.length < 100000){ // 单个 key 最大 100KB
+        data[key] = val;
+      }
+    }
+  }
+  return data;
+}
+
+// 将云端存档写回 localStorage
+function applySaves(data){
+  if(!data || typeof data !== 'object') return;
+  for(const [key, val] of Object.entries(data)){
+    try{ localStorage.setItem(key, val); }catch(e){}
+  }
+}
+
+// 保存到云端
+async function saveToCloud(){
+  const id = getActiveId();
+  if(!id || cloudBusy) return;
+  const prof = getActiveProfile();
+  if(!prof) return;
+  cloudBusy = true;
+  try{
+    const data = collectSaves(id);
+    await cfApi('/save', { id, nickname: prof.nickname, data });
+  } catch(e){ /* 静默失败 */ }
+  cloudBusy = false;
+}
+
+// 页面离开时自动存档
+addEventListener('beforeunload', function(){
+  const id = getActiveId();
+  if(!id) return;
+  const prof = getActiveProfile();
+  if(!prof) return;
+  const data = collectSaves(id);
+  // keepalive fetch 不能用 AbortController，直接 fire-and-forget
+  fetch(CF_BASE + '/save', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ id, nickname: prof.nickname, data }),
+    mode:'cors',
+    keepalive: true
+  }).catch(()=>{});
+});
+
+// 定时自动存档（每 2 分钟）
+setInterval(()=>{ saveToCloud(); }, 120000);
+
 function getPlayers(){
   try{ return JSON.parse(localStorage.getItem(PLAYERS_KEY) || '{}'); }
   catch(e){ return {}; }
@@ -609,7 +690,7 @@ function hideLoginNickname(){
   document.getElementById('login-nickname-step').classList.remove('show');
 }
 
-function onLoginSubmit(){
+async function onLoginSubmit(){
   hideLoginError();
   hideLoginConfirm();
   hideLoginNickname();
@@ -624,12 +705,35 @@ function onLoginSubmit(){
   }
   const players = getPlayers();
   if(players[input]){
-    // 已存在 —— 询问是否登录此账号
+    // 本地已有 → 确认登录（之后云端验证+拉存档）
     showLoginConfirm(input, players[input].nickname);
   } else {
-    // 新账号 —— 询问昵称
+    // 本地没有 → 查云端
     pendingLoginId = input;
-    showLoginNicknameStep();
+    const idEl = document.getElementById('login-id-input');
+    idEl.disabled = true;
+    showLoginError('🔍 正在检查云端…');
+    try{
+      const r = await fetch(CF_BASE + '/lookup?id=' + input, { mode:'cors' });
+      const res = await r.json();
+      idEl.disabled = false;
+      hideLoginError();
+      const label = document.querySelector('#login-nickname-step label');
+      if(res.found){
+        // 云端有此 ID → 需要输入昵称验证
+        label.textContent = '请输入该 ID 的昵称以验证身份：';
+      } else {
+        // 云端也没有 → 注册新账号
+        label.textContent = '给新账号起个名字吧：';
+      }
+      showLoginNicknameStep();
+    } catch(e){
+      idEl.disabled = false;
+      hideLoginError();
+      // 网络错误 → 回退到本地模式
+      document.querySelector('#login-nickname-step label').textContent = '给新账号起个名字吧：';
+      showLoginNicknameStep();
+    }
   }
 }
 function onGenerateNewId(){
@@ -640,37 +744,91 @@ function onGenerateNewId(){
   hideLoginNickname();
   onLoginSubmit();
 }
-function confirmLoginExisting(){
+async function confirmLoginExisting(){
   if(!pendingLoginId) return;
-  setActiveId(pendingLoginId);
+  const id = pendingLoginId;
+  const players = getPlayers();
+  const nickname = players[id] ? players[id].nickname : '';
   hideLoginConfirm();
   pendingLoginId = null;
+  // 云端验证 + 拉取存档
+  if(nickname){
+    showLoginError('☁️ 正在同步云端存档…');
+    try{
+      const ver = await cfApi('/verify', { id, nickname });
+      if(!ver.ok){
+        // 云端昵称不匹配 → 以本地数据为准
+        hideLoginError();
+        showLoginError('⚠️ 云端验证失败：' + (ver.error||'') + '，以本地数据为准');
+        setTimeout(()=>hideLoginError(), 3000);
+      } else {
+        // 验证成功 → 拉取云端存档
+        const ld = await cfApi('/load', { id, nickname });
+        hideLoginError();
+        if(ld.ok && ld.data){
+          applySaves(ld.data);
+        }
+      }
+    } catch(e){
+      hideLoginError();
+      // 网络错误 → 纯本地登录
+    }
+  }
+  setActiveId(id);
   finishLogin();
+  // 后台再存一次档
+  saveToCloud();
 }
 function cancelLoginConfirm(){
   pendingLoginId = null;
   hideLoginConfirm();
 }
-function confirmCreateNew(){
+async function confirmCreateNew(){
   if(!pendingLoginId) return;
   const nickname = document.getElementById('login-nickname-input').value.trim();
   if(!nickname){
     showLoginError('请输入昵称');
     return;
   }
+  const id = pendingLoginId;
+  const cleanNick = nickname.slice(0, 12);
+
+  // 先尝试云端注册
+  showLoginError('☁️ 正在注册…');
+  const reg = await cfApi('/register', { id, nickname: cleanNick });
+  hideLoginError();
+
+  if(!reg.ok){
+    if(reg.error && reg.error.indexOf('已被注册') !== -1){
+      // ID 已被注册 → 需要验证昵称
+      const ver = await cfApi('/verify', { id, nickname: cleanNick });
+      if(!ver.ok){
+        showLoginError('❌ 该 ID 已被注册，且昵称不匹配');
+        return;
+      }
+      // 验证通过 → 拉取存档
+      const ld = await cfApi('/load', { id, nickname: cleanNick });
+      if(ld.ok && ld.data) applySaves(ld.data);
+    }
+    // 其他错误（网络）→ 静默继续，本地创建
+  }
+
+  // 写入本地
   const players = getPlayers();
-  players[pendingLoginId] = {
-    nickname: nickname.slice(0, 12),
+  players[id] = {
+    nickname: cleanNick,
     avatar: '🐾',
     bio: '',
     firstSeen: Date.now(),
     lastSeen: Date.now(),
   };
   savePlayers(players);
-  setActiveId(pendingLoginId);
+  setActiveId(id);
   hideLoginNickname();
   pendingLoginId = null;
   finishLogin();
+  // 后台同步存档
+  saveToCloud();
 }
 function cancelCreateNew(){
   pendingLoginId = null;
