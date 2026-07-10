@@ -139,25 +139,22 @@ function showTutorialStep(selector, emoji, text, onInteract, opts) {
   function handleTutorialClick(e) {
     if (handled) return;
     handled = true;
-    e.stopPropagation();
     hideTutorialStep();
-    // Let the original click proceed
+    // Let the original click/navigation proceed — don't stop it
     setTimeout(function() {
       if (onInteract) onInteract();
     }, 100);
   }
   target.addEventListener('click', handleTutorialClick, { once: true });
-  // Also handle touch
+  // Also handle touch — don't preventDefault so <a> links still navigate
   target.addEventListener('touchend', function(e) {
     if (handled) return;
     handled = true;
-    e.preventDefault();
-    e.stopPropagation();
     hideTutorialStep();
     setTimeout(function() {
       if (onInteract) onInteract();
     }, 100);
-  }, { once: true, passive: false });
+  }, { once: true, passive: true });
 }
 
 function hideTutorialStep() {
