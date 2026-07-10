@@ -1174,5 +1174,29 @@ initFeedbackPage();
 
 <!-- 🐾 Thawpaw Games 浏览追踪 (GAS not configured = silent no-op) -->
 <script src="track.js" defer></script>
+<!-- 🐾 新手教程系统 -->
+<script src="games/tutorial.js"></script>
+<script>
+// 🐾 新手教程 第三步：Portal 首页欢迎引导
+(function(){
+  if(!tutorialCheck('portal','step3')){
+    // Wait for game cards to render (async fetch)
+    var tries = 0;
+    var timer = setInterval(function(){
+      tries++;
+      var card = document.querySelector('.game-card');
+      if(card || tries > 20){
+        clearInterval(timer);
+        if(!card) return;
+        setTimeout(function(){
+          showTutorialStep(card, '👋', '欢迎来到 ThawPaw Games！选一个游戏开始吧～', function(){
+            tutorialDone('portal','step3');
+          }, { skip: true });
+        }, 500);
+      }
+    }, 200);
+  }
+})();
+</script>
 </body>
 </html>
