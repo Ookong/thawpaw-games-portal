@@ -783,7 +783,7 @@ function loadFeedback(){
 function deleteFeedback(fid){
   if(!isSuperAdmin) { alert('仅超级管理员可删除'); return; }
   if(!confirm('删除这条反馈？')) return;
-  apiPost('deleteFeedback', { feedbackId: fid }).then(res => {
+  apiPost('deleteFeedback', { id: session.id, nickname: session.nickname, feedbackId: fid }).then(res => {
     if(res.ok) loadFeedback();
     else alert(res.error || '删除失败');
   });
@@ -792,7 +792,7 @@ function deleteFeedback(fid){
 function clearAllFeedback(){
   if(!isSuperAdmin) { alert('仅超级管理员可清空'); return; }
   if(!confirm('确定清空所有反馈？此操作不可撤销！')) return;
-  apiPost('clearAllFeedback', {}).then(res => {
+  apiPost('clearAllFeedback', { id: session.id, nickname: session.nickname }).then(res => {
     if(res.ok){ alert('已清空 ' + (res.cleared || 0) + ' 条反馈'); loadFeedback(); }
     else alert(res.error || '清空失败');
   });
