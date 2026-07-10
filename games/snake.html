@@ -41,6 +41,12 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 
 /* Left 1/4 */
 .col-left{justify-content:center;align-items:center;color:var(--text2);font-size:13px;}
+/* Practice card */
+.practice-card{background:var(--card2);border-radius:var(--radius);padding:18px 12px;text-align:center;cursor:pointer;transition:transform .15s,box-shadow .15s;width:100%;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;}
+.practice-card:hover{transform:scale(1.03);box-shadow:0 0 12px rgba(76,175,80,.3);}
+.practice-card .practice-icon{font-size:36px;}
+.practice-card .practice-title{font-weight:700;font-size:15px;}
+.practice-card .practice-sub{font-size:10px;color:var(--text2);line-height:1.4;}
 
 /* Left-center 1/4 - Skin */
 .col-lc{justify-content:center;align-items:center;}
@@ -102,6 +108,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .game-page .score-bar span{background:var(--card);padding:4px 12px;border-radius:20px;}
 .game-back{position:absolute;top:10px;left:10px;cursor:pointer;font-size:26px;z-index:10;opacity:.85;transition:opacity .2s;}
 .game-back:hover{opacity:1;}
+.practice-hint{position:absolute;top:48px;left:50%;transform:translateX(-50%);font-size:12px;color:var(--text2);background:var(--card);padding:4px 14px;border-radius:16px;white-space:nowrap;}
 
 /* ===== JOYSTICK ===== */
 .joystick-zone{display:none;position:fixed;bottom:30px;left:30px;z-index:300;}
@@ -207,9 +214,13 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
     <div class="settings-btn" onclick="event.stopPropagation();openSettings()" title="设置">⚙️</div>
   </div>
   <div class="home-content">
-    <!-- 左1/4 -->
+    <!-- 左1/4 — 练习区 -->
     <div class="col col-left">
-      <div style="color:#555;font-size:12px;">🔒 敬请期待</div>
+      <div class="practice-card" id="practice-entry" onclick="startPractice()">
+        <div class="practice-icon">🎓</div>
+        <div class="practice-title">练习区</div>
+        <div class="practice-sub" id="practice-sub">不会死，练技术赚苹果</div>
+      </div>
     </div>
     <!-- 左中1/4 皮肤 -->
     <div class="col col-lc">
@@ -293,6 +304,18 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
     </div>
     <button class="start-btn" onclick="startGame()">🐍 开始游戏！</button>
   </div>
+</div>
+
+<!-- ===== PRACTICE PAGE ===== -->
+<div id="page-practice" class="page game-page">
+  <div class="game-back" onclick="exitPractice()" title="返回">❄️</div>
+  <div class="score-bar">
+    <span>💀 <span id="prac-deaths">0</span></span>
+    <span>⏱️ <span id="prac-timer">60</span>s</span>
+    <span>🍎 <span id="prac-apples">0</span></span>
+  </div>
+  <div class="practice-hint" id="practice-hint">练习模式 · 不会死！撞到了就重新开始</div>
+  <canvas id="practice-canvas"></canvas>
 </div>
 
 <!-- ===== GAME PAGE ===== -->
@@ -567,6 +590,18 @@ function refreshHome(){
   document.getElementById('home-level-bar').style.width = (player.exp%100)+'%';
   document.getElementById('home-gold').textContent = player.gold;
   document.getElementById('home-apples').textContent = player.apples;
+  // Practice entry: hide for L10+
+  var pe = document.getElementById('practice-entry');
+  if(pe){
+    if(player.level>=10){
+      pe.style.display='none';
+    }else{
+      pe.style.display='flex';
+      var sub = document.getElementById('practice-sub');
+      var threshold = player.level<=3 ? 5 : 3;
+      if(sub) sub.textContent = '每分钟死<'+threshold+'次赚苹果！';
+    }
+  }
 }
 
 function refreshProfile(){
@@ -894,8 +929,205 @@ function goPortal(){
   location.href = '../index.html';
 }
 
+// ===== PRACTICE MODE =====
+let pSnake, pFood, pDir, pPendingDir, pLoop, pActive=false;
+let pGrid, pCell, pSpeed, pSpeedIdx;
+let pDeaths=0, pApplesEarned=0, pDeathTimes=[];
+let pTimerInterval=null, pTimeLeft=60;
+let pCanvas, pCtx;
+
+function startPractice(){
+  // Use same board/speed as classic defaults
+  pGrid = 20;
+  pSpeed = 130;
+  pSpeedIdx = 1;
+  pCanvas = document.getElementById('practice-canvas');
+  pCtx = pCanvas.getContext('2d');
+  const maxW = window.innerWidth - 40;
+  const maxH = window.innerHeight - 200;
+  const maxPx = Math.min(maxW, maxH);
+  pCell = Math.min(Math.floor(maxPx / pGrid), 18);
+  pCanvas.width = pCell * pGrid;
+  pCanvas.height = pCell * pGrid;
+  pCanvas.style.width = (pCell * pGrid) + 'px';
+  pCanvas.style.height = (pCell * pGrid) + 'px';
+  resetPracticeSnake();
+  pDeaths = 0;
+  pApplesEarned = 0;
+  pDeathTimes = [];
+  pTimeLeft = 60;
+  pActive = true;
+  document.getElementById('prac-deaths').textContent='0';
+  document.getElementById('prac-timer').textContent='60';
+  document.getElementById('prac-apples').textContent='0';
+  showPage('practice');
+  if(pLoop) clearInterval(pLoop);
+  pLoop = setInterval(practiceTick, pSpeed);
+  // Countdown timer
+  if(pTimerInterval) clearInterval(pTimerInterval);
+  pTimerInterval = setInterval(()=>{
+    if(!pActive) return;
+    pTimeLeft--;
+    // Clean death timestamps older than 60s ago (sliding window)
+    const cutoff = Date.now() - 60000;
+    pDeathTimes = pDeathTimes.filter(t=>t>cutoff);
+    // Update deaths display (sliding window count)
+    document.getElementById('prac-deaths').textContent=pDeathTimes.length;
+    // Update apples earned (live)
+    updatePracticeApples();
+    document.getElementById('prac-timer').textContent=pTimeLeft;
+    if(pTimeLeft<=0){
+      endPractice();
+    }
+  }, 1000);
+}
+
+function resetPracticeSnake(){
+  pSnake = [{x:Math.floor(pGrid/2),y:Math.floor(pGrid/2)}];
+  for(let i=1;i<3;i++) pSnake.push({x:pSnake[0].x-i,y:pSnake[0].y});
+  pDir = {x:1,y:0};
+  pPendingDir = null;
+  pPlaceFood();
+}
+
+function pPlaceFood(){
+  do{
+    pFood = {x:Math.floor(Math.random()*pGrid), y:Math.floor(Math.random()*pGrid)};
+  }while(pSnake.some(s=>s.x===pFood.x&&s.y===pFood.y));
+}
+
+function practiceTick(){
+  if(!pActive) return;
+  if(pPendingDir){ pDir = pPendingDir; pPendingDir = null; }
+  const head = {x:pSnake[0].x+pDir.x, y:pSnake[0].y+pDir.y};
+  // Wall wrap
+  if(head.x<0) head.x=pGrid-1;
+  if(head.x>=pGrid) head.x=0;
+  if(head.y<0) head.y=pGrid-1;
+  if(head.y>=pGrid) head.y=0;
+  const willEat = (head.x===pFood.x&&head.y===pFood.y);
+  const bodyToCheck = willEat ? pSnake : pSnake.slice(0,-1);
+  // Practice mode: collision = death count + reset, NOT gameOver
+  if(bodyToCheck.some(s=>s.x===head.x&&s.y===head.y)){
+    pDeaths++;
+    pDeathTimes.push(Date.now());
+    // Keep only last 60s
+    const cutoff = Date.now() - 60000;
+    pDeathTimes = pDeathTimes.filter(t=>t>cutoff);
+    document.getElementById('prac-deaths').textContent = pDeathTimes.length;
+    updatePracticeApples();
+    // Flash effect + reset snake
+    pCtx.fillStyle='rgba(255,80,80,.4)';
+    pCtx.fillRect(0,0,pCanvas.width,pCanvas.height);
+    setTimeout(()=>{ if(pActive) drawPractice(); }, 150);
+    resetPracticeSnake();
+    return;
+  }
+  pSnake.unshift(head);
+  if(head.x===pFood.x&&head.y===pFood.y){
+    pPlaceFood();
+  }else{
+    pSnake.pop();
+  }
+  drawPractice();
+}
+
+function getPracticeThreshold(){
+  const lv = player.level || 1;
+  if(lv<=3) return 5;
+  if(lv<=10) return 3;
+  return 0; // L10+ no practice
+}
+
+function updatePracticeApples(){
+  const threshold = getPracticeThreshold();
+  if(threshold<=0){ pApplesEarned=0; return; }
+  // Current deaths in last 60s
+  const cutoff = Date.now() - 60000;
+  const recentDeaths = pDeathTimes.filter(t=>t>cutoff).length;
+ // Apples = threshold - deaths (clamped ≥ 0), shown live as projected
+  pApplesEarned = Math.max(0, threshold - recentDeaths);
+  document.getElementById('prac-apples').textContent = pApplesEarned;
+}
+
+function drawPractice(){
+  pCtx.fillStyle='#0a0a1a';
+  pCtx.fillRect(0,0,pCanvas.width,pCanvas.height);
+  // Grid
+  pCtx.strokeStyle='#1a1a2e';
+  for(let i=0;i<=pGrid;i++){
+    pCtx.beginPath();pCtx.moveTo(i*pCell,0);pCtx.lineTo(i*pCell,pCanvas.height);pCtx.stroke();
+    pCtx.beginPath();pCtx.moveTo(0,i*pCell);pCtx.lineTo(pCanvas.width,i*pCell);pCtx.stroke();
+  }
+  // Food
+  pCtx.font = pCell*0.7+'px serif';
+  pCtx.textAlign='center';pCtx.textBaseline='middle';
+  pCtx.fillText('🍎', pFood.x*pCell+pCell/2, pFood.y*pCell+pCell/2);
+  // Snake
+  pSnake.forEach((s,i)=>{
+    const alpha = 1-(i/pSnake.length)*0.5;
+    pCtx.fillStyle = `rgba(76,175,80,${alpha})`;
+    pCtx.beginPath();
+    pCtx.roundRect(s.x*pCell+1, s.y*pCell+1, pCell-2, pCell-2, 4);
+    pCtx.fill();
+    if(i===0){
+      pCtx.font=(pCell*0.5)+'px serif';
+      pCtx.fillStyle='#fff';
+      const ex=pDir.x*3, ey=pDir.y*3;
+      pCtx.beginPath();
+      pCtx.arc(s.x*pCell+pCell*0.35+ex, s.y*pCell+pCell*0.35+ey, 2, 0, Math.PI*2);
+      pCtx.arc(s.x*pCell+pCell*0.65+ex, s.y*pCell+pCell*0.35+ey, 2, 0, Math.PI*2);
+      pCtx.fill();
+    }
+  });
+}
+
+function endPractice(){
+  pActive = false;
+  if(pLoop) clearInterval(pLoop);
+  if(pTimerInterval) clearInterval(pTimerInterval);
+  // Final apple calculation
+  updatePracticeApples();
+  // Award apples to player
+  if(pApplesEarned>0){
+    player.apples += pApplesEarned;
+    savePlayer();
+    refreshHome();
+  }
+  const threshold = getPracticeThreshold();
+  showPage('home');
+  setTimeout(()=>{
+    alert(`🎓 练习结束！\n💀 本分钟死亡：${pDeathTimes.length} 次\n🎯 阈值：${threshold} 次/分钟\n🍎 获得：${pApplesEarned} 个苹果！`);
+  }, 100);
+}
+
+function exitPractice(){
+  pActive = false;
+  if(pLoop) clearInterval(pLoop);
+  if(pTimerInterval) clearInterval(pTimerInterval);
+  // Award partial apples
+  updatePracticeApples();
+  if(pApplesEarned>0){
+    player.apples += pApplesEarned;
+    savePlayer();
+    refreshHome();
+  }
+  showPage('home');
+}
+
 // Controls
 document.addEventListener('keydown', e=>{
+  // Practice mode controls
+  if(pActive){
+    const pmap = {ArrowUp:{x:0,y:-1},ArrowDown:{x:0,y:1},ArrowLeft:{x:-1,y:0},ArrowRight:{x:1,y:0},
+      w:{x:0,y:-1},s:{x:0,y:1},a:{x:-1,y:0},d:{x:1,y:0}};
+    const pd = pmap[e.key];
+    if(pd && !(pd.x===-pDir.x && pd.y===-pDir.y)){
+      pPendingDir = pd;
+      e.preventDefault();
+    }
+    return;
+  }
   if(!gameActive) return;
   const map = {ArrowUp:{x:0,y:-1},ArrowDown:{x:0,y:1},ArrowLeft:{x:-1,y:0},ArrowRight:{x:1,y:0},
     w:{x:0,y:-1},s:{x:0,y:1},a:{x:-1,y:0},d:{x:1,y:0}};
@@ -909,19 +1141,24 @@ document.addEventListener('keydown', e=>{
 // Touch swipe controls (non-joystick fallback)
 let touchStart = null;
 document.addEventListener('touchstart', e=>{
-  if(currentPage!=='game') return;
+  if(currentPage!=='game' && currentPage!=='practice') return;
   if(e.target.closest('.joystick-zone')) return;
   touchStart = {x:e.touches[0].clientX, y:e.touches[0].clientY};
 });
 document.addEventListener('touchend', e=>{
-  if(!touchStart||currentPage!=='game') return;
+  if(!touchStart) return;
+  if(currentPage!=='game' && currentPage!=='practice') { touchStart=null; return; }
   const dx = e.changedTouches[0].clientX - touchStart.x;
   const dy = e.changedTouches[0].clientY - touchStart.y;
-  if(Math.abs(dx)<20 && Math.abs(dy)<20) return;
+  if(Math.abs(dx)<20 && Math.abs(dy)<20){ touchStart=null; return; }
   let d;
   if(Math.abs(dx)>Math.abs(dy)) d = dx>0?{x:1,y:0}:{x:-1,y:0};
   else d = dy>0?{x:0,y:1}:{x:0,y:-1};
-  if(!(d.x===-direction.x && d.y===-direction.y)) pendingDir = d;
+  if(currentPage==='practice'){
+    if(pActive && !(d.x===-pDir.x && d.y===-pDir.y)) pPendingDir = d;
+  }else{
+    if(!(d.x===-direction.x && d.y===-direction.y)) pendingDir = d;
+  }
   touchStart = null;
 });
 
