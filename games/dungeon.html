@@ -2711,6 +2711,30 @@ refreshHomeUI();
 console.log('🗺️ 小小探险家 loaded');
 </script>
 <script src="tutorial.js"></script>
+<script src="friends.js"></script>
+<script>
+// Called by friends.js when accepting a duo invite
+function enterDuoMode(roomCode){
+  if(typeof mode!=='undefined') mode='duo';
+  if(typeof isDuo!=='undefined') isDuo=true;
+  // Show a toast
+  if(typeof showToast==='function') showToast('🎮 好友已加入！房间码: '+roomCode);
+  // Go to mode select or start duo
+  if(typeof showPage==='function') showPage('settings');
+}
+// Check for pending invite on load
+(function(){
+  var pi=localStorage.getItem('tpg_pending_invite');
+  if(pi){
+    try{
+      var inv=JSON.parse(pi);
+      if(inv.game==='dungeon'){
+        localStorage.removeItem('tpg_pending_invite');
+        setTimeout(function(){ enterDuoMode(inv.roomCode); }, 1000);
+      }
+    }catch(e){}
+  }
+})();
 <script>
 // 🐾 新手教程 第一步：小小探险家
 (function(){
