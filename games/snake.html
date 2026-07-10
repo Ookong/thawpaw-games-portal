@@ -330,6 +330,10 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
       <div style="font-size:28px;">🤝👥</div>
       <div><div class="mode-name" style="font-size:14px;">合作邀请好友</div><div class="mode-desc" style="font-size:11px;">和好友一起霸屏</div></div>
     </div>
+    <div class="mode-card" onclick="showPage('join-room')" style="margin-bottom:8px;flex-direction:row;gap:12px;padding:14px;text-align:left;border:1.5px solid var(--accent);">
+      <div style="font-size:28px;">🔑</div>
+      <div><div class="mode-name" style="font-size:14px;">输入房间码加入</div><div class="mode-desc" style="font-size:11px;">有房间码？直接加入好友的房间</div></div>
+    </div>
 
     <!-- 线下模式 -->
     <h3 style="font-size:14px;color:var(--text2);margin:12px 0 4px;">📱 线下（同设备）</h3>
@@ -459,6 +463,21 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
   <div style="text-align:center;padding:8px;font-size:12px;color:var(--text2);">
     📱 触屏：左半屏控制玩家1，右半屏控制玩家2 · 💻 键盘：WASD / 方向键<br>
     撞自己=死！撞对方=安全。一方死后拿走自己的分数离场
+  </div>
+</div>
+
+<!-- ===== JOIN ROOM PAGE ===== -->
+<div id="page-join-room" class="page">
+  <div class="back-btn" onclick="showPage('modes')">←</div>
+  <div class="snow-btn" onclick="goPortal()" style="position:absolute;top:16px;right:16px;">❄️</div>
+  <div class="settings-page">
+    <h2>🔑 加入房间</h2>
+    <div class="setting-group">
+      <label>输入好友给你的房间码</label>
+      <input id="join-code-input" placeholder="如：AB3XK9" maxlength="8" style="width:100%;padding:14px;background:var(--card2);border:2px solid var(--border);border-radius:10px;color:var(--gold);font-size:24px;font-weight:900;font-family:monospace;text-align:center;letter-spacing:6px;text-transform:uppercase;" />
+    </div>
+    <button class="start-btn" onclick="joinRoomByCode()">🔑 加入！</button>
+    <div style="text-align:center;margin-top:12px;font-size:12px;color:var(--dim);">房间码由好友创建房间后获得</div>
   </div>
 </div>
 
@@ -1324,6 +1343,22 @@ async function onlineCheckMatch() {
 function onlineCancel() {
   if (onlineState.matchTimer) { clearInterval(onlineState.matchTimer); onlineState.matchTimer = null; }
   showPage('modes');
+}
+
+async function joinRoomByCode() {
+  var me = getMyId();
+  if (!me) { alert('请先登录！'); return; }
+  var code = document.getElementById('join-code-input').value.trim().toUpperCase();
+  if (!code || code.length < 4) { alert('请输入有效的房间码'); return; }
+  var res = await onlineApi('online/room/join', 'POST', { id: me.id, nickname: me.nickname, roomCode: code });
+  if (!res.ok) { alert('❌ ' + (res.error || '加入失败')); return; }
+  onlineState.roomCode = res.roomCode;
+  onlineState.playerNum = res.playerNum || 2;
+  onlineState.opponent = res.opponent || { id: '?', nickname: '房主' };
+  onlineState.mode = res.mode || 'pk';
+  onlineState.matchType = 'join';
+  document.getElementById('join-code-input').value = '';
+  onlineEnterGame();
 }
 
 function onlineEnterGame() {
