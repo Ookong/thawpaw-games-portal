@@ -2713,13 +2713,22 @@ console.log('🗺️ 小小探险家 loaded');
   if(isNewPlayer() && !tutorialCheck('dungeon','step1')){
     setTimeout(function(){
       var btn = document.querySelector('#zone-start-title');
-      // The clickable zone is the parent .zone-upper
       var zone = btn ? btn.closest('.zone-upper') : null;
       if(!zone) return;
       showTutorialStep(zone, '🕵️', '点击经典模式开始冒险！', function(){
         tutorialDone('dungeon','step1');
       });
     }, 600);
+  }
+})();
+// 🐾 新手教程 第二步：游戏内操作说明
+(function(){
+  if(!tutorialCheck('dungeon','step2')){
+    var origEnter = window.enterCurrentLevel;
+    window.enterCurrentLevel = function(){
+      origEnter && origEnter.apply(this, arguments);
+      setTimeout(function(){ showTutorialHowTo('dungeon'); }, 500);
+    };
   }
 })();
 </script>

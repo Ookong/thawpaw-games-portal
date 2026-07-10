@@ -2882,6 +2882,16 @@ console.log('🐾 猫武士大冒险 loaded');
     }, 600);
   }
 })();
+// 🐾 新手教程 第二步：游戏内操作说明
+(function(){
+  if(!tutorialCheck('moonstone','step2')){
+    var origEnter = window.enterFloor;
+    window.enterFloor = function(n){
+      origEnter && origEnter.apply(this, arguments);
+      setTimeout(function(){ showTutorialHowTo('moonstone'); }, 500);
+    };
+  }
+})();
 </script>
 </body>
 </html>

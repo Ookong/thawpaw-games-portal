@@ -205,3 +205,99 @@ function isNewPlayer() {
     return false;
   } catch (e) { return false; }
 }
+
+/**
+ * 📘 第 2 步：游戏内操作说明弹窗
+ * @param {string} game - 'snake' | 'moonstone' | 'dungeon'
+ * @param {function} onClose - optional callback after user dismisses
+ */
+function showTutorialHowTo(game, onClose) {
+  ensureTutorialElements();
+
+  var guides = {
+    snake: {
+      emoji: '🐍',
+      title: '怎么玩贪吃蛇',
+      steps: [
+        '⌨️ 方向键或 WASD 控制蛇移动',
+        '🍎 吃到苹果加分、变长',
+        '🚫 别撞到自己！撞到就 Game Over',
+        '💰 吃苹果还能赚金币'
+      ]
+    },
+    moonstone: {
+      emoji: '🐱',
+      title: '怎么玩猫武士大冒险',
+      steps: [
+        '⌨️ 方向键移动猫武士',
+        '⚔️ 走到敌人旁边按攻击键',
+        '🌿 受伤了用草药回血',
+        '▼ 找到楼梯往下层探索',
+        '🔮 打 BOSS 赢月亮石！'
+      ]
+    },
+    dungeon: {
+      emoji: '🕵️',
+      title: '怎么玩小小探险家',
+      steps: [
+        '⌨️ WASD 或方向键移动',
+        '⚔️ 走到怪物旁边自动攻击',
+        '💣 用炸弹炸一片怪物',
+        '🏪 按 P 开商店买装备',
+        '🗺️ 打 BOSS 赢探险经验！'
+      ]
+    }
+  };
+
+  var g = guides[game];
+  if (!g) { if (onClose) onClose(); return; }
+
+  // Dim background
+  var overlay = document.createElement('div');
+  overlay.className = 'tpg-tut-overlay active';
+  overlay.style.pointerEvents = 'auto';
+  overlay.style.display = 'flex';
+  overlay.style.alignItems = 'center';
+  overlay.style.justifyContent = 'center';
+
+  // Card
+  var card = document.createElement('div');
+  card.style.cssText = 'background:#1e1e2e;border:1.5px solid #aaddff;border-radius:16px;padding:24px 20px;width:90%;max-width:340px;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,.6);animation:tpgPop .3s ease;';
+
+  var html = '<div style="font-size:44px;margin-bottom:8px;">' + g.emoji + '</div>';
+  html += '<div style="font-size:18px;font-weight:700;color:#aaddff;margin-bottom:14px;">' + g.title + '</div>';
+  html += '<div style="text-align:left;font-size:14px;color:#ccc;line-height:1.8;margin-bottom:18px;">';
+  for (var i = 0; i < g.steps.length; i++) {
+    html += '<div style="margin-bottom:4px;">' + g.steps[i] + '</div>';
+  }
+  html += '</div>';
+  html += '<button style="background:#e94560;color:#fff;border:none;padding:12px 32px;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;width:100%;">知道了！</button>';
+  card.innerHTML = html;
+
+  overlay.appendChild(card);
+  document.body.appendChild(overlay);
+
+  // Add pop animation keyframe if not exists
+  if (!document.getElementById('tpg-pop-keyframe')) {
+    var s = document.createElement('style');
+    s.id = 'tpg-pop-keyframe';
+    s.textContent = '@keyframes tpgPop{from{transform:scale(.8);opacity:0;}to{transform:scale(1);opacity:1;}}';
+    document.head.appendChild(s);
+  }
+
+  // Close on button click
+  var btn = card.querySelector('button');
+  btn.addEventListener('click', function() {
+    overlay.remove();
+    tutorialDone(game, 'step2');
+    if (onClose) onClose();
+  });
+  // Also close on overlay click outside card
+  overlay.addEventListener('click', function(e) {
+    if (e.target === overlay) {
+      overlay.remove();
+      tutorialDone(game, 'step2');
+      if (onClose) onClose();
+    }
+  });
+}
