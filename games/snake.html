@@ -832,9 +832,9 @@ function showPage(name){
   bb.style.display = (name==='home') ? 'flex' : 'none';
   if(name==='home') refreshHome();
   if(name==='profile') refreshProfile();
-  // Show joystick only on game page for touch devices
+  // Show joystick on game + practice pages for touch devices
   if(isTouchDevice){
-    joystickZone.classList.toggle('visible', name==='game');
+    joystickZone.classList.toggle('visible', name==='game' || name==='practice');
   }
 }
 
@@ -2402,11 +2402,15 @@ function handleJoystickMove(touch){
   const nx = Math.cos(angle)*clampedDist;
   const ny = Math.sin(angle)*clampedDist;
   joystickKnob.style.transform = `translate(calc(-50% + ${nx}px), calc(-50% + ${ny}px))`;
-  if(dist > 15 && gameActive){
+  if(dist > 15 && (gameActive || pActive)){
     let d;
     if(Math.abs(dx)>Math.abs(dy)) d = dx>0?{x:1,y:0}:{x:-1,y:0};
     else d = dy>0?{x:0,y:1}:{x:0,y:-1};
-    if(!(d.x===-direction.x && d.y===-direction.y)) pendingDir = d;
+    if(gameActive){
+      if(!(d.x===-direction.x && d.y===-direction.y)) pendingDir = d;
+    } else if(pActive){
+      if(!(d.x===-pDir.x && d.y===-pDir.y)) pPendingDir = d;
+    }
   }
 }
 
