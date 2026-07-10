@@ -25,7 +25,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .profile-info{display:flex;flex-direction:column;gap:2px;}
 .profile-info .name-row{display:flex;align-items:center;gap:6px;}
 .profile-info .nickname{font-weight:600;font-size:15px;}
-.level-badge{font-size:11px;background:var(--accent);padding:1px 6px;border-radius:8px;}
+.level-badge{font-size:11px;background:var(--accent);padding:1px 8px;border-radius:10px;white-space:nowrap;}
 .level-bar-wrap{height:4px;background:#333;border-radius:2px;width:80px;margin-top:2px;}
 .level-bar{height:100%;background:var(--gold);border-radius:2px;width:30%;transition:width .3s;}
 
@@ -450,6 +450,41 @@ const SHOP_DATA = {
 const CURRENCY_NAMES = {gold:'💰',apple:'🍎'};
 const BAG_CATEGORIES = ['全部','皮肤','道具'];
 
+// ===== SNAKE TITLES (称号系统) =====
+const SNAKE_TITLES = [
+  {minLv:1,  name:'爬虫',   emoji:'🐛'},
+  {minLv:3,  name:'长虫',   emoji:'🪱'},
+  {minLv:5,  name:'初级蛇', emoji:'🐍'},
+  {minLv:7,  name:'普通蛇', emoji:'🐍'},
+  {minLv:9,  name:'超级蛇', emoji:'🐲'},
+  {minLv:10, name:'蛇中王', emoji:'🐉'},
+];
+function getSnakeTitle(lv){
+  let t = SNAKE_TITLES[0];
+  for(const s of SNAKE_TITLES){ if(lv>=s.minLv) t=s; }
+  return t;
+}
+function getSnakeTitleText(lv){
+  const t=getSnakeTitle(lv);
+  return t.emoji+' '+t.name;
+}
+const MAX_LEVEL = 10;
+function checkLevelUp(){
+  while(player.level < MAX_LEVEL && player.exp >= 100){
+    player.exp -= 100;
+    player.level++;
+  }
+  if(player.level >= MAX_LEVEL) player.exp = 0;
+}
+function expInLevel(){
+  if(player.level>=MAX_LEVEL) return 0;
+  return player.exp;
+}
+function expForNextLevel(){
+  if(player.level>=MAX_LEVEL) return 1;
+  return 100;
+}
+
 let player = {
   nickname: '',
   avatar: '🐍',
@@ -586,8 +621,8 @@ function showPage(name){
 function refreshHome(){
   document.getElementById('home-avatar').textContent = player.avatar;
   document.getElementById('home-nickname').textContent = player.nickname || '未命名';
-  document.getElementById('home-level').textContent = 'Lv.'+player.level;
-  document.getElementById('home-level-bar').style.width = (player.exp%100)+'%';
+  document.getElementById('home-level').textContent = getSnakeTitleText(player.level);
+  document.getElementById('home-level-bar').style.width = Math.min(100,(expInLevel()/expForNextLevel())*100)+'%';
   document.getElementById('home-gold').textContent = player.gold;
   document.getElementById('home-apples').textContent = player.apples;
   // Practice entry: hide for L10+
@@ -609,9 +644,9 @@ function refreshProfile(){
   document.getElementById('profile-nickname').textContent = player.nickname || '未命名';
   document.getElementById('profile-snake-id').textContent = '贪吃号：'+player.snakeId;
   document.getElementById('profile-bio').textContent = player.bio || '点击设置简介';
-  document.getElementById('profile-level').textContent = 'Lv.'+player.level;
-  document.getElementById('profile-exp').textContent = (player.exp%100)+'/100';
-  document.getElementById('profile-level-bar').style.width = (player.exp%100)+'%';
+  document.getElementById('profile-level').textContent = getSnakeTitleText(player.level);
+  document.getElementById('profile-exp').textContent = player.level>=MAX_LEVEL ? 'MAX' : (expInLevel()+'/'+expForNextLevel());
+  document.getElementById('profile-level-bar').style.width = Math.min(100,(expInLevel()/expForNextLevel())*100)+'%';
 }
 
 // ===== NICKNAME =====
@@ -863,6 +898,7 @@ function gameTick(){
     player.gold += goldEarned;
     player.apples += 1;
     player.exp += 5;
+    checkLevelUp();
     document.getElementById('game-score').textContent = parseInt(document.getElementById('game-score').textContent)+goldEarned;
     document.getElementById('game-apples').textContent = parseInt(document.getElementById('game-apples').textContent)+1;
     document.getElementById('game-length').textContent = snake.length;
@@ -913,7 +949,7 @@ function gameOver(){
   const apples = document.getElementById('game-apples').textContent;
   savePlayer();
   setTimeout(()=>{
-    alert(`游戏结束！\n💰 ${score} 金币 | 🍎 ${apples} 苹果\n蛇长：${snake.length}`);
+    alert(`游戏结束！\n💰 ${score} 金币 | 🍎 ${apples} 苹果\n蛇长：${snake.length}\n当前称号：${getSnakeTitleText(player.level)}`);
     showPage('home');
   },100);
 }
