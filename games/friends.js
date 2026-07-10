@@ -53,7 +53,7 @@
     if (document.getElementById('tpg-friends-panel')) return;
     var panel = document.createElement('div');
     panel.id = 'tpg-friends-panel';
-    panel.style.cssText = 'position:fixed;bottom:72px;right:16px;width:320px;max-height:480px;background:#1a1a2e;border:1px solid #333;border-radius:16px;z-index:9999;display:none;flex-direction:column;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.5);font-family:system-ui,sans-serif;';
+    panel.style.cssText = 'position:fixed;bottom:72px;left:16px;width:360px;max-width:calc(100vw - 32px);max-height:70vh;background:#1a1a2e;border:1px solid #333;border-radius:16px;z-index:9999;display:none;flex-direction:column;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.5);font-family:system-ui,sans-serif;';
     panel.innerHTML = '' +
       '<div style="padding:14px 16px;border-bottom:1px solid #333;display:flex;justify-content:space-between;align-items:center;">' +
         '<span style="font-weight:700;font-size:15px;color:#fff;">👥 好友</span>' +
@@ -231,10 +231,12 @@
         if (f.progress.dungeon) progressParts.push('🕵️F' + f.progress.dungeon.floor);
         if (f.progress.moonstone) progressParts.push('🔮' + f.progress.moonstone.moonstones);
       }
+      var isOnline = f.savedAt && (Date.now() - new Date(f.savedAt).getTime() < 120000);
+      var dot = isOnline ? '🟢' : '⚪';
       html += '<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #222;">' +
-        '<span style="font-size:20px;">' + f.avatar + '</span>' +
+        '<span style="font-size:20px;position:relative;">' + f.avatar + '<span style="position:absolute;bottom:-2px;right:-4px;font-size:10px;">' + dot + '</span></span>' +
         '<div style="flex:1;">' +
-          '<div style="font-size:13px;color:#fff;font-weight:600;">' + escapeHtml(f.nickname) + '</div>' +
+          '<div style="font-size:13px;color:#fff;font-weight:600;">' + escapeHtml(f.nickname) + ' <span style="font-size:10px;color:'+(isOnline?'#4caf50':'#666')+';">'+(isOnline?'在线':'离线')+'</span></div>' +
           '<div style="font-size:11px;color:#666;">' + (progressParts.join(' · ') || '暂无记录') + '</div>' +
         '</div>' +
         '<button onclick="tpgFriends.invite(\'' + f.id + '\',\'' + escapeHtml(f.nickname) + '\')" style="background:#48c6ef;color:#000;border:none;padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer;">🎮</button>' +
@@ -284,21 +286,36 @@
   var currentGame = 'snake';
   function setGame(g) { currentGame = g; }
 
-  async function invite(friendId, friendName) {
+  function invite(friendId, friendName) {
     var p = getPlayer();
     if (!p) return;
-    var roomCode = generateRoomCode();
     var gameNames = { snake: '贪吃蛇', moonstone: '猫武士大冒险', dungeon: '小小探险家' };
-    var res = await api('friends/invite', 'POST', { id: p.id, nickname: p.nickname, targetId: friendId, game: currentGame, roomCode: roomCode });
-    if (res.ok) {
-      alert('🎮 已邀请 ' + friendName + ' 一起玩' + (gameNames[currentGame] || '') + '！\n房间码：' + roomCode + '\n\n让好友打开游戏输入房间码加入');
-      // For same-device duo: directly enter duo mode
-      if (typeof enterDuoMode === 'function') {
-        enterDuoMode(roomCode);
-      }
-    } else {
-      alert('❌ ' + (res.error || '邀请失败'));
-    }
+    // Create an online room, then send invite
+    api('online/room/create', 'POST', { id: p.id, nickname: p.nickname, mode: currentGame === 'snake' ? 'pk' : 'duo' }).then(function(res) {
+      if (!res.ok) { alert('❌ 创建房间失败'); return; }
+      var roomCode = res.roomCode;
+      api('friends/invite', 'POST', { id: p.id, nickname: p.nickname, targetId: friendId, game: currentGame, roomCode: roomCode }).then(function(res2) {
+        if (res2.ok) {
+          alert('🎮 已邀请 ' + friendName + '！\n房间码：' + roomCode + '\n好友加入后自动开始');
+          if (currentGame === 'snake' && typeof onlineState !== 'undefined') {
+            onlineState.mode = 'pk';
+            onlineState.matchType = 'invite';
+            onlineState.roomCode = roomCode;
+            onlineState.playerNum = 1;
+            onlineState.opponent = null;
+            document.getElementById('online-title').textContent = '⚔️ 邀请好友';
+            document.getElementById('online-status').style.display = 'none';
+            document.getElementById('online-room-info').style.display = 'block';
+            document.getElementById('online-room-code').textContent = roomCode;
+            showPage('online-match');
+            if (onlineState.matchTimer) clearInterval(onlineState.matchTimer);
+            onlineState.matchTimer = setInterval(onlineCheckMatch, 2000);
+          }
+        } else {
+          alert('❌ ' + (res2.error || '邀请失败'));
+        }
+      });
+    });
   }
 
   // Check for incoming invites (polling)
