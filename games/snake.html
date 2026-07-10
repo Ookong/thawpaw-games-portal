@@ -237,10 +237,10 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
         <div class="mode-name">经典模式</div>
         <div class="mode-desc">经典贪吃蛇</div>
       </div>
-      <div class="mode-card" style="opacity:.5;cursor:default;">
+      <div class="mode-card" onclick="showPage('modes')">
         <div class="mode-icon">🔮</div>
         <div class="mode-name">更多模式</div>
-        <div class="mode-desc">即将开放</div>
+        <div class="mode-desc">双人PK · 双人合作</div>
       </div>
     </div>
     <!-- 右1/4 活动 -->
@@ -303,6 +303,148 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
       <div class="slider-labels"><span>慢速</span><span>中速</span><span>快速</span></div>
     </div>
     <button class="start-btn" onclick="startGame()">🐍 开始游戏！</button>
+  </div>
+</div>
+
+<!-- ===== MODES PAGE ===== -->
+<div id="page-modes" class="page">
+  <div class="back-btn" onclick="showPage('home')">←</div>
+  <div class="settings-page">
+    <h2>🔮 更多模式</h2>
+    <div class="mode-card" onclick="showPage('pk-setup')" style="margin-bottom:12px;flex-direction:row;gap:12px;padding:18px;text-align:left;">
+      <div style="font-size:36px;">⚔️</div>
+      <div>
+        <div class="mode-name" style="font-size:16px;">双人 PK</div>
+        <div class="mode-desc" style="font-size:12px;">两条蛇各自棋盘，比谁死前分高！赢 +10🍎，输 +10💰安慰</div>
+      </div>
+    </div>
+    <div class="mode-card" onclick="showPage('duo-setup')" style="margin-bottom:12px;flex-direction:row;gap:12px;padding:18px;text-align:left;">
+      <div style="font-size:36px;">🤝</div>
+      <div>
+        <div class="mode-name" style="font-size:16px;">双人合作</div>
+        <div class="mode-desc" style="font-size:12px;">同一棋盘！撞自己=死，撞对方=安全。霸屏平分 50🍎</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PK SETUP PAGE ===== -->
+<div id="page-pk-setup" class="page">
+  <div class="back-btn" onclick="showPage('modes')">←</div>
+  <div class="settings-page">
+    <h2>⚔️ 双人 PK 设置</h2>
+    <div class="setting-group">
+      <label>📏 棋盘大小</label>
+      <div class="slider-row">
+        <span style="font-size:12px;">小</span>
+        <input type="range" id="pk-board" min="1" max="3" value="2">
+        <span style="font-size:12px;">大</span>
+      </div>
+      <div class="slider-labels"><span>15×15</span><span>20×20</span><span>25×25</span></div>
+    </div>
+    <div class="setting-group">
+      <label>⚡ 速度</label>
+      <div class="slider-row">
+        <span style="font-size:12px;">慢</span>
+        <input type="range" id="pk-speed" min="1" max="3" value="2">
+        <span style="font-size:12px;">快</span>
+      </div>
+      <div class="slider-labels"><span>慢速</span><span>中速</span><span>快速</span></div>
+    </div>
+    <div class="setting-group">
+      <label>👤 玩家 1</label>
+      <input id="pk-p1name" placeholder="玩家1名字" style="width:100%;padding:8px;background:var(--card2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;" value="玩家1" />
+    </div>
+    <div class="setting-group">
+      <label>🐼 玩家 2</label>
+      <input id="pk-p2name" placeholder="玩家2名字" style="width:100%;padding:8px;background:var(--card2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;" value="玩家2" />
+    </div>
+    <button class="start-btn" onclick="startPK()">⚔️ 开始 PK！</button>
+  </div>
+</div>
+
+<!-- ===== DUO SETUP PAGE ===== -->
+<div id="page-duo-setup" class="page">
+  <div class="back-btn" onclick="showPage('modes')">←</div>
+  <div class="settings-page">
+    <h2>🤝 双人合作设置</h2>
+    <div class="setting-group">
+      <label>📏 棋盘大小</label>
+      <div class="slider-row">
+        <span style="font-size:12px;">小</span>
+        <input type="range" id="duo-board" min="1" max="3" value="2">
+        <span style="font-size:12px;">大</span>
+      </div>
+      <div class="slider-labels"><span>15×15</span><span>20×20</span><span>25×25</span></div>
+    </div>
+    <div class="setting-group">
+      <label>⚡ 速度</label>
+      <div class="slider-row">
+        <span style="font-size:12px;">慢</span>
+        <input type="range" id="duo-speed" min="1" max="3" value="2">
+        <span style="font-size:12px;">快</span>
+      </div>
+      <div class="slider-labels"><span>慢速</span><span>中速</span><span>快速</span></div>
+    </div>
+    <div class="setting-group">
+      <label>🟢 玩家 1 (WASD)</label>
+      <input id="duo-p1name" placeholder="玩家1名字" style="width:100%;padding:8px;background:var(--card2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;" value="玩家1" />
+    </div>
+    <div class="setting-group">
+      <label>🟠 玩家 2 (方向键)</label>
+      <input id="duo-p2name" placeholder="玩家2名字" style="width:100%;padding:8px;background:var(--card2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;" value="玩家2" />
+    </div>
+    <button class="start-btn" onclick="startDuo()">🤝 开始合作！</button>
+  </div>
+</div>
+
+<!-- ===== PK GAME PAGE ===== -->
+<div id="page-pk" class="page game-page">
+  <div class="top-bar">
+    <div class="back-btn" onclick="pkQuit()">←</div>
+    <div style="flex:1;text-align:center;">
+      <span id="pk-status">⚔️ PK 进行中！</span>
+    </div>
+    <div class="snow-btn" onclick="goPortal()">❄️</div>
+  </div>
+  <div style="display:flex;gap:8px;justify-content:center;padding:8px;flex-wrap:wrap;">
+    <div style="text-align:center;">
+      <div style="font-size:12px;color:var(--green);font-weight:700;" id="pk-p1label">🟢 玩家1</div>
+      <div style="font-size:20px;font-weight:700;color:var(--gold);" id="pk-p1score">0</div>
+      <div style="font-size:11px;color:var(--text2);">长度：<span id="pk-p1len">3</span></div>
+      <canvas id="pk-canvas1" style="margin-top:4px;border:2px solid #4caf50;border-radius:6px;"></canvas>
+    </div>
+    <div style="font-size:28px;align-self:center;font-weight:900;color:var(--accent);">VS</div>
+    <div style="text-align:center;">
+      <div style="font-size:12px;color:#ff9800;font-weight:700;" id="pk-p2label">🟠 玩家2</div>
+      <div style="font-size:20px;font-weight:700;color:var(--gold);" id="pk-p2score">0</div>
+      <div style="font-size:11px;color:var(--text2);">长度：<span id="pk-p2len">3</span></div>
+      <canvas id="pk-canvas2" style="margin-top:4px;border:2px solid #ff9800;border-radius:6px;"></canvas>
+    </div>
+  </div>
+  <div style="text-align:center;padding:8px;font-size:12px;color:var(--text2);">
+    📱 触屏：左半屏控制玩家1，右半屏控制玩家2 · 💻 键盘：WASD / 方向键
+  </div>
+</div>
+
+<!-- ===== DUO GAME PAGE ===== -->
+<div id="page-duo" class="page game-page">
+  <div class="top-bar">
+    <div class="back-btn" onclick="duoQuit()">←</div>
+    <div style="flex:1;text-align:center;">
+      <span id="duo-status">🤝 合作进行中！</span>
+    </div>
+    <div class="snow-btn" onclick="goPortal()">❄️</div>
+  </div>
+  <div style="display:flex;gap:12px;justify-content:center;padding:8px;font-size:14px;font-weight:700;">
+    <span style="color:#4caf50;">🟢 <span id="duo-p1name-disp">P1</span>：<span id="duo-p1score">0</span></span>
+    <span style="color:#ff9800;">🟠 <span id="duo-p2name-disp">P2</span>：<span id="duo-p2score">0</span></span>
+    <span style="color:var(--gold);">覆盖：<span id="duo-coverage">0%</span></span>
+  </div>
+  <canvas id="duo-canvas" style="display:block;margin:0 auto;"></canvas>
+  <div style="text-align:center;padding:8px;font-size:12px;color:var(--text2);">
+    📱 触屏：左半屏控制玩家1，右半屏控制玩家2 · 💻 键盘：WASD / 方向键<br>
+    撞自己=死！撞对方=安全。一方死后拿走自己的分数离场
   </div>
 </div>
 
@@ -964,6 +1106,424 @@ function goPortal(){
   if(gameActive){ gameActive=false; clearInterval(gameLoop); savePlayer(); }
   location.href = '../index.html';
 }
+
+// ===== PK MODE (双人对战) =====
+let pk1, pk2, pkLoop, pkActive=false;
+let pkGrid, pkCell, pkSpeed, pkSpeedIdx;
+let pkC1, pkC2, pkCtx1, pkCtx2;
+
+function makePKSnake(cx, cy) {
+  var s = [];
+  for (var i = 0; i < 3; i++) s.push({x: cx - i, y: cy});
+  return s;
+}
+
+function startPK() {
+  var bs = parseInt(document.getElementById('pk-board').value) - 1;
+  var sp = parseInt(document.getElementById('pk-speed').value) - 1;
+  pkGrid = BOARD_SIZES[bs];
+  pkSpeed = SPEEDS[sp];
+  pkSpeedIdx = sp;
+  pkCell = Math.min(Math.floor(Math.min(window.innerWidth * 0.42, window.innerHeight - 240) / pkGrid), 14);
+  pkC1 = document.getElementById('pk-canvas1');
+  pkC2 = document.getElementById('pk-canvas2');
+  pkCtx1 = pkC1.getContext('2d');
+  pkCtx2 = pkC2.getContext('2d');
+  for (var ctx of [pkCtx1, pkCtx2]) {
+    ctx.canvas.width = pkCell * pkGrid;
+    ctx.canvas.height = pkCell * pkGrid;
+    ctx.canvas.style.width = (pkCell * pkGrid) + 'px';
+    ctx.canvas.style.height = (pkCell * pkGrid) + 'px';
+  }
+  var mid = Math.floor(pkGrid / 2);
+  pk1 = { snake: makePKSnake(mid, mid), dir: {x:1,y:0}, pending: null, score: 0, alive: true, name: document.getElementById('pk-p1name').value || '玩家1' };
+  pk2 = { snake: makePKSnake(mid, mid), dir: {x:1,y:0}, pending: null, score: 0, alive: true, name: document.getElementById('pk-p2name').value || '玩家2' };
+  pk1.food = pkPlaceFood(pk1.snake);
+  pk2.food = pkPlaceFood(pk2.snake);
+  document.getElementById('pk-p1label').textContent = '🟢 ' + pk1.name;
+  document.getElementById('pk-p2label').textContent = '🟠 ' + pk2.name;
+  document.getElementById('pk-p1score').textContent = '0';
+  document.getElementById('pk-p2score').textContent = '0';
+  document.getElementById('pk-p1len').textContent = '3';
+  document.getElementById('pk-p2len').textContent = '3';
+  document.getElementById('pk-status').textContent = '⚔️ PK 进行中！';
+  pkActive = true;
+  showPage('pk');
+  if (pkLoop) clearInterval(pkLoop);
+  pkLoop = setInterval(pkTick, pkSpeed);
+}
+
+function pkPlaceFood(snake) {
+  var f;
+  do { f = {x: Math.floor(Math.random()*pkGrid), y: Math.floor(Math.random()*pkGrid)}; }
+  while (snake.some(s => s.x===f.x && s.y===f.y));
+  return f;
+}
+
+function pkTick() {
+  if (!pkActive) return;
+  if (pk1.alive) pkPlayerTick(pk1, 1);
+  if (pk2.alive) pkPlayerTick(pk2, 2);
+  pkDraw();
+  // Check end condition
+  if (!pk1.alive && !pk2.alive) pkEnd();
+}
+
+function pkPlayerTick(p, num) {
+  if (p.pending) { p.dir = p.pending; p.pending = null; }
+  var head = {x: p.snake[0].x + p.dir.x, y: p.snake[0].y + p.dir.y};
+  if (head.x < 0) head.x = pkGrid-1;
+  if (head.x >= pkGrid) head.x = 0;
+  if (head.y < 0) head.y = pkGrid-1;
+  if (head.y >= pkGrid) head.y = 0;
+  var willEat = (head.x === p.food.x && head.y === p.food.y);
+  var body = willEat ? p.snake : p.snake.slice(0, -1);
+  if (body.some(s => s.x===head.x && s.y===head.y)) {
+    p.alive = false;
+    document.getElementById('pk-status').textContent = '💀 ' + p.name + ' 挂了！等结果…';
+    return;
+  }
+  p.snake.unshift(head);
+  if (willEat) {
+    var gold = GOLD_PER_FOOD[pkSpeedIdx];
+    p.score += gold;
+    p.food = pkPlaceFood(p.snake);
+    document.getElementById('pk-p' + num + 'score').textContent = p.score;
+    document.getElementById('pk-p' + num + 'len').textContent = p.snake.length;
+  } else {
+    p.snake.pop();
+  }
+}
+
+function pkDraw() {
+  pkDrawBoard(pkCtx1, pk1, '#4caf50', p.food);
+  pkDrawBoard(pkCtx2, pk2, '#ff9800', pk.food);
+}
+
+function pkDrawBoard(ctx, p, color, food) {
+  ctx.fillStyle = '#0a0a1a';
+  ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+  // Grid
+  ctx.strokeStyle = '#1a1a2e';
+  for (var i = 0; i <= pkGrid; i++) {
+    ctx.beginPath(); ctx.moveTo(i*pkCell, 0); ctx.lineTo(i*pkCell, ctx.canvas.height); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, i*pkCell); ctx.lineTo(ctx.canvas.width, i*pkCell); ctx.stroke();
+  }
+  // Food
+  ctx.font = pkCell*0.7+'px serif';
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText('🍎', p.food.x*pkCell+pkCell/2, p.food.y*pkCell+pkCell/2);
+  // Snake or skull
+  if (p.alive) {
+    p.snake.forEach((s, i) => {
+      var alpha = 1 - (i/p.snake.length)*0.5;
+      ctx.fillStyle = color.replace(')', ',' + alpha + ')').replace('rgb', 'rgba').replace('#4caf50', 'rgba(76,175,80,'+alpha+')').replace('#ff9800', 'rgba(255,152,0,'+alpha+')');
+      if (color === '#4caf50') ctx.fillStyle = 'rgba(76,175,80,'+alpha+')';
+      else ctx.fillStyle = 'rgba(255,152,0,'+alpha+')';
+      ctx.beginPath();
+      ctx.roundRect(s.x*pkCell+1, s.y*pkCell+1, pkCell-2, pkCell-2, 3); ctx.fill();
+    });
+  } else {
+    // Draw faded snake + skull
+    p.snake.forEach((s, i) => {
+      ctx.fillStyle = 'rgba(80,80,80,0.3)';
+      ctx.beginPath(); ctx.roundRect(s.x*pkCell+1, s.y*pkCell+1, pkCell-2, pkCell-2, 3); ctx.fill();
+    });
+    ctx.font = pkCell+'px serif';
+    ctx.fillText('💀', p.snake[0].x*pkCell+pkCell/2, p.snake[0].y*pkCell+pkCell/2);
+  }
+}
+
+function pkEnd() {
+  pkActive = false;
+  clearInterval(pkLoop);
+  var p1s = pk1.score, p2s = pk2.score;
+  var winner, loser, winMsg;
+  if (p1s > p2s) { winner = pk1; loser = pk2; winMsg = '🎉 ' + pk1.name + ' 赢了！'; }
+  else if (p2s > p1s) { winner = pk2; loser = pk1; winMsg = '🎉 ' + pk2.name + ' 赢了！'; }
+  else { winMsg = '🤝 平局！'; }
+  // Rewards
+  if (winner) {
+    player.apples += 10;
+    player.gold += winner.score;
+    player.exp += 20;
+    player.gold += loser === pk1 ? pk2.score : pk1.score; // both scores
+    winMsg += '\n🏆 赢家奖励：+10🍎 +' + winner.score + '💰';
+    winMsg += '\n💔 输家安慰：+10💰';
+    player.gold += 10; // consolation
+  } else {
+    player.gold += p1s + p2s;
+    player.exp += 10;
+    winMsg += '\n双方各 +' + (p1s+p2s) + '💰';
+  }
+  checkLevelUp();
+  savePlayer();
+  document.getElementById('pk-status').textContent = winMsg.split('\n')[0];
+  setTimeout(() => {
+    alert(winMsg + '\n\n🟢 ' + pk1.name + ': ' + p1s + '\n🟠 ' + pk2.name + ': ' + p2s);
+    showPage('home');
+  }, 200);
+}
+
+function pkQuit() {
+  pkActive = false;
+  clearInterval(pkLoop);
+  showPage('modes');
+}
+
+// PK keyboard: P1=WASD, P2=Arrows
+function pkKey(e) {
+  if (!pkActive) return;
+  var k = e.key.toLowerCase();
+  var p1keys = { w:{x:0,y:-1}, s:{x:0,y:1}, a:{x:-1,y:0}, d:{x:1,y:0} };
+  var p2keys = { arrowup:{x:0,y:-1}, arrowdown:{x:0,y:1}, arrowleft:{x:-1,y:0}, arrowright:{x:1,y:0} };
+  if (pk1.alive && p1keys[k]) {
+    var nd = p1keys[k];
+    if (nd.x !== -pk1.dir.x || nd.y !== -pk1.dir.y) pk1.pending = nd;
+    e.preventDefault();
+  }
+  if (pk2.alive && p2keys[k]) {
+    var nd2 = p2keys[k];
+    if (nd2.x !== -pk2.dir.x || nd2.y !== -pk2.dir.y) pk2.pending = nd2;
+    e.preventDefault();
+  }
+}
+
+// PK touch: left half = P1, right half = P2
+function pkTouch(e) {
+  if (!pkActive) return;
+  for (var t of e.touches) {
+    var isLeft = t.clientX < window.innerWidth / 2;
+    var p = isLeft ? pk1 : pk2;
+    if (!p.alive) continue;
+    var dx = t.clientX - (isLeft ? window.innerWidth/4 : window.innerWidth*3/4);
+    var dy = t.clientY - window.innerHeight/2;
+    var nd;
+    if (Math.abs(dx) > Math.abs(dy)) nd = dx > 0 ? {x:1,y:0} : {x:-1,y:0};
+    else nd = dy > 0 ? {x:0,y:1} : {x:0,y:-1};
+    if (nd.x !== -p.dir.x || nd.y !== -p.dir.y) p.pending = nd;
+  }
+  e.preventDefault();
+}
+
+// ===== DUO MODE (双人合作) =====
+let duo, duoLoop, duoActive=false;
+let duoGrid, duoCell, duoSpeed, duoSpeedIdx;
+let duoCanvas, duoCtx;
+
+function startDuo() {
+  var bs = parseInt(document.getElementById('duo-board').value) - 1;
+  var sp = parseInt(document.getElementById('duo-speed').value) - 1;
+  duoGrid = BOARD_SIZES[bs];
+  duoSpeed = SPEEDS[sp];
+  duoSpeedIdx = sp;
+  duoCanvas = document.getElementById('duo-canvas');
+  duoCtx = duoCanvas.getContext('2d');
+  var maxPx = Math.min(window.innerWidth - 20, window.innerHeight - 200);
+  duoCell = Math.min(Math.floor(maxPx / duoGrid), 18);
+  duoCanvas.width = duoCell * duoGrid;
+  duoCanvas.height = duoCell * duoGrid;
+  duoCanvas.style.width = (duoCell * duoGrid) + 'px';
+  duoCanvas.style.height = (duoCell * duoGrid) + 'px';
+  var mid = Math.floor(duoGrid / 2);
+  duo = {
+    s1: { snake: [], dir: {x:1,y:0}, pending: null, score: 0, alive: true, name: document.getElementById('duo-p1name').value || 'P1' },
+    s2: { snake: [], dir: {x:1,y:0}, pending: null, score: 0, alive: true, name: document.getElementById('duo-p2name').value || 'P2' },
+    food: null
+  };
+  // P1 starts left-center, P2 starts right-center
+  for (var i = 0; i < 3; i++) {
+    duo.s1.snake.push({x: Math.floor(mid/2) - i, y: mid});
+    duo.s2.snake.push({x: mid + Math.floor(mid/2) - i, y: mid});
+  }
+  duo.food = duoPlaceFood();
+  document.getElementById('duo-p1name-disp').textContent = duo.s1.name;
+  document.getElementById('duo-p2name-disp').textContent = duo.s2.name;
+  document.getElementById('duo-p1score').textContent = '0';
+  document.getElementById('duo-p2score').textContent = '0';
+  document.getElementById('duo-status').textContent = '🤝 合作进行中！';
+  duoActive = true;
+  showPage('duo');
+  if (duoLoop) clearInterval(duoLoop);
+  duoLoop = setInterval(duoTick, duoSpeed);
+}
+
+function duoPlaceFood() {
+  var occupied = duo.s1.snake.concat(duo.s2.snake);
+  var f;
+  do { f = {x: Math.floor(Math.random()*duoGrid), y: Math.floor(Math.random()*duoGrid)}; }
+  while (occupied.some(s => s.x===f.x && s.y===f.y));
+  return f;
+}
+
+function duoTick() {
+  if (!duoActive) return;
+  if (duo.s1.alive) duoSnakeTick(duo.s1, 's1');
+  if (duo.s2.alive) duoSnakeTick(duo.s2, 's2');
+  duoDraw();
+  // Coverage
+  var total = duoGrid * duoGrid;
+  var covered = duo.s1.snake.length + duo.s2.snake.length;
+  var pct = Math.round(covered / total * 100);
+  var covEl = document.getElementById('duo-coverage');
+  if (covEl) covEl.textContent = pct + '%';
+  // 霸屏 check: 50%+ coverage
+  if (pct >= 50 && duo.s1.alive && duo.s2.alive) {
+    duoWin(pct);
+    return;
+  }
+  if (!duo.s1.alive && !duo.s2.alive) duoEnd();
+}
+
+function duoSnakeTick(s, key) {
+  if (s.pending) { s.dir = s.pending; s.pending = null; }
+  var head = {x: s.snake[0].x + s.dir.x, y: s.snake[0].y + s.dir.y};
+  // Wall wrap
+  if (head.x < 0) head.x = duoGrid-1;
+  if (head.x >= duoGrid) head.x = 0;
+  if (head.y < 0) head.y = duoGrid-1;
+  if (head.y >= duoGrid) head.y = 0;
+  // Self collision = DEATH
+  var willEat = (head.x === duo.food.x && head.y === duo.food.y);
+  var ownBody = willEat ? s.snake : s.snake.slice(0, -1);
+  if (ownBody.some(b => b.x===head.x && b.y===head.y)) {
+    s.alive = false;
+    document.getElementById('duo-status').textContent = '💀 ' + s.name + ' 撞到自己了！';
+    return;
+  }
+  // Collision with OTHER snake = SAFE (pass through)
+  s.snake.unshift(head);
+  if (willEat) {
+    var gold = GOLD_PER_FOOD[duoSpeedIdx];
+    s.score += gold;
+    duo.food = duoPlaceFood();
+    document.getElementById(key === 's1' ? 'duo-p1score' : 'duo-p2score').textContent = s.score;
+  } else {
+    s.snake.pop();
+  }
+}
+
+function duoDraw() {
+  duoCtx.fillStyle = '#0a0a1a';
+  duoCtx.fillRect(0, 0, duoCanvas.width, duoCanvas.height);
+  // Grid
+  duoCtx.strokeStyle = '#1a1a2e';
+  for (var i = 0; i <= duoGrid; i++) {
+    duoCtx.beginPath(); duoCtx.moveTo(i*duoCell, 0); duoCtx.lineTo(i*duoCell, duoCanvas.height); duoCtx.stroke();
+    duoCtx.beginPath(); duoCtx.moveTo(0, i*duoCell); duoCtx.lineTo(duoCanvas.width, i*duoCell); duoCtx.stroke();
+  }
+  // Food
+  duoCtx.font = duoCell*0.7+'px serif';
+  duoCtx.textAlign='center'; duoCtx.textBaseline='middle';
+  duoCtx.fillText('🍎', duo.food.x*duoCell+duoCell/2, duo.food.y*duoCell+duoCell/2);
+  // P1 green
+  duoDrawSnake(duo.s1, 'rgba(76,175,80,', duoCtx);
+  // P2 orange
+  duoDrawSnake(duo.s2, 'rgba(255,152,0,', duoCtx);
+}
+
+function duoDrawSnake(s, colorPrefix, ctx) {
+  s.snake.forEach((seg, i) => {
+    var alpha = s.alive ? (1 - (i/s.snake.length)*0.5) : 0.2;
+    ctx.fillStyle = colorPrefix + alpha + ')';
+    ctx.beginPath();
+    ctx.roundRect(seg.x*duoCell+1, seg.y*duoCell+1, duoCell-2, duoCell-2, 3); ctx.fill();
+  });
+  if (!s.alive) {
+    ctx.font = duoCell+'px serif';
+    ctx.fillText('💀', s.snake[0].x*duoCell+duoCell/2, s.snake[0].y*duoCell+duoCell/2);
+  }
+}
+
+function duoWin(pct) {
+  duoActive = false;
+  clearInterval(duoLoop);
+  var totalApples = 50;
+  var s1Pct = duo.s1.snake.length / (duo.s1.snake.length + duo.s2.snake.length);
+  var p1Get = Math.round(totalApples * s1Pct);
+  var p2Get = totalApples - p1Get;
+  player.apples += p1Get; // current player gets P1 share
+  player.exp += 30;
+  checkLevelUp();
+  savePlayer();
+  document.getElementById('duo-status').textContent = '🏆 霸屏成功！' + pct + '%';
+  setTimeout(() => {
+    alert('🏆 霸屏成功！覆盖率 ' + pct + '%\n\n🟢 ' + duo.s1.name + '：' + p1Get + '🍎\n🟠 ' + duo.s2.name + '：' + p2Get + '🍎');
+    showPage('home');
+  }, 200);
+}
+
+function duoEnd() {
+  duoActive = false;
+  clearInterval(duoLoop);
+  player.gold += duo.s1.score + duo.s2.score;
+  player.exp += 10;
+  checkLevelUp();
+  savePlayer();
+  var msg = '游戏结束！\n';
+  msg += '🟢 ' + duo.s1.name + '：' + duo.s1.score + '💰\n';
+  msg += '🟠 ' + duo.s2.name + '：' + duo.s2.score + '💰\n';
+  msg += '每人拿走自己的积分';
+  document.getElementById('duo-status').textContent = '💀 双方都挂了';
+  setTimeout(() => { alert(msg); showPage('home'); }, 200);
+}
+
+function duoQuit() {
+  duoActive = false;
+  clearInterval(duoLoop);
+  showPage('modes');
+}
+
+// Duo keyboard: P1=WASD, P2=Arrows
+function duoKey(e) {
+  if (!duoActive) return;
+  var k = e.key.toLowerCase();
+  var p1keys = { w:{x:0,y:-1}, s:{x:0,y:1}, a:{x:-1,y:0}, d:{x:1,y:0} };
+  var p2keys = { arrowup:{x:0,y:-1}, arrowdown:{x:0,y:1}, arrowleft:{x:-1,y:0}, arrowright:{x:1,y:0} };
+  if (duo.s1.alive && p1keys[k]) {
+    var nd = p1keys[k];
+    if (nd.x !== -duo.s1.dir.x || nd.y !== -duo.s1.dir.y) duo.s1.pending = nd;
+    e.preventDefault();
+  }
+  if (duo.s2.alive && p2keys[k]) {
+    var nd2 = p2keys[k];
+    if (nd2.x !== -duo.s2.dir.x || nd2.y !== -duo.s2.dir.y) duo.s2.pending = nd2;
+    e.preventDefault();
+  }
+}
+
+// Duo touch: left half = P1, right half = P2
+function duoTouch(e) {
+  if (!duoActive) return;
+  for (var t of e.touches) {
+    var isLeft = t.clientX < window.innerWidth / 2;
+    var s = isLeft ? duo.s1 : duo.s2;
+    if (!s.alive) continue;
+    var dx = t.clientX - (isLeft ? window.innerWidth/4 : window.innerWidth*3/4);
+    var dy = t.clientY - window.innerHeight/2;
+    var nd;
+    if (Math.abs(dx) > Math.abs(dy)) nd = dx > 0 ? {x:1,y:0} : {x:-1,y:0};
+    else nd = dy > 0 ? {x:0,y:1} : {x:0,y:-1};
+    if (nd.x !== -s.dir.x || nd.y !== -s.dir.y) s.pending = nd;
+  }
+  e.preventDefault();
+}
+
+// Route keyboard/touch to the right mode
+document.addEventListener('keydown', function(e) {
+  if (pkActive) pkKey(e);
+  else if (duoActive) duoKey(e);
+}, { passive: false });
+
+document.addEventListener('touchstart', function(e) {
+  if (pkActive) pkTouch(e);
+  else if (duoActive) duoTouch(e);
+}, { passive: false });
+
+document.addEventListener('touchmove', function(e) {
+  if (pkActive) pkTouch(e);
+  else if (duoActive) duoTouch(e);
+}, { passive: false });
 
 // ===== PRACTICE MODE =====
 let pSnake, pFood, pDir, pPendingDir, pLoop, pActive=false;
