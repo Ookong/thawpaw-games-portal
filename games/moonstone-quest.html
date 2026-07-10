@@ -458,6 +458,7 @@ a{color:#88aaff;}
       <div id="expBar"><div id="expFill" style="width:0%"></div></div>
       <div class="stat"><span class="val" id="sExp">0/15</span></div>
       <div class="stat"><span class="label">🌿 </span><span class="val" id="sHerb">2</span> &nbsp;<span class="label">✦ </span><span class="val" id="sExpH">0</span></div>
+      <div class="stat" style="border-top:1px solid #333;padding-top:4px;margin-top:4px;"><span class="label">🔮 </span><span class="val" id="sMoon" style="color:#aaddff;">0</span> &nbsp;<span class="label">🪨 </span><span class="val" id="sGravel" style="color:#888;">0</span></div>
       <div class="stat"><span class="label">Floor </span><span class="val" id="sFloor">1/10</span></div>
       <div id="msgLog"></div>
     </div>
@@ -1963,6 +1964,7 @@ function movePlayer(dx,dy,who){
       // Home gravel reward
       homeData.gravel+=1;
       saveHome();
+      updateSidebar();
     }else if(it.type==='exp_herb'){
       G.shared.expHerbs++;
       addMsg(`✦ P${who} found an experience herb! (${G.shared.expHerbs} total)`,'good');
@@ -1982,6 +1984,7 @@ function movePlayer(dx,dy,who){
     // Award moonstones
     homeData.moonstones+=30;
     saveHome();
+    updateSidebar();
     showToast('🎉 胜利！+30 🔮 月亮石');
     return;
   }
@@ -2030,6 +2033,7 @@ function attackAdjacent(who){
           homeData.gravel+=1;
         }
         saveHome();
+        updateSidebar();
         addMsg(`💀 ${e.type.replace(/_/g,' ')} defeated! +${e.exp} EXP`,'good');
         spawnParticles(e.x,e.y,EDATA[e.type].col,8);
         if(leveled){
@@ -2119,6 +2123,7 @@ function tryDescend(){
     // Award moonstone for completing a floor
     homeData.moonstones+=2;
     saveHome();
+    updateSidebar();
     G.floor++;
     if(G.floor>G.maxFloorReached) G.maxFloorReached=G.floor;
     sfxDescend();
@@ -2129,6 +2134,7 @@ function tryDescend(){
     if(G.grid[p.y][p.x]==='>'){
       homeData.moonstones+=2;
       saveHome();
+      updateSidebar();
       G.floor++;
       if(G.floor>G.maxFloorReached) G.maxFloorReached=G.floor;
       sfxDescend();
@@ -2685,6 +2691,11 @@ function updateSidebar(){
   document.getElementById('sHerb').textContent=s.herbs;
   document.getElementById('sExpH').textContent=s.expHerbs;
   document.getElementById('sFloor').textContent=`${G.floor}/${MAX_FLOOR}`;
+  // 🔮 Currency: refresh in-game sidebar counters
+  var sMoon=document.getElementById('sMoon');
+  if(sMoon) sMoon.textContent=homeData.moonstones;
+  var sGravel=document.getElementById('sGravel');
+  if(sGravel) sGravel.textContent=homeData.gravel;
   var hhp=document.getElementById('hudHp');
   if(hhp){
     if(isDuo()){
