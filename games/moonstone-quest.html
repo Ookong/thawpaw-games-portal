@@ -2869,6 +2869,28 @@ refreshHomeUI();
 console.log('🐾 猫武士大冒险 loaded');
 </script>
 <script src="tutorial.js"></script>
+<script src="friends.js"></script>
+<script>
+tpgFriends && tpgFriends.setGame && tpgFriends.setGame('moonstone');
+// Called by friends.js when accepting a duo invite
+function enterDuoMode(roomCode){
+  if(typeof mode!=='undefined') mode='duo';
+  if(typeof showToast==='function') showToast('🎮 好友已加入！房间码: '+roomCode);
+  if(typeof onClickExplore==='function') onClickExplore();
+}
+// Check for pending invite on load
+(function(){
+  var pi=localStorage.getItem('tpg_pending_invite');
+  if(pi){
+    try{
+      var inv=JSON.parse(pi);
+      if(inv.game==='moonstone'){
+        localStorage.removeItem('tpg_pending_invite');
+        setTimeout(function(){ enterDuoMode(inv.roomCode); }, 1500);
+      }
+    }catch(e){}
+  }
+})();
 <script>
 // 🐾 新手教程 第一步：猫武士大冒险
 (function(){
