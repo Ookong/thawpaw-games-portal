@@ -388,6 +388,7 @@ tr:hover td{background:var(--card2)}
         <div style="display:flex;gap:.5rem">
           <button class="export-btn" onclick="exportFeedback('json')">📥 导出 JSON</button>
           <button class="export-btn" onclick="exportFeedback('csv')" style="background:var(--accent)">📥 导出 CSV</button>
+          <button id="btn-clear-feedback" class="export-btn" onclick="clearAllFeedback()" style="background:rgba(255,70,90,.2);color:#ff7a99;display:none;">🗑️ 清空全部</button>
         </div>
       </div>
       <div id="feedback-list">
@@ -450,7 +451,8 @@ const SUPER_ADMIN_ID = '94568945';
 const CF_BACKEND_KEY = 'tpgCfBackendUrl';
 const DEFAULT_CF_URL = 'https://tpg-hq.thawflow.com';
 let backendUrl = localStorage.getItem(CF_BACKEND_KEY) || DEFAULT_CF_URL;
-let session = null; // { id, nickname, role }
+let session = null; isSuperAdmin = false; // { id, nickname, role }
+var isSuperAdmin = false;
 
 function getBackendBase(){
   return backendUrl.replace(/\/+$/, '');
@@ -462,7 +464,7 @@ function getBackendBase(){
   const saved = sessionStorage.getItem('tpgHqSession');
   if(saved){
     try{
-      session = JSON.parse(saved);
+      session = JSON.parse(saved); isSuperAdmin = (session.role === "super");
       showDashboard();
     }catch(e){ sessionStorage.removeItem('tpgHqSession'); }
   }
@@ -588,7 +590,7 @@ function confirmNick(){
   // Try backend verify
   apiPost('verify', { id: pendingId, nickname: nick }).then(res => {
     if(res.ok){
-      session = { id: res.id, nickname: res.nickname, role: res.role };
+      session = { id: res.id, nickname: res.nickname, role: res.role }; isSuperAdmin = (session.role === "super");
       sessionStorage.setItem('tpgHqSession', JSON.stringify(session));
       document.getElementById('nick-step').classList.remove('show');
       showDashboard();
@@ -599,7 +601,7 @@ function confirmNick(){
         // Local match
         let role = 'player';
         if(pendingId === SUPER_ADMIN_ID) role = 'super';
-        session = { id: pendingId, nickname: nick, role: role };
+        session = { id: pendingId, nickname: nick, role: role }; isSuperAdmin = (session.role === "super");
         sessionStorage.setItem('tpgHqSession', JSON.stringify(session));
         document.getElementById('nick-step').classList.remove('show');
         showDashboard();
@@ -613,7 +615,7 @@ function confirmNick(){
     if(players[pendingId] && players[pendingId].nickname === nick){
       let role = 'player';
       if(pendingId === SUPER_ADMIN_ID) role = 'super';
-      session = { id: pendingId, nickname: nick, role: role };
+      session = { id: pendingId, nickname: nick, role: role }; isSuperAdmin = (session.role === "super");
       sessionStorage.setItem('tpgHqSession', JSON.stringify(session));
       document.getElementById('nick-step').classList.remove('show');
       showDashboard();
@@ -675,7 +677,7 @@ function showDashboard(){
 
 function hqLogout(){
   sessionStorage.removeItem('tpgHqSession');
-  session = null;
+  session = null; isSuperAdmin = false;
   stopFeedbackWatcher();
   document.getElementById('dashboard').classList.remove('active');
   document.getElementById('login-screen').style.display = 'flex';
@@ -750,6 +752,8 @@ function renderFeedbackList(list){
   const sorted = [...list].sort((a,b) => (b.time||'').localeCompare(a.time||''));
   el.innerHTML = sorted.map(f => {
     const time = f.time ? new Date(f.time).toLocaleString('zh-CN') : '';
+    var fid = f.id || f.feedbackId || f.time || '';
+    var delBtn = isSuperAdmin ? '<button onclick="deleteFeedback(\''+fid+'\')" style="background:rgba(255,70,90,.2);color:#ff7a99;border:1px solid rgba(255,70,90,.3);padding:2px 8px;border-radius:4px;font-size:11px;cursor:pointer;margin-left:6px;">🗑️ 删除</button>' : '';
     return '<div class="feedback-item">' +
       '<div class="fb-header">' +
         '<span class="mono">' + escapeHtml(f.playerId) + '</span>' +
@@ -757,6 +761,7 @@ function renderFeedbackList(list){
         '<span>' + escapeHtml(f.nickname) + '</span>' +
         '<span class="fb-cat">' + escapeHtml(f.category) + '</span>' +
         '<span style="margin-left:auto">' + time + '</span>' +
+        delBtn +
       '</div>' +
       '<div class="fb-content">' + escapeHtml(f.message) + '</div>' +
     '</div>';
@@ -767,8 +772,29 @@ function loadFeedback(){
   apiGet('exportFeedback').then(res => {
     if(!res.ok) return;
     renderFeedbackList(res.feedback || []);
+    // Show/hide clear-all button
+    var clearBtn = document.getElementById('btn-clear-feedback');
+    if(clearBtn) clearBtn.style.display = (isSuperAdmin && res.feedback && res.feedback.length > 0) ? '' : 'none';
   }).catch(err => {
     document.getElementById('feedback-list').innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div>加载失败</div>';
+  });
+}
+
+function deleteFeedback(fid){
+  if(!isSuperAdmin) { alert('仅超级管理员可删除'); return; }
+  if(!confirm('删除这条反馈？')) return;
+  apiPost('deleteFeedback', { feedbackId: fid }).then(res => {
+    if(res.ok) loadFeedback();
+    else alert(res.error || '删除失败');
+  });
+}
+
+function clearAllFeedback(){
+  if(!isSuperAdmin) { alert('仅超级管理员可清空'); return; }
+  if(!confirm('确定清空所有反馈？此操作不可撤销！')) return;
+  apiPost('clearAllFeedback', {}).then(res => {
+    if(res.ok){ alert('已清空 ' + (res.cleared || 0) + ' 条反馈'); loadFeedback(); }
+    else alert(res.error || '清空失败');
   });
 }
 
