@@ -20,7 +20,7 @@ function ensureTutorialElements() {
   if (_tutorialOverlay) return;
   var style = document.createElement('style');
   style.textContent = [
-    '.tpg-tut-overlay{position:fixed;inset:0;z-index:9999;pointer-events:auto;background:rgba(0,0,0,0);transition:background .3s;}',
+    '.tpg-tut-overlay{position:fixed;inset:0;z-index:9999;pointer-events:none;background:rgba(0,0,0,0);transition:background .3s;}',
     '.tpg-tut-overlay.active{background:rgba(0,0,0,.72);}',
     '.tpg-tut-hole{position:fixed;border-radius:14px;box-shadow:0 0 0 9999px rgba(0,0,0,.72);pointer-events:none;transition:all .3s ease;z-index:9998;border:2px solid rgba(255,255,255,.4);}',
     '.tpg-tut-finger{position:fixed;font-size:36px;z-index:10000;pointer-events:none;animation:tpgBounce .8s ease-in-out infinite alternate;}',
@@ -67,13 +67,7 @@ function showTutorialStep(selector, emoji, text, onInteract, opts) {
   var overlay = document.createElement('div');
   overlay.className = 'tpg-tut-overlay';
   overlay.style.background = 'transparent'; // shadow on target handles dimming
-  overlay.style.pointerEvents = 'auto';
-  // Clicking overlay does nothing (must click target)
-  overlay.addEventListener('click', function(e) {
-    e.preventDefault();
-    e.stopPropagation();
-    return false;
-  }, true);
+  overlay.style.pointerEvents = 'none'; // allow clicks to pass through
 
   // Finger pointer
   var finger = document.createElement('div');

@@ -212,7 +212,6 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
     <div class="home-currency-bubble">💰 <span id="home-gold">0</span></div>
     <div class="home-currency-bubble">🍎 <span id="home-apples">0</span></div>
     <div class="settings-btn" onclick="event.stopPropagation();openSettings()" title="设置">⚙️</div>
-    <div class="snow-btn" onclick="goPortal()" title="返回 Portal">❄️</div>
   </div>
   <div class="home-content">
     <!-- 左1/4 — 练习区 -->
@@ -263,7 +262,6 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 <!-- ===== PROFILE PAGE ===== -->
 <div id="page-profile" class="page">
   <div class="back-btn" onclick="showPage('home')">←</div>
-  <div class="snow-btn" onclick="goPortal()" style="position:absolute;top:16px;right:16px;">❄️</div>
   <div class="profile-page">
     <div class="big-avatar" id="profile-avatar" onclick="openAvatarPicker()">🐍</div>
     <div class="name-section">
@@ -284,7 +282,6 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 <!-- ===== SETTINGS PAGE (调试) ===== -->
 <div id="page-settings" class="page">
   <div class="back-btn" onclick="showPage('home')">←</div>
-  <div class="snow-btn" onclick="goPortal()" style="position:absolute;top:16px;right:16px;">❄️</div>
   <div class="settings-page">
     <h2>🎮 经典模式设置</h2>
     <div class="setting-group">
@@ -312,7 +309,6 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 <!-- ===== MODES PAGE ===== -->
 <div id="page-modes" class="page">
   <div class="back-btn" onclick="showPage('home')">←</div>
-  <div class="snow-btn" onclick="goPortal()" style="position:absolute;top:16px;right:16px;">❄️</div>
   <div class="settings-page">
     <h2>🔮 更多模式</h2>
 
@@ -351,7 +347,6 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 <!-- ===== PK SETUP PAGE ===== -->
 <div id="page-pk-setup" class="page">
   <div class="back-btn" onclick="showPage('modes')">←</div>
-  <div class="snow-btn" onclick="goPortal()" style="position:absolute;top:16px;right:16px;">❄️</div>
   <div class="settings-page">
     <h2>⚔️ 双人 PK 设置</h2>
     <div class="setting-group">
@@ -387,7 +382,6 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 <!-- ===== DUO SETUP PAGE ===== -->
 <div id="page-duo-setup" class="page">
   <div class="back-btn" onclick="showPage('modes')">←</div>
-  <div class="snow-btn" onclick="goPortal()" style="position:absolute;top:16px;right:16px;">❄️</div>
   <div class="settings-page">
     <h2>🤝 双人合作设置</h2>
     <div class="setting-group">
@@ -427,7 +421,6 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
     <div style="flex:1;text-align:center;">
       <span id="pk-status">⚔️ PK 进行中！</span>
     </div>
-    <div class="snow-btn" onclick="goPortal()">❄️</div>
   </div>
   <div style="display:flex;gap:8px;justify-content:center;padding:8px;flex-wrap:wrap;">
     <div style="text-align:center;">
@@ -456,7 +449,6 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
     <div style="flex:1;text-align:center;">
       <span id="duo-status">🤝 合作进行中！</span>
     </div>
-    <div class="snow-btn" onclick="goPortal()">❄️</div>
   </div>
   <div style="display:flex;gap:12px;justify-content:center;padding:8px;font-size:14px;font-weight:700;">
     <span style="color:#4caf50;">🟢 <span id="duo-p1name-disp">P1</span>：<span id="duo-p1score">0</span></span>
@@ -473,7 +465,6 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 <!-- ===== ONLINE MATCH PAGE ===== -->
 <div id="page-online-match" class="page">
   <div class="back-btn" onclick="onlineCancel()">←</div>
-  <div class="snow-btn" onclick="goPortal()" style="position:absolute;top:16px;right:16px;">❄️</div>
   <div class="settings-page" style="text-align:center;">
     <h2 id="online-title">🌐 线上匹配</h2>
     <div id="online-status" style="font-size:18px;color:var(--text2);padding:40px 20px;">
@@ -497,7 +488,6 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
     <div style="flex:1;text-align:center;">
       <span id="opk-status">⚔️ 在线 PK！</span>
     </div>
-    <div class="snow-btn" onclick="goPortal()">❄️</div>
   </div>
   <div style="display:flex;gap:8px;justify-content:center;padding:8px;flex-wrap:wrap;">
     <div style="text-align:center;">
@@ -526,7 +516,6 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
     <div style="flex:1;text-align:center;">
       <span id="oduo-status">🤝 在线合作！</span>
     </div>
-    <div class="snow-btn" onclick="goPortal()">❄️</div>
   </div>
   <div style="display:flex;gap:12px;justify-content:center;padding:8px;font-size:14px;font-weight:700;">
     <span style="color:#4caf50;" id="oduo-me-disp">🟢 你：0</span>
@@ -541,7 +530,6 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 
 <!-- ===== PRACTICE PAGE ===== -->
 <div id="page-practice" class="page game-page">
-  <div class="game-back" onclick="exitPractice()" title="返回">❄️</div>
   <div class="score-bar">
     <span>💀 <span id="prac-deaths">0</span></span>
     <span>⏱️ <span id="prac-timer">60</span>s</span>
@@ -553,7 +541,6 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 
 <!-- ===== GAME PAGE ===== -->
 <div id="page-game" class="page game-page">
-  <div class="game-back" onclick="goPortal()" title="返回 Portal">❄️</div>
   <div class="score-bar">
     <span>💰 <span id="game-score">0</span></span>
     <span>🍎 <span id="game-apples">0</span></span>
@@ -909,6 +896,40 @@ document.getElementById('profile-bio').addEventListener('click', function(){
 function openAvatarPicker(){
   const picker = document.getElementById('avatar-picker');
   picker.innerHTML = '';
+  // Photo album option first
+  const photoDiv = document.createElement('div');
+  photoDiv.className = 'avatar-option';
+  photoDiv.style.cssText = 'background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;font-size:14px;font-weight:700;';
+  photoDiv.textContent = '📷\n相册';
+  photoDiv.onclick = ()=>{
+    var input=document.createElement('input');
+    input.type='file';
+    input.accept='image/*';
+    input.onchange=function(e){
+      var file=e.target.files[0]; if(!file) return;
+      if(file.size>500000){ alert('图片太大了，请选小于 500KB 的图片'); return; }
+      var reader=new FileReader();
+      reader.onload=function(ev){
+        // Resize to 80x80 via canvas
+        var img=new Image();
+        img.onload=function(){
+          var c=document.createElement('canvas');
+          c.width=80;c.height=80;
+          c.getContext('2d').drawImage(img,0,0,80,80);
+          player.avatar=c.toDataURL('image/jpeg',0.7);
+          savePlayer();
+          syncAvatar(player.avatar);
+          refreshProfile();
+          refreshHome();
+          closeModal('avatar');
+        };
+        img.src=ev.target.result;
+      };
+      reader.readAsDataURL(file);
+    };
+    input.click();
+  };
+  picker.appendChild(photoDiv);
   AVATARS.forEach(a=>{
     const d = document.createElement('div');
     d.className = 'avatar-option'+(player.avatar===a?' selected':'');
@@ -916,13 +937,31 @@ function openAvatarPicker(){
     d.onclick = ()=>{
       player.avatar = a;
       savePlayer();
+      syncAvatar(a);
       refreshProfile();
       refreshHome();
       closeModal('avatar');
     };
     picker.appendChild(d);
   });
+  // If current avatar is a data URL (photo), show it as selected
+  if(typeof player.avatar==='string' && player.avatar.startsWith('data:')){
+    var photo=document.createElement('div');
+    photo.className='avatar-option selected';
+    photo.style.cssText='background-image:url('+player.avatar+');background-size:cover;';
+    picker.insertBefore(photo,picker.children[1]);
+  }
   openModal('avatar');
+}
+
+// Sync avatar to all players + cloud
+function syncAvatar(avatar){
+  try{
+    var id=localStorage.getItem('thawpawActiveId');
+    if(!id) return;
+    var players=JSON.parse(localStorage.getItem('thawpawPlayers')||'{}');
+    if(players[id]){ players[id].avatar=avatar; localStorage.setItem('thawpawPlayers',JSON.stringify(players)); }
+  }catch(e){}
 }
 
 // ===== MODALS =====
@@ -1644,6 +1683,8 @@ function startPK() {
   showPage('pk');
   if (pkLoop) clearInterval(pkLoop);
   pkLoop = setInterval(pkTick, pkSpeed);
+  // Show joysticks on touch devices
+  if ('ontouchstart' in window) setTimeout(showPKJoysticks, 300);
 }
 
 function pkPlaceFood(snake) {
@@ -1761,10 +1802,12 @@ function pkEnd() {
 function pkQuit() {
   pkActive = false;
   clearInterval(pkLoop);
+  hideDuoJoysticks();
   showPage('modes');
 }
 
 // PK keyboard: P1=WASD, P2=Arrows
+// PK touch: handled by duoTouch (shared joysticks)
 function pkKey(e) {
   if (!pkActive) return;
   var k = e.key.toLowerCase();
@@ -1783,21 +1826,7 @@ function pkKey(e) {
 }
 
 // PK touch: left half = P1, right half = P2
-function pkTouch(e) {
-  if (!pkActive) return;
-  for (var t of e.touches) {
-    var isLeft = t.clientX < window.innerWidth / 2;
-    var p = isLeft ? pk1 : pk2;
-    if (!p.alive) continue;
-    var dx = t.clientX - (isLeft ? window.innerWidth/4 : window.innerWidth*3/4);
-    var dy = t.clientY - window.innerHeight/2;
-    var nd;
-    if (Math.abs(dx) > Math.abs(dy)) nd = dx > 0 ? {x:1,y:0} : {x:-1,y:0};
-    else nd = dy > 0 ? {x:0,y:1} : {x:0,y:-1};
-    if (nd.x !== -p.dir.x || nd.y !== -p.dir.y) p.pending = nd;
-  }
-  e.preventDefault();
-}
+// pkTouch removed — now handled by duoTouch with virtual joysticks
 
 // ===== DUO MODE (双人合作) =====
 let duo, duoLoop, duoActive=false;
@@ -1839,6 +1868,8 @@ function startDuo() {
   showPage('duo');
   if (duoLoop) clearInterval(duoLoop);
   duoLoop = setInterval(duoTick, duoSpeed);
+  // Show joysticks on touch devices
+  if ('ontouchstart' in window) setTimeout(showDuoJoysticks, 300);
 }
 
 function duoPlaceFood() {
@@ -1964,6 +1995,7 @@ function duoEnd() {
 function duoQuit() {
   duoActive = false;
   clearInterval(duoLoop);
+  hideDuoJoysticks();
   showPage('modes');
 }
 
@@ -1985,22 +2017,102 @@ function duoKey(e) {
   }
 }
 
-// Duo touch: left half = P1, right half = P2
+// Duo touch: left half = P1, right half = P2 — with virtual joysticks
+var duoJoysticks = { j1: { active: false, cx: 0, cy: 0, knob: null, base: null }, j2: { active: false, cx: 0, cy: 0, knob: null, base: null } };
+
+function showDuoJoysticks() {
+  hideDuoJoysticks();
+  duoJoysticks.j1 = createJoystick('tpg-j1', 'left');
+  duoJoysticks.j2 = createJoystick('tpg-j2', 'right');
+}
+function showPKJoysticks() {
+  hideDuoJoysticks();
+  duoJoysticks.j1 = createJoystick('tpg-j1', 'left');
+  duoJoysticks.j2 = createJoystick('tpg-j2', 'right');
+}
+function hideDuoJoysticks() {
+  ['tpg-j1','tpg-j2','tpg-j1-base','tpg-j2-base','tpg-j1-knob','tpg-j2-knob'].forEach(function(id){
+    var el=document.getElementById(id); if(el) el.remove();
+  });
+  duoJoysticks.j1.active=false; duoJoysticks.j2.active=false;
+}
+function createJoystick(id, side) {
+  var pos = side === 'left' ? { x: 70, y: window.innerHeight - 90 } : { x: window.innerWidth - 70, y: window.innerHeight - 90 };
+  var base = document.createElement('div');
+  base.id = id + '-base';
+  base.style.cssText = 'position:fixed;width:100px;height:100px;border-radius:50%;border:2px solid rgba(255,255,255,.2);background:rgba(0,0,0,.3);z-index:9997;left:'+(pos.x-50)+'px;top:'+(pos.y-50)+'px;touch-action:none;';
+  var knob = document.createElement('div');
+  knob.id = id + '-knob';
+  knob.style.cssText = 'position:fixed;width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.4);z-index:9998;left:'+(pos.x-22)+'px;top:'+(pos.y-22)+'px;transition:transform .1s;pointer-events:none;';
+  document.body.appendChild(base);
+  document.body.appendChild(knob);
+  var state = { active: false, cx: pos.x, cy: pos.y, knob: knob, base: base, touchId: null };
+  return state;
+}
+
 function duoTouch(e) {
-  if (!duoActive) return;
+  if (!duoActive && !pkActive) return;
   for (var t of e.touches) {
     var isLeft = t.clientX < window.innerWidth / 2;
-    var s = isLeft ? duo.s1 : duo.s2;
-    if (!s.alive) continue;
-    var dx = t.clientX - (isLeft ? window.innerWidth/4 : window.innerWidth*3/4);
-    var dy = t.clientY - window.innerHeight/2;
-    var nd;
-    if (Math.abs(dx) > Math.abs(dy)) nd = dx > 0 ? {x:1,y:0} : {x:-1,y:0};
-    else nd = dy > 0 ? {x:0,y:1} : {x:0,y:-1};
-    if (nd.x !== -s.dir.x || nd.y !== -s.dir.y) s.pending = nd;
+    var jk = isLeft ? duoJoysticks.j1 : duoJoysticks.j2;
+    if (!jk || !jk.base) continue;
+    // Check if touch is near joystick
+    var distToBase = Math.hypot(t.clientX - jk.cx, t.clientY - jk.cy);
+    if (distToBase < 80 || jk.touchId === t.identifier) {
+      jk.touchId = t.identifier;
+      jk.active = true;
+      var dx = t.clientX - jk.cx;
+      var dy = t.clientY - jk.cy;
+      // Move knob (clamped)
+      var maxR = 35;
+      var angle = Math.atan2(dy, dx);
+      var r = Math.min(Math.hypot(dx, dy), maxR);
+      jk.knob.style.left = (jk.cx + Math.cos(angle) * r - 22) + 'px';
+      jk.knob.style.top = (jk.cy + Math.sin(angle) * r - 22) + 'px';
+      // Determine direction
+      if (r > 12) {
+        var nd;
+        if (Math.abs(dx) > Math.abs(dy)) nd = dx > 0 ? {x:1,y:0} : {x:-1,y:0};
+        else nd = dy > 0 ? {x:0,y:1} : {x:0,y:-1};
+        // Apply to the right snake
+        if (duoActive) {
+          var s = isLeft ? duo.s1 : duo.s2;
+          if (s.alive && (nd.x !== -s.dir.x || nd.y !== -s.dir.y)) s.pending = nd;
+        } else if (pkActive) {
+          var p = isLeft ? pk1 : pk2;
+          if (p.alive && (nd.x !== -p.dir.x || nd.y !== -p.dir.y)) p.pending = nd;
+        }
+      }
+    }
   }
   e.preventDefault();
 }
+
+function resetJoystickKnob(jk) {
+  if (!jk || !jk.knob) return;
+  jk.knob.style.left = (jk.cx - 22) + 'px';
+  jk.knob.style.top = (jk.cy - 22) + 'px';
+  jk.active = false; jk.touchId = null;
+}
+
+document.addEventListener('touchend', function(e) {
+  if (pkActive || duoActive) {
+    // Reset knobs for lifted touches
+    [duoJoysticks.j1, duoJoysticks.j2].forEach(function(jk){
+      if(jk && jk.touchId !== null){
+        var stillActive = false;
+        for(var t of e.touches){ if(t.identifier === jk.touchId){ stillActive = true; break; } }
+        if(!stillActive) resetJoystickKnob(jk);
+      }
+    });
+  }
+}, { passive: false });
+
+document.addEventListener('touchcancel', function(e) {
+  if (pkActive || duoActive) {
+    [duoJoysticks.j1, duoJoysticks.j2].forEach(function(jk){ if(jk) resetJoystickKnob(jk); });
+  }
+}, { passive: false });
 
 // Route keyboard/touch to the right mode
 document.addEventListener('keydown', function(e) {
@@ -2009,12 +2121,12 @@ document.addEventListener('keydown', function(e) {
 }, { passive: false });
 
 document.addEventListener('touchstart', function(e) {
-  if (pkActive) pkTouch(e);
+  if (pkActive) duoTouch(e);
   else if (duoActive) duoTouch(e);
 }, { passive: false });
 
 document.addEventListener('touchmove', function(e) {
-  if (pkActive) pkTouch(e);
+  if (pkActive) duoTouch(e);
   else if (duoActive) duoTouch(e);
 }, { passive: false });
 
@@ -2329,6 +2441,7 @@ document.addEventListener('touchstart', ()=>{
 </script>
 <script src="tutorial.js"></script>
 <script src="friends.js"></script>
+<script src="snow-button.js"></script>
 <script>
 tpgFriends && tpgFriends.setGame && tpgFriends.setGame('snake');
 </script>
