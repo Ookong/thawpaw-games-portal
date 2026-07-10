@@ -1288,6 +1288,18 @@ document.addEventListener('touchstart', ()=>{
     }, 600);
   }
 })();
+// 🐾 新手教程 第二步：游戏内操作说明
+(function(){
+  if(!tutorialCheck('snake','step2')){
+    var origStart = window.startGame;
+    window.startGame = function(){
+      origStart && origStart.apply(this, arguments);
+      setTimeout(function(){
+        showTutorialHowTo('snake');
+      }, 400);
+    };
+  }
+})();
 </script>
 </body>
 </html>
