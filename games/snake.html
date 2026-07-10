@@ -347,6 +347,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
   <div class="modal">
     <span class="modal-close" onclick="closeModal('shop')">✕</span>
     <h3>🏪 商店</h3>
+    <div style="margin-bottom:10px;font-size:13px;text-align:center;">💰 <span id="shop-bal-gold">0</span> &nbsp;|&nbsp; 🍎 <span id="shop-bal-apples">0</span></div>
     <div class="shop-content">
       <div class="shop-sidebar" id="shop-cats"></div>
       <div class="shop-main" id="shop-items"></div>
@@ -669,6 +670,7 @@ function doExchange(){
   player.apples += amount;
   savePlayer();
   refreshBank();
+  refreshHome();
   document.getElementById('exchange-slider').value=0;
   document.getElementById('exchange-input').value=0;
 }
@@ -676,6 +678,11 @@ function doExchange(){
 // ===== SHOP =====
 let shopCat = '';
 function refreshShop(){
+  // Update balance display
+  var balGold=document.getElementById('shop-bal-gold');
+  if(balGold) balGold.textContent=player.gold;
+  var balApples=document.getElementById('shop-bal-apples');
+  if(balApples) balApples.textContent=player.apples;
   const cats = document.getElementById('shop-cats');
   cats.innerHTML = '';
   const catNames = Object.keys(SHOP_DATA);
@@ -715,6 +722,7 @@ function buyItem(item){
   savePlayer();
   closeModal('confirm');
   refreshShop();
+  refreshHome();
 }
 
 // ===== BAG =====

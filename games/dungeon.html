@@ -477,6 +477,7 @@ body.solo-touch #joystickP2{display:none;}
       <div class="row"><span class="label">🧪 Potions</span><span class="val" id="sPots">0</span></div>
       <div class="row"><span class="label">❤️ Big</span><span class="val" id="sBigP">0</span></div>
       <div class="row"><span class="label">💣 Bombs</span><span class="val" id="sBombs">0</span></div>
+      <div class="row" style="border-top:1px solid #333;padding-top:4px;margin-top:4px;"><span class="label">🗺️</span><span class="val" id="sMaps" style="color:#aaffcc;">0</span> &nbsp;<span class="label">💥</span><span class="val" id="sBooms" style="color:#ff6688;">0</span></div>
       <div id="msgLog"></div>
       <div class="tip">
         <b>WASD</b> move · <b>Space</b> attack · <b>P</b> potion · <b>B</b> bomb<br>
@@ -1814,6 +1815,7 @@ function attackMonster(pi,mon){
       logMsg(`🗺️ BOSS defeated! +5 🗺️ 探险经验`,'gold');
     }
     monsters=monsters.filter(m=>m!==mon);
+    updateHud();
     const lvThreshold=isDuo?7:5;
     if(kills%lvThreshold===0){
       for(const pl of players){pl.maxHp+=5;pl.hp=Math.min(pl.hp+10,pl.maxHp);pl.atk+=1;}
@@ -2159,6 +2161,11 @@ function updateHud(){
   sPots.textContent=potions;
   sBigP.textContent=bigPotions;
   sBombs.textContent=bombs;
+  // 🗺️/💥 Home currency display in sidebar
+  var sMapsEl=document.getElementById('sMaps');
+  if(sMapsEl) sMapsEl.textContent=homeData.maps;
+  var sBoomsEl=document.getElementById('sBooms');
+  if(sBoomsEl) sBoomsEl.textContent=homeData.booms;
   // 🐛 FIX: hud* elements are mobile-only; guard each ref so missing
   // elements (e.g. hudAtk/hudDef not in slim mobile HUD) don't throw.
   if(hudHp)     { hudHp.textContent=`${p1.hp}/${p1.maxHp}`; }
