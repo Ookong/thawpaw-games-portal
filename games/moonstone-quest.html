@@ -456,7 +456,7 @@ a{color:#88aaff;}
       <div class="stat"><span class="val" id="sHp">30/30</span></div>
       <div class="stat"><span class="label">EXP</span></div>
       <div id="expBar"><div id="expFill" style="width:0%"></div></div>
-      <div class="stat"><span class="val" id="sExp">0/15</span></div>
+      <div class="stat"><span class="val" id="sExp">0/15</span> <span id="sExpUp" style="display:none;cursor:pointer;color:var(--gold);font-weight:700;font-size:12px;margin-left:6px;" onclick="showLevelUpPrompt()">⬆️升级</span></div>
       <div class="stat"><span class="label">🌿 </span><span class="val" id="sHerb">2</span> &nbsp;<span class="label">✦ </span><span class="val" id="sExpH">0</span></div>
       <div class="stat" style="border-top:1px solid #333;padding-top:4px;margin-top:4px;"><span class="label">🔮 </span><span class="val" id="sMoon" style="color:#aaddff;">0</span> &nbsp;<span class="label">🪨 </span><span class="val" id="sGravel" style="color:#888;">0</span></div>
       <div class="stat"><span class="label">Floor </span><span class="val" id="sFloor">1/10</span></div>
@@ -498,7 +498,7 @@ a{color:#88aaff;}
     <span class="hud-label">ATK</span><span class="hud-val" id="hudAtk">5</span>
     <span class="hud-label">EXP</span>
     <div class="hud-expbar"><div class="hud-expfill" id="hudExpFill" style="width:0%"></div></div>
-    <span class="hud-val" id="hudExp">0/15</span>
+    <span class="hud-val" id="hudExp" style="cursor:pointer;" onclick="if(G.shared.exp>=expToNext())showLevelUpPrompt()">0/15</span>
   </div>
   <div class="hud-row">
     <span class="hud-val" id="hudHerbs">🌿2</span>
@@ -676,6 +676,22 @@ a{color:#88aaff;}
       <div class="confirm-btns">
         <button class="btn-yes" id="confirm-yes">确定</button>
         <button class="btn-no" onclick="closeConfirm()">取消</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Level Up Modal -->
+<div id="modal-levelup" class="modal-overlay">
+  <div class="modal" style="max-width:360px;text-align:center;">
+    <div class="modal-body" style="padding:10px;">
+      <div style="font-size:48px;margin-bottom:8px;">⭐</div>
+      <h3 style="color:var(--gold);font-size:20px;margin-bottom:6px;">升级了！</h3>
+      <div id="levelup-text" style="font-size:14px;color:var(--text2);margin-bottom:16px;line-height:1.6;">经验已满！是否现在升级？</div>
+      <div id="levelup-stats" style="font-size:13px;color:var(--gold);margin-bottom:16px;">HP +5 · ATK +2</div>
+      <div class="confirm-btns">
+        <button class="btn-yes" onclick="acceptLevelUp()">✅ 升级！</button>
+        <button class="btn-no" onclick="deferLevelUp()">稍后</button>
       </div>
     </div>
   </div>
@@ -1917,17 +1933,39 @@ function newGame(){
 function gainExp(amount){
   const p=G.shared;
   p.exp+=amount;
-  let leveled=false;
-  while(p.exp>=expToNext()){
-    p.exp-=expToNext();
-    p.level++;p.maxHp+=5;
-    G.p1.maxHp=G.shared.maxHp;G.p2.maxHp=G.shared.maxHp;
-    G.p1.hp=Math.min(G.p1.hp+10,G.p1.maxHp);
-    if(G.p2.alive) G.p2.hp=Math.min(G.p2.hp+10,G.p2.maxHp);
-    p.atk+=2;
-    leveled=true;
+  // Check if a level-up is available (don't auto-level — show prompt)
+  if(p.exp>=expToNext() && G.state==='playing'){
+    showLevelUpPrompt();
   }
-  return leveled;
+  return false;
+}
+function showLevelUpPrompt(){
+  if(document.getElementById('modal-levelup').classList.contains('active')) return;
+  const p=G.shared;
+  document.getElementById('levelup-text').innerHTML='Lv.'+p.level+' → <b style="color:var(--gold)">Lv.'+(p.level+1)+'</b><br>经验已满！是否现在升级？';
+  document.getElementById('modal-levelup').classList.add('active');
+}
+function acceptLevelUp(){
+  closeModal('modal-levelup');
+  const p=G.shared;
+  p.exp-=expToNext();
+  p.level++;p.maxHp+=5;
+  G.p1.maxHp=G.shared.maxHp;G.p2.maxHp=G.shared.maxHp;
+  G.p1.hp=Math.min(G.p1.hp+10,G.p1.maxHp);
+  if(G.p2.alive) G.p2.hp=Math.min(G.p2.hp+10,G.p2.maxHp);
+  p.atk+=2;
+  sfxLevelUp();
+  addMsg(`⭐ LEVEL UP! Now level ${p.level}! HP+5 ATK+2`,'gold');
+  spawnParticles(G.p1.x,G.p1.y,'#ffcc44',12);
+  updateSidebar();
+  // Chain: if still enough exp for another level, show again
+  if(p.exp>=expToNext()){
+    setTimeout(()=>showLevelUpPrompt(),300);
+  }
+}
+function deferLevelUp(){
+  closeModal('modal-levelup');
+  addMsg('💡 经验已满，可以随时升级！','info');
 }
 function spendExp(amount){
   if(G.shared.exp>=amount){G.shared.exp-=amount;return true;}
@@ -2036,11 +2074,6 @@ function attackAdjacent(who){
         updateSidebar();
         addMsg(`💀 ${e.type.replace(/_/g,' ')} defeated! +${e.exp} EXP`,'good');
         spawnParticles(e.x,e.y,EDATA[e.type].col,8);
-        if(leveled){
-          sfxLevelUp();
-          addMsg(`⭐ LEVEL UP! Now level ${G.shared.level}! HP+5 ATK+2`,'gold');
-          spawnParticles(p.x,p.y,'#ffcc44',12);
-        }
       }
       if(who===1) G.p1Acted=true; else G.p2Acted=true;
       if(isSolo()){
@@ -2094,13 +2127,8 @@ function useExpHerb(){
   const p=G.shared;
   if(p.expHerbs>0){
     p.expHerbs--;
-    const leveled=gainExp(10);
+    gainExp(10);
     addMsg('✦ Used experience herb! +10 EXP','good');
-    if(leveled){
-      sfxLevelUp();
-      addMsg(`⭐ LEVEL UP! Now level ${p.level}! HP+5 ATK+2`,'gold');
-      spawnParticles(G.p1.x,G.p1.y,'#ffcc44',12);
-    }
     if(isDuo()){G.p1Acted=true;G.p2Acted=true;}
     enemyTurn();
   }else{
@@ -2688,6 +2716,9 @@ function updateSidebar(){
   document.getElementById('sAtk').textContent=s.atk;
   document.getElementById('sExp').textContent=`${s.exp}/${expToNext()}`;
   document.getElementById('expFill').style.width=(s.exp/expToNext()*100)+'%';
+  // Show level-up button if exp is enough
+  var sExpUp=document.getElementById('sExpUp');
+  if(sExpUp) sExpUp.style.display = (s.exp>=expToNext()) ? 'inline' : 'none';
   document.getElementById('sHerb').textContent=s.herbs;
   document.getElementById('sExpH').textContent=s.expHerbs;
   document.getElementById('sFloor').textContent=`${G.floor}/${MAX_FLOOR}`;
