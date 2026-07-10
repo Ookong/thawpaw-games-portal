@@ -1197,12 +1197,34 @@ async function doPlayerSearch(){
       var p=res.players[i];
       var roleBadge = p.role==='super'?'<span style="background:#ffd700;color:#000;padding:1px 6px;border-radius:8px;font-size:10px;font-weight:700">超级</span>':p.role==='admin'?'<span style="background:var(--accent);color:#fff;padding:1px 6px;border-radius:8px;font-size:10px">管理</span>':'';
       var savedAt = p.savedAt ? new Date(p.savedAt).toLocaleDateString('zh-CN') : '—';
-      html+='<div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:8px;cursor:default;">';
+      html+='<div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:8px;">';
       html+='<div style="display:flex;justify-content:space-between;align-items:center;">';
       html+='<div><span style="font-weight:700;color:var(--gold);font-family:monospace;">'+p.id+'</span> '+roleBadge+'</div>';
       html+='<div style="font-size:12px;color:var(--dim)">最后存档: '+savedAt+'</div>';
       html+='</div>';
-      html+='<div style="margin-top:4px;font-size:14px;">'+escapeHtml(p.nickname)+'</div>';
+      html+='<div style="margin-top:4px;font-size:14px;font-weight:600;">'+escapeHtml(p.nickname)+'</div>';
+      // Progress badges
+      var pr = p.progress;
+      if(pr){
+        html+='<div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px;">';
+        if(pr.snake){
+          var titles=['🐛爬虫','🪱长虫','🐍初级蛇','🐍普通蛇','🐲超级蛇','🐉蛇中王'];
+          var ti = pr.snake.level<=2?0:pr.snake.level<=4?1:pr.snake.level<=6?2:pr.snake.level<=8?3:pr.snake.level<=9?4:5;
+          html+='<span style="background:rgba(76,175,80,.15);padding:3px 8px;border-radius:6px;font-size:12px;">'+titles[ti]+' · 💰'+pr.snake.gold+' · 🍎'+pr.snake.apples+'</span>';
+        }
+        if(pr.dungeon){
+          html+='<span style="background:rgba(108,99,255,.15);padding:3px 8px;border-radius:6px;font-size:12px;">🕵️'+(pr.dungeon.level||1)+'层 · 💰'+(pr.dungeon.gold||0)+'</span>';
+        }
+        if(pr.moonstone){
+          html+='<span style="background:rgba(170,221,255,.15);padding:3px 8px;border-radius:6px;font-size:12px;">🔮'+(pr.moonstone.moonstones||0)+' · 🪨'+(pr.moonstone.gravel||0)+'</span>';
+        }
+        if(!pr.snake&&!pr.dungeon&&!pr.moonstone){
+          html+='<span style="color:var(--dim);font-size:12px;">暂无游戏记录</span>';
+        }
+        html+='</div>';
+      } else {
+        html+='<div style="margin-top:6px;color:var(--dim);font-size:12px;">未存档</div>';
+      }
       html+='</div>';
     }
     el.innerHTML=html;
