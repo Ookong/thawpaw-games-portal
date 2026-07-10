@@ -79,6 +79,104 @@
     document.getElementById('tpg-fab-sendreq').addEventListener('click', sendFriendRequest);
   }
 
+  // ── DM Chat ──
+  var chatWith = null;
+  var chatPollTimer = null;
+  var lastChatTs = 0;
+
+  function openChat(friendId, friendName) {
+    chatWith = friendId;
+    lastChatTs = 0;
+    var p = getPlayer();
+    if (!p) return;
+    ensurePanel();
+    var panel = document.getElementById('tpg-friends-panel');
+    panel.innerHTML = '' +
+      '<div style="padding:14px 16px;border-bottom:1px solid #333;display:flex;align-items:center;gap:8px;">' +
+        '<span id="tpg-chat-back" style="cursor:pointer;font-size:20px;color:#888;">‹</span>' +
+        '<span style="font-weight:700;font-size:15px;color:#fff;flex:1;">💬 ' + escapeHtml(friendName) + '</span>' +
+        '<span id="tpg-fab-close2" style="cursor:pointer;color:#888;font-size:18px;">✕</span>' +
+      '</div>' +
+      '<div id="tpg-chat-msgs" style="flex:1;overflow-y:auto;padding:10px 16px;display:flex;flex-direction:column;gap:6px;min-height:200px;"></div>' +
+      '<div style="padding:10px 16px;border-top:1px solid #333;display:flex;gap:8px;">' +
+        '<input id="tpg-chat-input" placeholder="发消息…" style="flex:1;padding:8px 10px;background:#0d0d1f;border:1px solid #444;border-radius:6px;color:#fff;font-size:13px;outline:none;" />' +
+        '<button id="tpg-chat-send" style="background:#6c63ff;color:#fff;border:none;padding:0 14px;border-radius:6px;cursor:pointer;font-size:16px;">➤</button>' +
+      '</div>';
+    panel.style.display = 'flex';
+    document.getElementById('tpg-chat-back').addEventListener('click', function() { closeChat(); });
+    document.getElementById('tpg-fab-close2').addEventListener('click', function() { togglePanel(); closeChat(); });
+    document.getElementById('tpg-chat-send').addEventListener('click', sendDM);
+    document.getElementById('tpg-chat-input').addEventListener('keydown', function(e) { if (e.key === 'Enter') sendDM(); });
+    refreshChat();
+    if (chatPollTimer) clearInterval(chatPollTimer);
+    chatPollTimer = setInterval(refreshChat, 3000);
+    setTimeout(function() { var inp = document.getElementById('tpg-chat-input'); if (inp) inp.focus(); }, 100);
+  }
+
+  function closeChat() {
+    chatWith = null;
+    if (chatPollTimer) { clearInterval(chatPollTimer); chatPollTimer = null; }
+    // Restore panel
+    var panel = document.getElementById('tpg-friends-panel');
+    if (panel) panel.remove();
+    ensurePanel();
+    refresh();
+  }
+
+  async function refreshChat() {
+    if (!chatWith) return;
+    var p = getPlayer();
+    if (!p) return;
+    var res = await api('dm/history?id=' + p.id + '&nickname=' + encodeURIComponent(p.nickname) + '&with=' + chatWith + '&since=' + lastChatTs, 'GET');
+    if (!res.ok) return;
+    var msgsEl = document.getElementById('tpg-chat-msgs');
+    if (!msgsEl) return;
+    var atBottom = msgsEl.scrollTop + msgsEl.clientHeight >= msgsEl.scrollHeight - 50;
+    for (var i = 0; i < res.messages.length; i++) {
+      var m = res.messages[i];
+      if (m.ts <= lastChatTs) continue;
+      lastChatTs = m.ts;
+      var mine = m.from === p.id;
+      var div = document.createElement('div');
+      div.style.cssText = mine
+        ? 'align-self:flex-end;background:#6c63ff;color:#fff;padding:6px 12px;border-radius:12px 12px 2px 12px;max-width:75%;font-size:13px;word-break:break-word;'
+        : 'align-self:flex-start;background:#2a2a3e;color:#ccc;padding:6px 12px;border-radius:12px 12px 12px 2px;max-width:75%;font-size:13px;word-break:break-word;';
+      div.textContent = m.content;
+      msgsEl.appendChild(div);
+    }
+    if (atBottom) msgsEl.scrollTop = msgsEl.scrollHeight;
+  }
+
+  async function sendDM() {
+    var inp = document.getElementById('tpg-chat-input');
+    if (!inp) return;
+    var content = inp.value.trim();
+    if (!content) return;
+    inp.value = '';
+    var p = getPlayer();
+    if (!p) return;
+    // Optimistic: show my message immediately
+    var msgsEl = document.getElementById('tpg-chat-msgs');
+    if (msgsEl) {
+      var div = document.createElement('div');
+      div.style.cssText = 'align-self:flex-end;background:#6c63ff;color:#fff;padding:6px 12px;border-radius:12px 12px 2px 12px;max-width:75%;font-size:13px;word-break:break-word;';
+      div.textContent = content;
+      msgsEl.appendChild(div);
+      msgsEl.scrollTop = msgsEl.scrollHeight;
+    }
+    var res = await api('dm/send', 'POST', { id: p.id, nickname: p.nickname, to: chatWith, content: content });
+    if (!res.ok) {
+      if (msgsEl) {
+        var err = document.createElement('div');
+        err.style.cssText = 'align-self:center;color:#ff7a99;font-size:11px;';
+        err.textContent = '⚠️ 发送失败: ' + (res.error || '');
+        msgsEl.appendChild(err);
+      }
+    } else {
+      lastChatTs = Date.now();
+    }
+  }
+
   function togglePanel() {
     ensurePanel();
     var panel = document.getElementById('tpg-friends-panel');
@@ -139,7 +237,8 @@
           '<div style="font-size:13px;color:#fff;font-weight:600;">' + escapeHtml(f.nickname) + '</div>' +
           '<div style="font-size:11px;color:#666;">' + (progressParts.join(' · ') || '暂无记录') + '</div>' +
         '</div>' +
-        '<button onclick="tpgFriends.invite(\'' + f.id + '\',\'' + escapeHtml(f.nickname) + '\')" style="background:#48c6ef;color:#000;border:none;padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer;">🎮 邀请</button>' +
+        '<button onclick="tpgFriends.invite(\'' + f.id + '\',\'' + escapeHtml(f.nickname) + '\')" style="background:#48c6ef;color:#000;border:none;padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer;">🎮</button>' +
+        '<button onclick="tpgFriends.chat(\'' + f.id + '\',\'' + escapeHtml(f.nickname) + '\')" style="background:#4caf50;color:#fff;border:none;padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer;">💬</button>' +
         '<button onclick="tpgFriends.remove(\'' + f.id + '\')" style="background:transparent;color:#666;border:none;padding:4px 6px;font-size:14px;cursor:pointer;">🗑️</button>' +
       '</div>';
     }
@@ -278,6 +377,8 @@
     accept: acceptFriend,
     remove: removeFriend,
     invite: invite,
+    chat: openChat,
+    closeChat: closeChat,
     joinGame: joinGame,
     refresh: refresh
   };
