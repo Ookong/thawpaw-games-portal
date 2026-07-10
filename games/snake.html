@@ -311,19 +311,35 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
   <div class="back-btn" onclick="showPage('home')">←</div>
   <div class="settings-page">
     <h2>🔮 更多模式</h2>
-    <div class="mode-card" onclick="showPage('pk-setup')" style="margin-bottom:12px;flex-direction:row;gap:12px;padding:18px;text-align:left;">
-      <div style="font-size:36px;">⚔️</div>
-      <div>
-        <div class="mode-name" style="font-size:16px;">双人 PK</div>
-        <div class="mode-desc" style="font-size:12px;">两条蛇各自棋盘，比谁死前分高！赢 +10🍎，输 +10💰安慰</div>
-      </div>
+
+    <!-- 线上模式 -->
+    <h3 style="font-size:14px;color:var(--accent);margin:8px 0 4px;">🌐 线上对战</h3>
+    <div class="mode-card" onclick="onlineStart('pk','random')" style="margin-bottom:8px;flex-direction:row;gap:12px;padding:14px;text-align:left;">
+      <div style="font-size:28px;">⚔️🎲</div>
+      <div><div class="mode-name" style="font-size:14px;">PK 随机匹配</div><div class="mode-desc" style="font-size:11px;">线上随机对手 · 赢 +10🍎</div></div>
     </div>
-    <div class="mode-card" onclick="showPage('duo-setup')" style="margin-bottom:12px;flex-direction:row;gap:12px;padding:18px;text-align:left;">
-      <div style="font-size:36px;">🤝</div>
-      <div>
-        <div class="mode-name" style="font-size:16px;">双人合作</div>
-        <div class="mode-desc" style="font-size:12px;">同一棋盘！撞自己=死，撞对方=安全。霸屏平分 50🍎</div>
-      </div>
+    <div class="mode-card" onclick="onlineStart('pk','invite')" style="margin-bottom:8px;flex-direction:row;gap:12px;padding:14px;text-align:left;">
+      <div style="font-size:28px;">⚔️👥</div>
+      <div><div class="mode-name" style="font-size:14px;">PK 邀请好友</div><div class="mode-desc" style="font-size:11px;">创建房间发给好友</div></div>
+    </div>
+    <div class="mode-card" onclick="onlineStart('duo','random')" style="margin-bottom:8px;flex-direction:row;gap:12px;padding:14px;text-align:left;">
+      <div style="font-size:28px;">🤝🎲</div>
+      <div><div class="mode-name" style="font-size:14px;">合作随机匹配</div><div class="mode-desc" style="font-size:11px;">和陌生人合作霸屏</div></div>
+    </div>
+    <div class="mode-card" onclick="onlineStart('duo','invite')" style="margin-bottom:8px;flex-direction:row;gap:12px;padding:14px;text-align:left;">
+      <div style="font-size:28px;">🤝👥</div>
+      <div><div class="mode-name" style="font-size:14px;">合作邀请好友</div><div class="mode-desc" style="font-size:11px;">和好友一起霸屏</div></div>
+    </div>
+
+    <!-- 线下模式 -->
+    <h3 style="font-size:14px;color:var(--text2);margin:12px 0 4px;">📱 线下（同设备）</h3>
+    <div class="mode-card" onclick="showPage('pk-setup')" style="margin-bottom:8px;flex-direction:row;gap:12px;padding:14px;text-align:left;">
+      <div style="font-size:28px;">⚔️</div>
+      <div><div class="mode-name" style="font-size:14px;">双人 PK</div><div class="mode-desc" style="font-size:11px;">同设备对战</div></div>
+    </div>
+    <div class="mode-card" onclick="showPage('duo-setup')" style="margin-bottom:8px;flex-direction:row;gap:12px;padding:14px;text-align:left;">
+      <div style="font-size:28px;">🤝</div>
+      <div><div class="mode-name" style="font-size:14px;">双人合作</div><div class="mode-desc" style="font-size:11px;">同设备合作霸屏</div></div>
     </div>
   </div>
 </div>
@@ -445,6 +461,74 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
   <div style="text-align:center;padding:8px;font-size:12px;color:var(--text2);">
     📱 触屏：左半屏控制玩家1，右半屏控制玩家2 · 💻 键盘：WASD / 方向键<br>
     撞自己=死！撞对方=安全。一方死后拿走自己的分数离场
+  </div>
+</div>
+
+<!-- ===== ONLINE MATCH PAGE ===== -->
+<div id="page-online-match" class="page">
+  <div class="back-btn" onclick="onlineCancel()">←</div>
+  <div class="settings-page" style="text-align:center;">
+    <h2 id="online-title">🌐 线上匹配</h2>
+    <div id="online-status" style="font-size:18px;color:var(--text2);padding:40px 20px;">
+      <div style="font-size:48px;margin-bottom:12px;">🔍</div>
+      <div>搜索对手中…</div>
+      <div style="font-size:12px;color:var(--dim);margin-top:8px;" id="online-sub">等待另一位玩家加入</div>
+    </div>
+    <div id="online-room-info" style="display:none;padding:20px;">
+      <div style="font-size:14px;color:var(--text2);margin-bottom:8px;">把房间码发给好友：</div>
+      <div id="online-room-code" style="font-size:32px;font-weight:900;color:var(--gold);font-family:monospace;letter-spacing:4px;background:var(--card2);padding:12px 24px;border-radius:12px;display:inline-block;margin-bottom:12px;">------</div>
+      <div style="font-size:12px;color:var(--dim);">等待好友加入…</div>
+    </div>
+    <button class="start-btn" onclick="onlineCancel()" style="margin-top:20px;opacity:.7;">取消</button>
+  </div>
+</div>
+
+<!-- ===== ONLINE PK GAME PAGE ===== -->
+<div id="page-online-pk" class="page game-page">
+  <div class="top-bar">
+    <div class="back-btn" onclick="onlineQuit()">←</div>
+    <div style="flex:1;text-align:center;">
+      <span id="opk-status">⚔️ 在线 PK！</span>
+    </div>
+    <div class="snow-btn" onclick="goPortal()">❄️</div>
+  </div>
+  <div style="display:flex;gap:8px;justify-content:center;padding:8px;flex-wrap:wrap;">
+    <div style="text-align:center;">
+      <div style="font-size:12px;font-weight:700;" id="opk-me-label">🟢 你</div>
+      <div style="font-size:20px;font-weight:700;color:var(--gold);" id="opk-me-score">0</div>
+      <canvas id="opk-canvas" style="margin-top:4px;border:2px solid #4caf50;border-radius:6px;"></canvas>
+    </div>
+    <div style="font-size:28px;align-self:center;font-weight:900;color:var(--accent);">VS</div>
+    <div style="text-align:center;">
+      <div style="font-size:12px;font-weight:700;" id="opk-opp-label">🟠 对手</div>
+      <div style="font-size:20px;font-weight:700;color:var(--gold);" id="opk-opp-score">0</div>
+      <div style="margin-top:4px;border:2px solid #ff9800;border-radius:6px;padding:8px 4px;" id="opk-opp-panel">
+        <div style="font-size:11px;color:var(--text2);" id="opk-opp-info">等待数据…</div>
+      </div>
+    </div>
+  </div>
+  <div style="text-align:center;padding:8px;font-size:12px;color:var(--text2);">
+    📱 触屏滑动控制方向 · 💻 WASD 或方向键
+  </div>
+</div>
+
+<!-- ===== ONLINE DUO GAME PAGE ===== -->
+<div id="page-online-duo" class="page game-page">
+  <div class="top-bar">
+    <div class="back-btn" onclick="onlineQuit()">←</div>
+    <div style="flex:1;text-align:center;">
+      <span id="oduo-status">🤝 在线合作！</span>
+    </div>
+    <div class="snow-btn" onclick="goPortal()">❄️</div>
+  </div>
+  <div style="display:flex;gap:12px;justify-content:center;padding:8px;font-size:14px;font-weight:700;">
+    <span style="color:#4caf50;" id="oduo-me-disp">🟢 你：0</span>
+    <span style="color:#ff9800;" id="oduo-opp-disp">🟠 对手：0</span>
+    <span style="color:var(--gold);" id="oduo-coverage">覆盖：0%</span>
+  </div>
+  <canvas id="oduo-canvas" style="display:block;margin:0 auto;"></canvas>
+  <div style="text-align:center;padding:8px;font-size:12px;color:var(--text2);">
+    撞自己=死！撞对方=安全。📱滑动 / 💻 WASD 或方向键
   </div>
 </div>
 
@@ -1106,6 +1190,408 @@ function goPortal(){
   if(gameActive){ gameActive=false; clearInterval(gameLoop); savePlayer(); }
   location.href = '../index.html';
 }
+
+// ===== ONLINE MULTIPLAYER LOGIC =====
+var onlineState = {
+  mode: null, matchType: null, roomCode: null, playerNum: 1,
+  opponent: null, matchTimer: null, syncTimer: null,
+  mySnake: null, myDir: null, myPending: null, myScore: 0, myAlive: true,
+  oppData: null, oppLastTs: 0,
+  gameLoop: null, active: false,
+  canvas: null, ctx: null, cell: 0, grid: 20, speed: 130, speedIdx: 1,
+  food: null, oppSnake: null
+};
+var BACKEND_URL = 'https://tpg-hq.thawflow.com';
+
+function onlineApi(path, method, data) {
+  var url = BACKEND_URL + '/' + path;
+  var opts = { method: method || 'GET', headers: { 'Content-Type': 'application/json' } };
+  if (data) opts.body = JSON.stringify(data);
+  var ctrl = new AbortController();
+  opts.signal = ctrl.signal;
+  setTimeout(function() { ctrl.abort(); }, 8000);
+  return fetch(url, opts).then(function(r) { return r.json(); }).catch(function(e) { return { ok: false, error: e.message }; });
+}
+
+function getMyId() {
+  var id = localStorage.getItem('thawpawActiveId');
+  if (!id) return null;
+  var players = JSON.parse(localStorage.getItem('thawpawPlayers') || '{}');
+  return players[id] ? { id: id, nickname: players[id].nickname } : null;
+}
+
+async function onlineStart(mode, matchType) {
+  var me = getMyId();
+  if (!me) { alert('请先登录！'); return; }
+  onlineState.mode = mode;
+  onlineState.matchType = matchType;
+  onlineState.opponent = null;
+  onlineState.roomCode = null;
+
+  if (matchType === 'random') {
+    // Join matchmaking queue
+    var res = await onlineApi('online/match', 'POST', { id: me.id, nickname: me.nickname, mode: mode });
+    if (!res.ok) { alert('❌ ' + (res.error || '匹配失败')); return; }
+    if (res.status === 'matched') {
+      onlineState.roomCode = res.roomCode;
+      onlineState.playerNum = res.playerNum;
+      onlineState.opponent = res.opponent;
+      onlineEnterGame();
+    } else {
+      // Waiting — show search page
+      document.getElementById('online-title').textContent = mode === 'pk' ? '⚔️ PK 随机匹配' : '🤝 合作随机匹配';
+      document.getElementById('online-status').innerHTML = '<div style="font-size:48px;margin-bottom:12px;">🔍</div><div>搜索对手中…</div><div style="font-size:12px;color:var(--dim);margin-top:8px;">等待另一位玩家加入</div>';
+      document.getElementById('online-room-info').style.display = 'none';
+      showPage('online-match');
+      // Poll for match
+      onlineState.matchTimer = setInterval(onlineCheckMatch, 2000);
+    }
+  } else if (matchType === 'invite') {
+    // Create room
+    var res = await onlineApi('online/room/create', 'POST', { id: me.id, nickname: me.nickname, mode: mode });
+    if (!res.ok) { alert('❌ ' + (res.error || '创建房间失败')); return; }
+    onlineState.roomCode = res.roomCode;
+    onlineState.playerNum = 1;
+    document.getElementById('online-title').textContent = mode === 'pk' ? '⚔️ PK 邀请好友' : '🤝 合作邀请好友';
+    document.getElementById('online-status').style.display = 'none';
+    document.getElementById('online-room-info').style.display = 'block';
+    document.getElementById('online-room-code').textContent = res.roomCode;
+    showPage('online-match');
+    // Wait for friend to join
+    onlineState.matchTimer = setInterval(onlineCheckMatch, 2000);
+  }
+}
+
+async function onlineCheckMatch() {
+  var me = getMyId(); if (!me) return;
+  var res = await onlineApi('online/match?id=' + me.id + '&nickname=' + encodeURIComponent(me.nickname) + '&mode=' + onlineState.mode, 'GET');
+  if (res.ok && res.status === 'matched') {
+    clearInterval(onlineState.matchTimer);
+    onlineState.matchTimer = null;
+    onlineState.roomCode = res.roomCode;
+    onlineState.playerNum = res.playerNum;
+    onlineState.opponent = res.opponent;
+    onlineEnterGame();
+  }
+}
+
+function onlineCancel() {
+  if (onlineState.matchTimer) { clearInterval(onlineState.matchTimer); onlineState.matchTimer = null; }
+  showPage('modes');
+}
+
+function onlineEnterGame() {
+  var me = getMyId();
+  if (!me) return;
+  var isPK = onlineState.mode === 'pk';
+  // Setup local game
+  onlineState.grid = 20;
+  onlineState.speed = 130;
+  onlineState.speedIdx = 1;
+  onlineState.cell = Math.min(Math.floor(Math.min(window.innerWidth * (isPK ? 0.42 : 0.95), window.innerHeight - 240) / onlineState.grid), isPK ? 14 : 18);
+  onlineState.mySnake = [];
+  var mid = Math.floor(onlineState.grid / 2);
+  for (var i = 0; i < 3; i++) onlineState.mySnake.push({ x: mid - i, y: mid });
+  onlineState.myDir = { x: 1, y: 0 };
+  onlineState.myPending = null;
+  onlineState.myScore = 0;
+  onlineState.myAlive = true;
+  onlineState.oppData = null;
+  onlineState.oppLastTs = 0;
+  onlineState.oppSnake = null;
+  onlineState.active = true;
+  // Place food
+  onlinePlaceFood();
+
+  if (isPK) {
+    var cv = document.getElementById('opk-canvas');
+    onlineState.canvas = cv;
+    onlineState.ctx = cv.getContext('2d');
+    cv.width = onlineState.cell * onlineState.grid; cv.height = onlineState.cell * onlineState.grid;
+    cv.style.width = (onlineState.cell * onlineState.grid) + 'px'; cv.style.height = (onlineState.cell * onlineState.grid) + 'px';
+    var myColor = onlineState.playerNum === 1 ? '#4caf50' : '#ff9800';
+    var oppColor = onlineState.playerNum === 1 ? '#ff9800' : '#4caf50';
+    document.getElementById('opk-me-label').style.color = myColor;
+    document.getElementById('opk-me-label').textContent = (myColor === '#4caf50' ? '🟢' : '🟠') + ' 你 (' + me.nickname + ')';
+    document.getElementById('opk-opp-label').style.color = oppColor;
+    document.getElementById('opk-opp-label').textContent = (oppColor === '#4caf50' ? '🟢' : '🟠') + ' ' + (onlineState.opponent ? onlineState.opponent.nickname : '对手');
+    document.getElementById('opk-status').textContent = '⚔️ 在线 PK！';
+    showPage('online-pk');
+  } else {
+    var cv2 = document.getElementById('oduo-canvas');
+    onlineState.canvas = cv2;
+    onlineState.ctx = cv2.getContext('2d');
+    cv2.width = onlineState.cell * onlineState.grid; cv2.height = onlineState.cell * onlineState.grid;
+    cv2.style.width = (onlineState.cell * onlineState.grid) + 'px'; cv2.style.height = (onlineState.cell * onlineState.grid) + 'px';
+    // P1 starts left, P2 starts right
+    if (onlineState.playerNum === 2) {
+      onlineState.mySnake = [];
+      for (var j = 0; j < 3; j++) onlineState.mySnake.push({ x: mid + Math.floor(mid / 2) - j, y: mid });
+    }
+    document.getElementById('oduo-me-disp').textContent = '🟢 你：0';
+    document.getElementById('oduo-opp-disp').textContent = '🟠 ' + (onlineState.opponent ? onlineState.opponent.nickname : '对手') + '：0';
+    document.getElementById('oduo-status').textContent = '🤝 在线合作！';
+    showPage('online-duo');
+  }
+  document.getElementById('opk-me-score').textContent = '0';
+  document.getElementById('opk-opp-score').textContent = '0';
+
+  // Start game loop
+  if (onlineState.gameLoop) clearInterval(onlineState.gameLoop);
+  onlineState.gameLoop = setInterval(onlineTick, onlineState.speed);
+  // Start sync (every 400ms)
+  if (onlineState.syncTimer) clearInterval(onlineState.syncTimer);
+  onlineState.syncTimer = setInterval(onlineSync, 400);
+  // Initial sync
+  setTimeout(onlineSync, 100);
+}
+
+function onlinePlaceFood() {
+  var occ = onlineState.mySnake.slice();
+  if (onlineState.oppSnake) occ = occ.concat(onlineState.oppSnake);
+  var f;
+  do { f = { x: Math.floor(Math.random() * onlineState.grid), y: Math.floor(Math.random() * onlineState.grid) }; }
+  while (occ.some(function(s) { return s.x === f.x && s.y === f.y; }));
+  onlineState.food = f;
+}
+
+function onlineTick() {
+  if (!onlineState.active || !onlineState.myAlive) return;
+  if (onlineState.myPending) { onlineState.myDir = onlineState.myPending; onlineState.myPending = null; }
+  var head = { x: onlineState.mySnake[0].x + onlineState.myDir.x, y: onlineState.mySnake[0].y + onlineState.myDir.y };
+  if (head.x < 0) head.x = onlineState.grid - 1;
+  if (head.x >= onlineState.grid) head.x = 0;
+  if (head.y < 0) head.y = onlineState.grid - 1;
+  if (head.y >= onlineState.grid) head.y = 0;
+  var willEat = (head.x === onlineState.food.x && head.y === onlineState.food.y);
+  var body = willEat ? onlineState.mySnake : onlineState.mySnake.slice(0, -1);
+  if (body.some(function(s) { return s.x === head.x && s.y === head.y; })) {
+    onlineState.myAlive = false;
+    onlineDraw();
+    onlineCheckEnd();
+    return;
+  }
+  onlineState.mySnake.unshift(head);
+  if (willEat) {
+    onlineState.myScore += GOLD_PER_FOOD[onlineState.speedIdx];
+    player.gold += GOLD_PER_FOOD[onlineState.speedIdx];
+    player.apples += 1;
+    player.exp += 5;
+    checkLevelUp();
+    onlinePlaceFood();
+    var scoreEl = document.getElementById(onlineState.mode === 'pk' ? 'opk-me-score' : '');
+    if (onlineState.mode === 'pk') {
+      document.getElementById('opk-me-score').textContent = onlineState.myScore;
+    }
+    onlineUpdateHUD();
+  } else {
+    onlineState.mySnake.pop();
+  }
+  onlineDraw();
+}
+
+function onlineUpdateHUD() {
+  if (onlineState.mode === 'duo') {
+    document.getElementById('oduo-me-disp').textContent = '🟢 你：' + onlineState.myScore;
+    var oppScore = onlineState.oppData ? (onlineState.oppData.score || 0) : 0;
+    document.getElementById('oduo-opp-disp').textContent = '🟠 ' + (onlineState.opponent ? onlineState.opponent.nickname : '对手') + '：' + oppScore;
+    // Coverage
+    var total = onlineState.grid * onlineState.grid;
+    var myLen = onlineState.mySnake.length;
+    var oppLen = onlineState.oppSnake ? onlineState.oppSnake.length : 0;
+    var pct = Math.round((myLen + oppLen) / total * 100);
+    var covEl = document.getElementById('oduo-coverage');
+    if (covEl) covEl.textContent = '覆盖：' + pct + '%';
+    // Check 霸屏
+    if (pct >= 50 && onlineState.active && onlineState.myAlive) {
+      onlineDuoWin(pct);
+    }
+  }
+}
+
+function onlineDraw() {
+  var ctx = onlineState.ctx;
+  var cs = onlineState.cell;
+  var g = onlineState.grid;
+  ctx.fillStyle = '#0a0a1a';
+  ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+  ctx.strokeStyle = '#1a1a2e';
+  for (var i = 0; i <= g; i++) {
+    ctx.beginPath(); ctx.moveTo(i * cs, 0); ctx.lineTo(i * cs, ctx.canvas.height); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, i * cs); ctx.lineTo(ctx.canvas.width, i * cs); ctx.stroke();
+  }
+  // Food
+  ctx.font = cs * 0.7 + 'px serif';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText('🍎', onlineState.food.x * cs + cs / 2, onlineState.food.y * cs + cs / 2);
+  // My snake
+  var myColor = onlineState.playerNum === 1 ? '76,175,80' : '255,152,0';
+  onlineState.mySnake.forEach(function(s, i) {
+    var alpha = onlineState.myAlive ? (1 - (i / onlineState.mySnake.length) * 0.5) : 0.3;
+    ctx.fillStyle = 'rgba(' + myColor + ',' + alpha + ')';
+    ctx.beginPath(); ctx.roundRect(s.x * cs + 1, s.y * cs + 1, cs - 2, cs - 2, 3); ctx.fill();
+  });
+  if (!onlineState.myAlive) {
+    ctx.font = cs + 'px serif';
+    ctx.fillText('💀', onlineState.mySnake[0].x * cs + cs / 2, onlineState.mySnake[0].y * cs + cs / 2);
+  }
+  // Opponent snake (duo mode or PK score panel)
+  if (onlineState.mode === 'duo' && onlineState.oppSnake) {
+    var oppColor = onlineState.playerNum === 1 ? '255,152,0' : '76,175,80';
+    var oppAlive = onlineState.oppData && onlineState.oppData.alive !== false;
+    onlineState.oppSnake.forEach(function(s, i) {
+      var alpha = oppAlive ? (1 - (i / onlineState.oppSnake.length) * 0.5) : 0.2;
+      ctx.fillStyle = 'rgba(' + oppColor + ',' + alpha + ')';
+      ctx.beginPath(); ctx.roundRect(s.x * cs + 1, s.y * cs + 1, cs - 2, cs - 2, 3); ctx.fill();
+    });
+  }
+}
+
+async function onlineSync() {
+  var me = getMyId(); if (!me) return;
+  // Send my state
+  var myState = {
+    score: onlineState.myScore,
+    alive: onlineState.myAlive,
+    length: onlineState.mySnake.length,
+    snake: onlineState.mode === 'duo' ? onlineState.mySnake.slice(-30) : null
+  };
+  onlineApi('online/sync', 'POST', {
+    id: me.id, nickname: me.nickname,
+    roomCode: onlineState.roomCode, playerNum: onlineState.playerNum, state: myState
+  });
+  // Get opponent state
+  var res = await onlineApi('online/sync?id=' + me.id + '&nickname=' + encodeURIComponent(me.nickname) + '&roomCode=' + onlineState.roomCode + '&playerNum=' + onlineState.playerNum, 'GET');
+  if (res.ok && res.state) {
+    if (res.state.left) {
+      // Opponent left
+      if (onlineState.active) {
+        onlineState.active = false;
+        clearInterval(onlineState.gameLoop); clearInterval(onlineState.syncTimer);
+        alert('😞 对手离开了游戏');
+        showPage('modes');
+      }
+      return;
+    }
+    onlineState.oppData = res.state;
+    onlineState.oppLastTs = res.state.ts || Date.now();
+    if (onlineState.mode === 'duo' && res.state.snake) {
+      onlineState.oppSnake = res.state.snake;
+    }
+    // Update PK HUD
+    if (onlineState.mode === 'pk') {
+      document.getElementById('opk-opp-score').textContent = res.state.score || 0;
+      var info = '长度：' + (res.state.length || 3);
+      if (res.state.alive === false) info = '💀 已挂 (' + (res.state.score || 0) + ')';
+      document.getElementById('opk-opp-info').textContent = info;
+    }
+    onlineUpdateHUD();
+    onlineDraw();
+    // Check end
+    onlineCheckEnd();
+  }
+}
+
+function onlineCheckEnd() {
+  if (!onlineState.active) return;
+  // If I'm dead and opp is also dead
+  if (!onlineState.myAlive && onlineState.oppData && onlineState.oppData.alive === false) {
+    onlineEnd();
+    return;
+  }
+  // If opp left (stale data > 10s)
+  if (onlineState.oppLastTs && Date.now() - onlineState.oppLastTs > 10000 && onlineState.oppData) {
+    onlineEnd();
+    return;
+  }
+}
+
+function onlineEnd() {
+  if (!onlineState.active) return;
+  onlineState.active = false;
+  clearInterval(onlineState.gameLoop); clearInterval(onlineState.syncTimer);
+  var me = getMyId(); if (me) {
+    onlineApi('online/leave', 'POST', { id: me.id, nickname: me.nickname, roomCode: onlineState.roomCode, playerNum: onlineState.playerNum });
+  }
+  var oppScore = onlineState.oppData ? (onlineState.oppData.score || 0) : 0;
+  var myScore = onlineState.myScore;
+  var msg;
+  if (onlineState.mode === 'pk') {
+    if (myScore > oppScore) {
+      player.apples += 10; player.gold += myScore; player.exp += 20;
+      msg = '🎉 你赢了！\n⚔️ 你：' + myScore + ' vs 对手：' + oppScore + '\n🏆 +10🍎 +' + myScore + '💰';
+    } else if (oppScore > myScore) {
+      player.gold += 10; player.exp += 5;
+      msg = '💔 你输了…\n⚔️ 你：' + myScore + ' vs 对手：' + oppScore + '\n安慰奖 +10💰';
+    } else {
+      player.gold += myScore; player.exp += 10;
+      msg = '🤝 平局！\n⚔️ 你：' + myScore + ' vs 对手：' + oppScore + '\n+' + myScore + '💰';
+    }
+  } else {
+    player.gold += myScore; player.exp += 10;
+    msg = '🤝 合作结束！\n🟢 你：' + myScore + '💰\n🟠 对手：' + oppScore + '💰';
+  }
+  checkLevelUp(); savePlayer();
+  setTimeout(function() { alert(msg); showPage('home'); }, 300);
+}
+
+function onlineDuoWin(pct) {
+  onlineState.active = false;
+  clearInterval(onlineState.gameLoop); clearInterval(onlineState.syncTimer);
+  var me = getMyId(); if (me) {
+    onlineApi('online/leave', 'POST', { id: me.id, nickname: me.nickname, roomCode: onlineState.roomCode, playerNum: onlineState.playerNum });
+  }
+  var oppScore = onlineState.oppData ? (onlineState.oppData.score || 0) : 0;
+  var totalApples = 50;
+  var myLen = onlineState.mySnake.length;
+  var oppLen = onlineState.oppSnake ? onlineState.oppSnake.length : 3;
+  var myRatio = myLen / (myLen + oppLen);
+  var myApples = Math.round(totalApples * myRatio);
+  player.apples += myApples; player.exp += 30;
+  checkLevelUp(); savePlayer();
+  document.getElementById('oduo-status').textContent = '🏆 霸屏成功！' + pct + '%';
+  setTimeout(function() {
+    alert('🏆 霸屏成功！覆盖率 ' + pct + '%\n\n🟢 你：' + myApples + '🍎\n🟠 对手：' + (totalApples - myApples) + '🍎');
+    showPage('home');
+  }, 300);
+}
+
+function onlineQuit() {
+  onlineState.active = false;
+  if (onlineState.gameLoop) clearInterval(onlineState.gameLoop);
+  if (onlineState.syncTimer) clearInterval(onlineState.syncTimer);
+  var me = getMyId();
+  if (me && onlineState.roomCode) {
+    onlineApi('online/leave', 'POST', { id: me.id, nickname: me.nickname, roomCode: onlineState.roomCode, playerNum: onlineState.playerNum });
+  }
+  showPage('modes');
+}
+
+// Online keyboard
+document.addEventListener('keydown', function(e) {
+  if (!onlineState.active || !onlineState.myAlive) return;
+  var k = e.key.toLowerCase();
+  var dirs = { w: {x:0,y:-1}, s: {x:0,y:1}, a: {x:-1,y:0}, d: {x:1,y:0},
+    arrowup: {x:0,y:-1}, arrowdown: {x:0,y:1}, arrowleft: {x:-1,y:0}, arrowright: {x:1,y:0} };
+  if (dirs[k]) {
+    var nd = dirs[k];
+    if (nd.x !== -onlineState.myDir.x || nd.y !== -onlineState.myDir.y) onlineState.myPending = nd;
+    e.preventDefault();
+  }
+});
+
+// Online touch
+document.addEventListener('touchstart', function(e) {
+  if (!onlineState.active || !onlineState.myAlive) return;
+  var t = e.touches[0];
+  var cx = window.innerWidth / 2, cy = window.innerHeight / 2;
+  var dx = t.clientX - cx, dy = t.clientY - cy;
+  var nd;
+  if (Math.abs(dx) > Math.abs(dy)) nd = dx > 0 ? {x:1,y:0} : {x:-1,y:0};
+  else nd = dy > 0 ? {x:0,y:1} : {x:0,y:-1};
+  if (nd.x !== -onlineState.myDir.x || nd.y !== -onlineState.myDir.y) onlineState.myPending = nd;
+  e.preventDefault();
+}, { passive: false });
 
 // ===== PK MODE (双人对战) =====
 let pk1, pk2, pkLoop, pkActive=false;
