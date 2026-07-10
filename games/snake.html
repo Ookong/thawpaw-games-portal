@@ -212,6 +212,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
     <div class="home-currency-bubble">💰 <span id="home-gold">0</span></div>
     <div class="home-currency-bubble">🍎 <span id="home-apples">0</span></div>
     <div class="settings-btn" onclick="event.stopPropagation();openSettings()" title="设置">⚙️</div>
+    <div class="snow-btn" onclick="goPortal()" title="返回 Portal">❄️</div>
   </div>
   <div class="home-content">
     <!-- 左1/4 — 练习区 -->
@@ -262,6 +263,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 <!-- ===== PROFILE PAGE ===== -->
 <div id="page-profile" class="page">
   <div class="back-btn" onclick="showPage('home')">←</div>
+  <div class="snow-btn" onclick="goPortal()" style="position:absolute;top:16px;right:16px;">❄️</div>
   <div class="profile-page">
     <div class="big-avatar" id="profile-avatar" onclick="openAvatarPicker()">🐍</div>
     <div class="name-section">
@@ -282,6 +284,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 <!-- ===== SETTINGS PAGE (调试) ===== -->
 <div id="page-settings" class="page">
   <div class="back-btn" onclick="showPage('home')">←</div>
+  <div class="snow-btn" onclick="goPortal()" style="position:absolute;top:16px;right:16px;">❄️</div>
   <div class="settings-page">
     <h2>🎮 经典模式设置</h2>
     <div class="setting-group">
@@ -309,6 +312,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 <!-- ===== MODES PAGE ===== -->
 <div id="page-modes" class="page">
   <div class="back-btn" onclick="showPage('home')">←</div>
+  <div class="snow-btn" onclick="goPortal()" style="position:absolute;top:16px;right:16px;">❄️</div>
   <div class="settings-page">
     <h2>🔮 更多模式</h2>
 
@@ -347,6 +351,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 <!-- ===== PK SETUP PAGE ===== -->
 <div id="page-pk-setup" class="page">
   <div class="back-btn" onclick="showPage('modes')">←</div>
+  <div class="snow-btn" onclick="goPortal()" style="position:absolute;top:16px;right:16px;">❄️</div>
   <div class="settings-page">
     <h2>⚔️ 双人 PK 设置</h2>
     <div class="setting-group">
@@ -382,6 +387,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 <!-- ===== DUO SETUP PAGE ===== -->
 <div id="page-duo-setup" class="page">
   <div class="back-btn" onclick="showPage('modes')">←</div>
+  <div class="snow-btn" onclick="goPortal()" style="position:absolute;top:16px;right:16px;">❄️</div>
   <div class="settings-page">
     <h2>🤝 双人合作设置</h2>
     <div class="setting-group">
@@ -467,6 +473,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 <!-- ===== ONLINE MATCH PAGE ===== -->
 <div id="page-online-match" class="page">
   <div class="back-btn" onclick="onlineCancel()">←</div>
+  <div class="snow-btn" onclick="goPortal()" style="position:absolute;top:16px;right:16px;">❄️</div>
   <div class="settings-page" style="text-align:center;">
     <h2 id="online-title">🌐 线上匹配</h2>
     <div id="online-status" style="font-size:18px;color:var(--text2);padding:40px 20px;">
