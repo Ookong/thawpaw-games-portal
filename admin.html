@@ -448,6 +448,7 @@ tr:hover td{background:var(--card2)}
 // ============================
 
 const SUPER_ADMIN_ID = '94568945';
+const SUPER_ADMIN_ID_2 = '59253603'; // 超级管理员2: 范宝
 const CF_BACKEND_KEY = 'tpgCfBackendUrl';
 const DEFAULT_CF_URL = 'https://tpg-hq.thawflow.com';
 let backendUrl = localStorage.getItem(CF_BACKEND_KEY) || DEFAULT_CF_URL;
@@ -565,7 +566,7 @@ function hqLogin(){
     const players = JSON.parse(localStorage.getItem('thawpawPlayers') || '{}');
     if(players[id]){
       showNickStep();
-    } else if(id === SUPER_ADMIN_ID){
+    } else if(id === SUPER_ADMIN_ID || id === SUPER_ADMIN_ID_2){
       // 超级管理员即使后端不可达也允许本地登录
       showNickStep();
     } else {
@@ -600,7 +601,7 @@ function confirmNick(){
       if(players[pendingId] && players[pendingId].nickname === nick){
         // Local match
         let role = 'player';
-        if(pendingId === SUPER_ADMIN_ID) role = 'super';
+        if(pendingId === SUPER_ADMIN_ID || pendingId === SUPER_ADMIN_ID_2) role = 'super';
         session = { id: pendingId, nickname: nick, role: role }; isSuperAdmin = (session.role === "super");
         sessionStorage.setItem('tpgHqSession', JSON.stringify(session));
         document.getElementById('nick-step').classList.remove('show');
@@ -614,7 +615,7 @@ function confirmNick(){
     const players = JSON.parse(localStorage.getItem('thawpawPlayers') || '{}');
     if(players[pendingId] && players[pendingId].nickname === nick){
       let role = 'player';
-      if(pendingId === SUPER_ADMIN_ID) role = 'super';
+      if(pendingId === SUPER_ADMIN_ID || pendingId === SUPER_ADMIN_ID_2) role = 'super';
       session = { id: pendingId, nickname: nick, role: role }; isSuperAdmin = (session.role === "super");
       sessionStorage.setItem('tpgHqSession', JSON.stringify(session));
       document.getElementById('nick-step').classList.remove('show');
@@ -867,7 +868,7 @@ function addSubAdmin(){
   const nick = document.getElementById('new-admin-nick').value.trim();
   if(!id || !nick){ alert('请输入 ID 和昵称'); return; }
   if(!/^\d{8}$/.test(id)){ alert('ID 必须是 8 位数字'); return; }
-  if(id === SUPER_ADMIN_ID){ alert('不能添加超级管理员为副管理员'); return; }
+  if(id === SUPER_ADMIN_ID || id === SUPER_ADMIN_ID_2){ alert('不能添加超级管理员为副管理员'); return; }
 
   apiPost('addAdmin', {
     id: session.id,

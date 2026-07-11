@@ -426,6 +426,17 @@ const THUMB_ART = {
       <text x="36" y="98" text-anchor="middle" font-size="18">🧪</text>
       <text x="68" y="162" text-anchor="middle" font-size="18">💰</text>
     </svg>`
+  },
+  sword: {
+    bg: 'linear-gradient(135deg, #0d0805 0%, #2a1410 40%, #0d0805 100%)',
+    svg: `<svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <text x="100" y="60" text-anchor="middle" font-size="36">⛩️</text>
+      <text x="100" y="120" text-anchor="middle" font-size="40">⚔️</text>
+      <text x="100" y="165" text-anchor="middle" font-size="16" fill="#d4af37" font-weight="bold">少年剑客</text>
+      <circle cx="30" cy="35" r="1" fill="#fff" opacity=".4"/>
+      <circle cx="170" cy="45" r=".8" fill="#fff" opacity=".3"/>
+      <circle cx="55" cy="20" r=".6" fill="#fff" opacity=".3"/>
+    </svg>`
   }
 };
 
@@ -945,7 +956,7 @@ if(getActiveId()){
         <h2>${g.name}</h2>
         <p>${g.description}</p>
         <div class="card-footer">
-          <span class="tag">${g.id==='dungeon'?'Roguelike':'RPG'}</span>
+          <span class="tag">${g.id==='dungeon'?'Roguelike':g.id==='snake'?'Arcade':g.id==='sword-master'?'Action':'RPG'}</span>
         </div>
       </div>`;
     grid.appendChild(card);

@@ -24,6 +24,14 @@
       "icon": "snake",
       "description": "Classic snake with shops, banks, and backpacks!",
       "color": "#4caf50"
+    },
+    {
+      "id": "sword-master",
+      "name": "少年剑客闯江湖",
+      "file": "games/sword-master.html",
+      "icon": "sword",
+      "description": "少年剑客林风闯庙宇，六波Boss挑战·无限关卡·买武器·变身Boss！⚔️",
+      "color": "#b43228"
     }
   ]
 }
