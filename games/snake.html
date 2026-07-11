@@ -155,6 +155,11 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .shop-sidebar .cat{padding:10px;text-align:center;cursor:pointer;font-size:12px;border-bottom:1px solid #333;transition:background .2s;}
 .shop-sidebar .cat.active{background:var(--accent);}
 .shop-main{flex:1;background:var(--bg);border-radius:0 var(--radius) var(--radius) 0;padding:12px;overflow-y:auto;display:grid;grid-template-columns:1fr 1fr;gap:8px;align-content:start;}
+.shop-right{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.shop-subcats{display:flex;gap:6px;padding:8px 12px;background:var(--card2);overflow-x:auto;}
+.shop-subcats .subcat{padding:4px 12px;border-radius:16px;font-size:12px;cursor:pointer;white-space:nowrap;transition:background .2s;background:#333;color:var(--text);}
+.shop-subcats .subcat.active{background:var(--accent);color:#fff;}
+.shop-main{flex:1;overflow-y:auto;}
 .shop-item{background:var(--card2);border-radius:8px;padding:10px;text-align:center;cursor:pointer;transition:transform .15s;}
 .shop-item:hover{transform:scale(1.05);}
 .shop-item .item-icon{font-size:28px;margin-bottom:4px;}
@@ -612,7 +617,10 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
     <div style="margin-bottom:10px;font-size:13px;text-align:center;">💰 <span id="shop-bal-gold">0</span> &nbsp;|&nbsp; 🍎 <span id="shop-bal-apples">0</span></div>
     <div class="shop-content">
       <div class="shop-sidebar" id="shop-cats"></div>
-      <div class="shop-main" id="shop-items"></div>
+      <div class="shop-right">
+        <div class="shop-subcats" id="shop-subcats"></div>
+        <div class="shop-main" id="shop-items"></div>
+      </div>
     </div>
   </div>
 </div>
@@ -647,6 +655,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
     <div class="detail-name" id="detail-name"></div>
     <div class="detail-desc" id="detail-desc"></div>
     <div class="detail-stats" id="detail-stats"></div>
+    <div id="detail-equip" style="margin-top:12px;text-align:center;"></div>
   </div>
 </div>
 
@@ -683,11 +692,70 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 <script>
 // ===== DATA =====
 const AVATARS = ['🐍','🐱','🐶','🐸','🦊','🐼','🐰','🦁','🐯','🐻','🐨','🐵','🦄','🐲','🦋','🐢'];
+// 两级分类：大分类 → 小分类 → 商品
 const SHOP_DATA = {
-  '敬请期待': []
+  '皮肤': {
+    '蛇皮': [
+      {id:'skin_fire',    icon:'🔥', name:'火蛇',   desc:'红色的蛇皮',      price:15, currency:'apple'},
+      {id:'skin_water',   icon:'💧', name:'水蛇',   desc:'蓝色的蛇皮',      price:15, currency:'apple'},
+      {id:'skin_rainbow', icon:'🌈', name:'彩虹蛇', desc:'7种颜色的蛇皮',   price:19, currency:'apple'},
+    ],
+    '套装': [
+      {id:'set_ice', icon:'❄️', name:'冰蛇', desc:'蓝色蛇皮+雪花❄️拖尾', price:25, currency:'apple'},
+    ],
+  },
+  '棋盘': {
+    '格线': [
+      {id:'grid_web',    icon:'🕸️', name:'蛛丝', desc:'白色格线', price:9, currency:'apple'},
+      {id:'grid_branch', icon:'🌿', name:'树枝', desc:'棕色格线', price:9, currency:'apple'},
+    ],
+    '格子': [
+      {id:'cell_sky',   icon:'🌤️', name:'天空', desc:'淡蓝色格子', price:11, currency:'apple'},
+      {id:'cell_cloud', icon:'☁️', name:'白云', desc:'白色格子', price:11, currency:'apple'},
+    ],
+    '套装': [
+      {id:'set_sunny', icon:'☀️', name:'烈日炎炎', desc:'红色格线+橙色格子', price:19, currency:'apple'},
+    ],
+  },
 };
+
+// 大分类图标
+const SHOP_CAT_ICONS = {'皮肤':'🐍','棋盘':'🎮'};
 const CURRENCY_NAMES = {gold:'💰',apple:'🍎'};
-const BAG_CATEGORIES = ['全部','皮肤','道具'];
+const BAG_CATEGORIES = ['全部','皮肤','棋盘'];
+
+// ===== SNAKE SKIN DEFINITIONS =====
+const SNAKE_SKINS = {
+  skin_classic: { name:'经典蛇', color:'#4caf50',                          icon:'🐍' },
+  skin_fire:    { name:'火蛇',   color:'#ef4444',                          icon:'🔥' },
+  skin_water:   { name:'水蛇',   color:'#3b82f6',                          icon:'💧' },
+  skin_rainbow: { name:'彩虹蛇', rainbow:true,                             icon:'🌈' },
+  set_ice:      { name:'冰蛇',   color:'#3b82f6', trail:'snow',            icon:'❄️' },
+};
+const RAINBOW_COLORS = ['#ef4444','#ff9800','#ffeb3b','#4caf50','#3b82f6','#9c27b0','#e91e63'];
+
+// ===== BOARD SKIN DEFINITIONS =====
+const BOARD_SKINS = {
+  board_classic: { name:'经典棋盘', gridColor:'#1a1a2e', cellColor:null,                          icon:'⬛' },
+  grid_web:      { name:'蛛丝',    gridColor:'#cccccc', cellColor:null,                          icon:'🕸️' },
+  grid_branch:   { name:'树枝',    gridColor:'#8b5a2b', cellColor:null,                          icon:'🌿' },
+  cell_sky:      { name:'天空',    gridColor:'#1a1a2e', cellColor:'rgba(135,206,235,0.25)',       icon:'🌤️' },
+  cell_cloud:    { name:'白云',    gridColor:'#1a1a2e', cellColor:'rgba(255,255,255,0.15)',       icon:'☁️' },
+  set_sunny:     { name:'烈日炎炎', gridColor:'#ef4444', cellColor:'rgba(255,165,0,0.25)',        icon:'☀️' },
+};
+
+function isSnakeSkin(id){ return SNAKE_SKINS.hasOwnProperty(id); }
+function isBoardSkin(id){ return BOARD_SKINS.hasOwnProperty(id); }
+
+function hexToRgba(hex, alpha){
+  const r=parseInt(hex.slice(1,3),16), g=parseInt(hex.slice(3,5),16), b=parseInt(hex.slice(5,7),16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+function getSnakeSegmentColor(skinId, segIndex, alpha){
+  const skin = SNAKE_SKINS[skinId] || SNAKE_SKINS.skin_classic;
+  if(skin.rainbow){ return hexToRgba(RAINBOW_COLORS[segIndex % RAINBOW_COLORS.length], alpha); }
+  return hexToRgba(skin.color, alpha);
+}
 
 // ===== SNAKE TITLES (称号系统) =====
 const SNAKE_TITLES = [
@@ -734,6 +802,7 @@ let player = {
   gold: 100,
   apples: 5,
   skin: 'skin_classic',
+  boardSkin: 'board_classic',
   inventory: {},
 };
 
@@ -864,6 +933,14 @@ function refreshHome(){
   document.getElementById('home-level-bar').style.width = Math.min(100,(expInLevel()/expForNextLevel())*100)+'%';
   document.getElementById('home-gold').textContent = player.gold;
   document.getElementById('home-apples').textContent = player.apples;
+  // Update skin display
+  var skinEl = document.getElementById('skin-preview');
+  var skinNameEl = document.getElementById('skin-name');
+  if(skinEl && skinNameEl){
+    var sk = SNAKE_SKINS[player.skin] || SNAKE_SKINS.skin_classic;
+    skinEl.textContent = sk.icon;
+    skinNameEl.textContent = sk.name;
+  }
   // Practice entry: hide for L10+
   var pe = document.getElementById('practice-entry');
   if(pe){
@@ -1038,12 +1115,14 @@ function doExchange(){
 
 // ===== SHOP =====
 let shopCat = '';
+let shopSubCat = '';
 function refreshShop(){
   // Update balance display
   var balGold=document.getElementById('shop-bal-gold');
   if(balGold) balGold.textContent=player.gold;
   var balApples=document.getElementById('shop-bal-apples');
   if(balApples) balApples.textContent=player.apples;
+  // Left sidebar: 大分类
   const cats = document.getElementById('shop-cats');
   cats.innerHTML = '';
   const catNames = Object.keys(SHOP_DATA);
@@ -1051,13 +1130,27 @@ function refreshShop(){
   catNames.forEach(c=>{
     const d = document.createElement('div');
     d.className = 'cat'+(shopCat===c?' active':'');
-    d.textContent = c;
-    d.onclick = ()=>{shopCat=c;refreshShop();};
+    d.textContent = (SHOP_CAT_ICONS[c]||'')+' '+c;
+    d.onclick = ()=>{shopCat=c; shopSubCat=''; refreshShop();};
     cats.appendChild(d);
   });
+  // Right top: 小分类
+  const subCats = document.getElementById('shop-subcats');
+  const subData = SHOP_DATA[shopCat] || {};
+  const subNames = Object.keys(subData);
+  if(!shopSubCat || !subData[shopSubCat]) shopSubCat = subNames[0];
+  subCats.innerHTML = '';
+  subNames.forEach(sc=>{
+    const d = document.createElement('div');
+    d.className = 'subcat'+(shopSubCat===sc?' active':'');
+    d.textContent = sc;
+    d.onclick = ()=>{shopSubCat=sc; refreshShop();};
+    subCats.appendChild(d);
+  });
+  // Right bottom: 商品
   const items = document.getElementById('shop-items');
   items.innerHTML = '';
-  (SHOP_DATA[shopCat]||[]).forEach(item=>{
+  (subData[shopSubCat]||[]).forEach(item=>{
     const d = document.createElement('div');
     d.className = 'shop-item';
     d.innerHTML = `<div class="item-icon">${item.icon}</div><div class="item-name">${item.name}</div><div class="item-price">${item.price} ${CURRENCY_NAMES[item.currency]}</div>`;
@@ -1100,7 +1193,15 @@ function refreshBag(){
   });
   const items = document.getElementById('bag-items');
   items.innerHTML = '';
-  const inv = Object.values(player.inventory).filter(i=>i.count>0);
+  var inv = Object.values(player.inventory).filter(function(i){return i.count>0;});
+  // Filter by bag category
+  if(bagCat !== '全部'){
+    inv = inv.filter(function(i){
+      if(bagCat === '皮肤') return isSnakeSkin(i.id);
+      if(bagCat === '棋盘') return isBoardSkin(i.id);
+      return true;
+    });
+  }
   if(inv.length===0){
     items.innerHTML='<div style="grid-column:1/-1;text-align:center;color:#555;padding:20px;">背包空空如也~</div>';
     return;
@@ -1118,7 +1219,30 @@ function showDetail(item){
   document.getElementById('detail-name').textContent = item.name;
   document.getElementById('detail-desc').textContent = item.desc||'';
   document.getElementById('detail-stats').textContent = '数量：×'+item.count;
+  // Equip button
+  const equipDiv = document.getElementById('detail-equip');
+  if(equipDiv) equipDiv.innerHTML = '';
+  if(equipDiv && (isSnakeSkin(item.id) || isBoardSkin(item.id))){
+    const equipped = (isSnakeSkin(item.id) && player.skin === item.id) ||
+                     (isBoardSkin(item.id) && player.boardSkin === item.id);
+    if(equipped){
+      equipDiv.innerHTML = '<div style="color:var(--gold);font-weight:600;">✅ 已装备</div>';
+    } else {
+      const btn = document.createElement('button');
+      btn.textContent = '装备';
+      btn.style.cssText = 'background:var(--accent);color:#fff;border:none;padding:8px 24px;border-radius:8px;cursor:pointer;font-weight:600;';
+      btn.onclick = function(){ equipItem(item); };
+      equipDiv.appendChild(btn);
+    }
+  }
   openModal('detail');
+}
+function equipItem(item){
+  if(isSnakeSkin(item.id)){ player.skin = item.id; }
+  else if(isBoardSkin(item.id)){ player.boardSkin = item.id; }
+  savePlayer();
+  closeModal('detail');
+  refreshHome();
 }
 
 // ===== GAME =====
@@ -1201,10 +1325,13 @@ function gameTick(){
 }
 
 function drawGame(){
-  ctx.fillStyle='#0a0a1a';
+  var board = BOARD_SKINS[player.boardSkin] || BOARD_SKINS.board_classic;
+  var skin = SNAKE_SKINS[player.skin] || SNAKE_SKINS.skin_classic;
+  // Background
+  ctx.fillStyle = board.cellColor || '#0a0a1a';
   ctx.fillRect(0,0,canvas.width,canvas.height);
   // Grid
-  ctx.strokeStyle='#1a1a2e';
+  ctx.strokeStyle = board.gridColor;
   for(let i=0;i<=gridSize;i++){
     ctx.beginPath();ctx.moveTo(i*cellSize,0);ctx.lineTo(i*cellSize,canvas.height);ctx.stroke();
     ctx.beginPath();ctx.moveTo(0,i*cellSize);ctx.lineTo(canvas.width,i*cellSize);ctx.stroke();
@@ -1213,10 +1340,23 @@ function drawGame(){
   ctx.font = cellSize*0.7+'px serif';
   ctx.textAlign='center';ctx.textBaseline='middle';
   ctx.fillText('🍎', food.x*cellSize+cellSize/2, food.y*cellSize+cellSize/2);
+  // Ice trail — snowflakes behind tail
+  if(skin.trail === 'snow'){
+    var trailCount = Math.min(4, snake.length-1);
+    for(var j=0; j<trailCount; j++){
+      var idx = snake.length-1-j;
+      if(idx < 1) break;
+      var ts = snake[idx];
+      var fade = 1 - j/4;
+      ctx.font = (cellSize*0.3*fade)+'px serif';
+      ctx.fillStyle = 'rgba(200,230,255,'+(fade*0.5)+')';
+      ctx.fillText('❄', ts.x*cellSize+cellSize*0.3, ts.y*cellSize+cellSize*0.7);
+    }
+  }
   // Snake
   snake.forEach((s,i)=>{
     const alpha = 1 - (i/snake.length)*0.5;
-    ctx.fillStyle = `rgba(76,175,80,${alpha})`;
+    ctx.fillStyle = getSnakeSegmentColor(player.skin, i, alpha);
     ctx.beginPath();
     ctx.roundRect(s.x*cellSize+1, s.y*cellSize+1, cellSize-2, cellSize-2, 4);
     ctx.fill();
