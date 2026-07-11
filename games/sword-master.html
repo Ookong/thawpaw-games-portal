@@ -66,6 +66,34 @@ canvas{display:block;box-shadow:0 0 40px rgba(180,50,40,0.3);}
 .buff-lifesteal{background:rgba(180,50,40,0.3);color:#ff6644;border:1px solid #ff6644;}
 .controls-hint{position:absolute;bottom:48px;left:50%;transform:translateX(-50%);display:none;gap:14px;color:#806040;font-size:11px;z-index:5;flex-wrap:wrap;max-width:90vw;justify-content:center;}
 .controls-hint .key{display:inline-block;padding:1px 5px;background:rgba(212,175,55,0.15);border:1px solid rgba(212,175,55,0.3);border-radius:3px;font-family:monospace;font-size:10px;}
+
+/* 返回键 */
+#back-btn{position:absolute;top:12px;left:50%;transform:translateX(-50%);z-index:8;width:40px;height:40px;border-radius:50%;background:rgba(20,12,8,0.8);border:2px solid rgba(212,175,55,0.4);color:#d4af37;font-size:18px;cursor:pointer;display:none;align-items:center;justify-content:center;pointer-events:auto;transition:all .15s;}
+#back-btn.show{display:flex;}
+#back-btn:hover{background:rgba(180,50,40,0.6);border-color:#d4af37;}
+
+/* 触屏操控 */
+#touch-controls{position:absolute;inset:0;z-index:6;display:none;pointer-events:none;}
+#touch-controls.show{display:block;}
+#joystick{position:absolute;bottom:80px;left:30px;width:120px;height:120px;pointer-events:auto;touch-action:none;}
+#joystick-bg{width:100%;height:100%;border-radius:50%;background:rgba(20,12,8,0.4);border:2px solid rgba(212,175,55,0.3);position:relative;}
+#joystick-knob{width:50px;height:50px;border-radius:50%;background:rgba(212,175,55,0.35);border:2px solid rgba(212,175,55,0.6);position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);transition:none;}
+#action-buttons{position:absolute;bottom:60px;right:20px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;pointer-events:none;}
+.touch-btn{width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer;pointer-events:auto;touch-action:none;border:2px solid;transition:transform .08s,opacity .08s;user-select:none;-webkit-user-select:none;position:relative;}
+.touch-btn:active{transform:scale(0.88);}
+.touch-btn .cd-overlay{position:absolute;inset:0;border-radius:50%;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:bold;color:#fff;pointer-events:none;}
+.touch-btn.disabled{opacity:0.3;}
+.tb-atk{background:rgba(180,50,40,0.5);border-color:#b43228;color:#ff6644;}
+.tb-dash{background:rgba(60,120,200,0.4);border-color:#3c78c8;color:#66aaff;}
+.tb-item{background:rgba(60,140,60,0.4);border-color:#3c8c3c;color:#66dd66;}
+.tb-skill{background:rgba(180,140,40,0.4);border-color:#b48c28;color:#ffcc44;}
+.tb-shop{background:rgba(120,80,40,0.4);border-color:#785028;color:#d4af37;}
+
+@media(max-width:768px){
+  canvas{width:100vw!important;height:100vh!important;}
+  #shop-panel{width:240px;right:8px;}
+  .controls-hint{display:none!important;}
+}
 #break-panel{position:absolute;bottom:60px;left:50%;transform:translateX(-50%);display:none;flex-direction:column;align-items:center;gap:6px;z-index:5;}
 #break-panel.show{display:flex;}
 .break-timer{font-size:14px;color:#d4af37;font-weight:700;}
@@ -74,6 +102,11 @@ canvas{display:block;box-shadow:0 0 40px rgba(180,50,40,0.3);}
 <body>
 <div id="wrap">
 <canvas id="c"></canvas>
+<button id="back-btn" onclick="goBack()" title="返回">←</button>
+<div id="touch-controls">
+  <div id="joystick"><div id="joystick-bg"><div id="joystick-knob"></div></div></div>
+  <div id="action-buttons"></div>
+</div>
 <div id="hud">
   <div class="hp-block"><div class="hp-label" style="color:#6db84f;">林风</div><div class="hp-bg"><div class="hp-fill player" id="p-hp" style="width:100%"></div><div class="hp-text" id="p-hp-t">150/150</div></div></div>
   <div class="hp-block" style="align-items:flex-end;"><div class="hp-label" id="enemy-label" style="color:#e04030;">—</div><div class="hp-bg"><div class="hp-fill boss" id="e-hp" style="width:100%"></div><div class="hp-text" id="e-hp-t">—</div></div></div>
@@ -155,6 +188,9 @@ canvas{display:block;box-shadow:0 0 40px rgba(180,50,40,0.3);}
 <script>
 const cv=document.getElementById('c'),ctx=cv.getContext('2d');
 const W=960,H=640;cv.width=W;cv.height=H;
+// 响应式缩放
+function fitCanvas(){const r=Math.min(innerWidth/W,innerHeight/H);cv.style.width=(W*r)+'px';cv.style.height=(H*r)+'px';}
+fitCanvas();addEventListener('resize',fitCanvas);
 const rand=(a,b)=>a+Math.random()*(b-a),clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y),ang=(a,b)=>Math.atan2(b.y-a.y,b.x-a.x);
 let actx=null;function ia(){if(!actx)actx=new(window.AudioContext||window.webkitAudioContext)();}
 function snd(f,d,t='sine',v=0.15){if(!actx)return;const o=actx.createOscillator(),g=actx.createGain();o.type=t;o.frequency.value=f;g.gain.setValueAtTime(v,actx.currentTime);g.gain.exponentialRampToValueAtTime(0.001,actx.currentTime+d);o.connect(g).connect(actx.destination);o.start();o.stop(actx.currentTime+d);}
@@ -1125,6 +1161,8 @@ function updateItems(){
     html+=`<div class="item-slot ${ready2?'usable':''}" onclick="useSkill2()" title="${w.skill2.name} (R)"><span class="key">R</span>⚡${ready2?'':`<span class="count">${Math.ceil(player.skill2CD/60)}</span>`}</div>`;
   }
   bar.innerHTML=html;
+  // 同步触屏按钮
+  if(isTouchDevice)buildActionButtons();
 }
 function updateBuffs(){
   const bar=document.getElementById('buff-bar');let html='';
@@ -1143,9 +1181,176 @@ function loop(){
     if(hitStop>0)hitStop--;else{updatePlayer();updateEnemies();updateProjectiles();updateCoins();}
   }else if(gameState==='break'){updatePlayer();updateCoins();breakTimer--;document.getElementById('break-timer').textContent=`休息中 ⏱ ${Math.ceil(breakTimer/60)}s`;if(breakTimer<=0){currentWave++;startWave();}}
   if(gameState==='battle'||gameState==='break')updateBuffs();
-  render();requestAnimationFrame(loop);
+  updateBackBtn();
+  if(gameState==='battle'||gameState==='break')updateTouchButtons();
+  render();
+  // 雪花
+  drawSnow();
+  requestAnimationFrame(loop);
 }
 requestAnimationFrame(loop);
+
+// ===== 雪花 =====
+const snowflakes=[];
+for(let i=0;i<50;i++)snowflakes.push({x:rand(0,W),y:rand(0,H),r:rand(1,3),vy:rand(0.3,1.2),vx:rand(-0.3,0.3),phase:rand(0,Math.PI*2),alpha:rand(0.3,0.8)});
+function drawSnow(){
+  snowflakes.forEach(s=>{
+    s.phase+=0.02;s.y+=s.vy;s.x+=s.vx+Math.sin(s.phase)*0.3;
+    if(s.y>H+5){s.y=-5;s.x=rand(0,W);}
+    if(s.x<-10)s.x=W+10;if(s.x>W+10)s.x=-10;
+    ctx.save();
+    ctx.globalAlpha=s.alpha;
+    ctx.fillStyle='#e8f0ff';
+    ctx.shadowColor='#aac8ff';ctx.shadowBlur=s.r*2;
+    ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fill();
+    ctx.restore();
+  });
+}
+
+// ===== 返回键 =====
+function goBack(){
+  if(gameState==='battle'||gameState==='break'){
+    // 确认返回标题
+    resetAll();
+  } else if(gameState==='clear'||gameState==='victory'){
+    document.getElementById('screen-victory').classList.add('hidden');
+    resetAll();
+  }
+}
+// 在 startGame 和 startWave 时显示返回键
+function updateBackBtn(){
+  document.getElementById('back-btn').classList.toggle('show',gameState==='battle'||gameState==='break'||gameState==='clear');
+}
+
+// ===== 触屏检测 =====
+const isTouchDevice=('ontouchstart'in window)||navigator.maxTouchPoints>0||navigator.msMaxTouchPoints>0;
+let touchMoveActive=false,touchMoveStart={x:0,y:0},touchMoveVec={x:0,y:0};
+
+function setupTouchControls(){
+  if(!isTouchDevice)return;
+  document.getElementById('touch-controls').classList.add('show');
+  document.getElementById('hint').style.display='none';
+  
+  // 摇杆
+  const joy=document.getElementById('joystick'),knob=document.getElementById('joystick-knob');
+  const joyR=50; // 摇杆半径
+  
+  function joyStart(e){
+    e.preventDefault();touchMoveActive=true;
+    const t=e.touches?e.touches[0]:e;
+    const rect=joy.getBoundingClientRect();
+    touchMoveStart={x:rect.left+rect.width/2,y:rect.top+rect.height/2};
+    joyMove(e);
+  }
+  function joyMove(e){
+    if(!touchMoveActive)return;e.preventDefault();
+    const t=e.touches?e.touches[0]:e;
+    let dx=t.clientX-touchMoveStart.x,dy=t.clientY-touchMoveStart.y;
+    const d=Math.hypot(dx,dy);
+    if(d>joyR){dx=dx/d*joyR;dy=dy/d*joyR;}
+    knob.style.transform=`translate(calc(-50% + ${dx}px),calc(-50% + ${dy}px))`;
+    touchMoveVec={x:dx/joyR,y:dy/joyR};
+  }
+  function joyEnd(e){
+    touchMoveActive=false;
+    knob.style.transform='translate(-50%,-50%)';
+    touchMoveVec={x:0,y:0};
+  }
+  joy.addEventListener('touchstart',joyStart,{passive:false});
+  joy.addEventListener('touchmove',joyMove,{passive:false});
+  joy.addEventListener('touchend',joyEnd);
+  joy.addEventListener('mousedown',joyStart);
+  document.addEventListener('mousemove',e=>{if(touchMoveActive)joyMove(e);});
+  document.addEventListener('mouseup',e=>{if(touchMoveActive)joyEnd(e);});
+
+  buildActionButtons();
+}
+
+function buildActionButtons(){
+  const container=document.getElementById('action-buttons');
+  container.innerHTML='';
+  const btns=[
+    {id:'tb-atk',cls:'tb-atk',icon:'⚔️',label:'攻击',fn:()=>{if(player.attackCD<=0)doAttack();}},
+    {id:'tb-dash',cls:'tb-dash',icon:'💨',label:'闪避',fn:()=>{if(player.dashCD<=0)doDash();}},
+    {id:'tb-skill1',cls:'tb-skill',icon:'⚡',label:'武器技',fn:()=>useSkill1(),cond:()=>{const w=getWeaponStat();return w.skill||w.skill1;}},
+    {id:'tb-skill2',cls:'tb-skill',icon:'🗡️',label:'封喉',fn:()=>useSkill2(),cond:()=>{const w=getWeaponStat();return w.skill2;}},
+    {id:'tb-potion',cls:'tb-item',icon:'🧪',label:'药',fn:()=>usePotion(),cond:()=>player.items.potion>0},
+    {id:'tb-ginseng',cls:'tb-item',icon:'🌿',label:'山参',fn:()=>useGinseng(),cond:()=>player.items.ginseng>0&&player.ginsengSips<2},
+    {id:'tb-bomb',cls:'tb-item',icon:'💣',label:'炸弹',fn:()=>startBombTarget(),cond:()=>player.items.bomb>0&&!player.bombTargeting},
+    {id:'tb-mine',cls:'tb-item',icon:'💥',label:'地雷',fn:()=>placeMine(),cond:()=>player.items.mine>0},
+    {id:'tb-circle',cls:'tb-item',icon:'🔮',label:'法阵',fn:()=>activateCircle(),cond:()=>player.items.circle>0},
+    {id:'tb-shop',cls:'tb-shop',icon:'🏪',label:'商店',fn:()=>toggleShop()},
+  ];
+  btns.forEach(b=>{
+    if(b.cond&&!b.cond())return;
+    const el=document.createElement('div');
+    el.className=`touch-btn ${b.cls}`;el.id=b.id;
+    el.innerHTML=b.icon;
+    el.dataset.label=b.label;
+    el.addEventListener('touchstart',e=>{e.preventDefault();e.stopPropagation();b.fn();},{passive:false});
+    el.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();b.fn();});
+    container.appendChild(el);
+  });
+}
+
+function updateTouchButtons(){
+  if(!isTouchDevice)return;
+  // 重建按钮列表（道具数量变化时）
+  buildActionButtons();
+  // 更新 CD 显示
+  const cdMap={
+    'tb-atk':player.attackCD,
+    'tb-dash':player.dashCD,
+    'tb-skill1':player.skill1CD,
+    'tb-skill2':player.skill2CD,
+  };
+  Object.keys(cdMap).forEach(id=>{
+    const el=document.getElementById(id);if(!el)return;
+    const cd=cdMap[id];
+    if(cd>0){
+      el.classList.add('disabled');
+      let overlay=el.querySelector('.cd-overlay');
+      if(!overlay){overlay=document.createElement('div');overlay.className='cd-overlay';el.appendChild(overlay);}
+      overlay.textContent=Math.ceil(cd/60);
+    } else {
+      el.classList.remove('disabled');
+      const overlay=el.querySelector('.cd-overlay');if(overlay)overlay.remove();
+    }
+  });
+}
+
+// 触屏移动接入
+const origUpdatePlayer=updatePlayer;
+updatePlayer=function(){
+  if(touchMoveActive){
+    let dx=touchMoveVec.x,dy=touchMoveVec.y;
+    if(Math.hypot(dx,dy)>0.1){
+      if(player.dashing>0){player.x+=player.dashDir.x*8;player.y+=player.dashDir.y*8;player.dashing--;player.trail.push({x:player.x,y:player.y,life:12});}
+      else{
+        const l=Math.hypot(dx,dy);
+        const spd=(player.transformActive>0&&player.transformType)?getTransformStat().speed:player.speed;
+        player.x+=dx*spd;player.y+=dy*spd;
+        player.facing=Math.atan2(dy,dx);
+      }
+      player.x=clamp(player.x,player.r,W-player.r);player.y=clamp(player.y,player.r,H-player.r);
+      if(player.transformActive>0&&player.transformType){const ts=getTransformStat().size;player.x=clamp(player.x,ts,W-ts);player.y=clamp(player.y,ts,H-ts);}
+      if(player.attackCD>0)player.attackCD--;if(player.attackTimer>0)player.attackTimer--;if(player.dashCD>0)player.dashCD--;if(player.invuln>0)player.invuln--;
+      if(player.buffs.invuln>0)player.buffs.invuln--;if(player.buffs.doubleDmg>0)player.buffs.doubleDmg--;if(player.buffs.lifesteal>0)player.buffs.lifesteal--;
+      if(player.transformActive>0){player.transformActive--;if(player.transformActive===0){player.transformType=null;}}
+      if(player.transformCD>0)player.transformCD--;
+      if(player.skill1CD>0)player.skill1CD--;if(player.skill2CD>0)player.skill2CD--;if(player.enemyDebuff>0)player.enemyDebuff--;
+      if(player.enemyFreeze>0)player.enemyFreeze--;
+      player.trail=player.trail.filter(t=>{t.life--;return t.life>0;});
+      // 弓箭自动瞄准
+      if(getWeaponStat().type==='ranged'&&enemies.length>0){let nearest=null,nd=9999;enemies.forEach(e=>{const d=dist(player,e);if(d<nd){nd=d;nearest=e;}});if(nearest)player.facing=ang(player,nearest);}
+      return;
+    }
+  }
+  origUpdatePlayer();
+};
+
+// 初始化触屏
+setupTouchControls();
 </script>
 </body>
 </html>
