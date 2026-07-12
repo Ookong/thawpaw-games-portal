@@ -184,6 +184,7 @@ canvas{display:block;box-shadow:0 0 40px rgba(180,50,40,0.3);}
     </div>
     <div class="sm-currency-bubble">💰 <span id="sm-home-coins">0</span></div>
     <div class="sm-currency-bubble">📜 <span id="sm-home-seals">0</span></div>
+    <span class="sm-settings-btn" onclick="goPortal()" title="返回 Portal" style="font-size:20px;">🏠</span>
     <span class="sm-settings-btn" onclick="alert('设置建设中 ⚙️')">⚙️</span>
   </div>
   <div class="sm-home-content">
@@ -1593,6 +1594,7 @@ function smOpenBag(){document.getElementById('sm-bag-coins').textContent=smSave.
 function smCloseModal(n){document.getElementById('sm-modal-'+n).classList.remove('show');}
 function smDoExchange(){const amt=parseInt(document.getElementById('sm-exchange-input').value)||0;if(amt<=0)return;const cost=amt*SM_RATE;if(smSave.coins<cost)return;smSave.coins-=cost;smSave.seals+=amt;smSaveSave();smOpenBank();smUpdateHome();}
 smShowPage('home');
+function goPortal(){window.location.href='../index.html';}
 </script>
 </body>
 </html>
