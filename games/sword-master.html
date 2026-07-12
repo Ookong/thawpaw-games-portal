@@ -180,7 +180,7 @@ canvas{display:block;box-shadow:0 0 40px rgba(180,50,40,0.3);}
   <div class="sm-top-bar">
     <div class="sm-profile-bubble">
       <div class="sm-avatar">⚔️</div>
-      <div class="sm-profile-info"><div class="name-row"><span class="nickname" id="sm-nick">少年剑客</span></div></div>
+      <div class="sm-profile-info"><div class="name-row"><span class="nickname" id="sm-nick">武侠号</span></div></div>
     </div>
     <div class="sm-currency-bubble">💰 <span id="sm-home-coins">0</span></div>
     <div class="sm-currency-bubble">📜 <span id="sm-home-seals">0</span></div>
@@ -1567,7 +1567,7 @@ function smGetKey(){const id=localStorage.getItem('thawpawActiveId')||'default';
 function smLoadSave(){try{const d=JSON.parse(localStorage.getItem(smGetKey()));return d||{coins:0,seals:0,highestLevel:1};}catch(e){return{coins:0,seals:0,highestLevel:1};}}
 function smSaveSave(){localStorage.setItem(smGetKey(),JSON.stringify(smSave));}
 let smSave=smLoadSave();
-function smGetNick(){try{const id=localStorage.getItem('thawpawActiveId');if(id){const ps=JSON.parse(localStorage.getItem('thawpawPlayers')||'{}');if(ps[id]&&ps[id].nickname)return ps[id].nickname;}}catch(e){}return'少年剑客';}
+function smGetNick(){try{const id=localStorage.getItem('thawpawActiveId');if(id){const ps=JSON.parse(localStorage.getItem('thawpawPlayers')||'{}');if(ps[id]&&ps[id].nickname)return '武侠号';}}catch(e){}return'武侠号';}
 function smShowPage(name){
   document.querySelectorAll('.sm-page').forEach(p=>{p.classList.remove('active');p.style.display='none';});
   const pg=document.getElementById('sm-page-'+name);if(pg){pg.classList.add('active');pg.style.display='';}
