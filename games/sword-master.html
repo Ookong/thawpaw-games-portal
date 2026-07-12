@@ -97,9 +97,198 @@ canvas{display:block;box-shadow:0 0 40px rgba(180,50,40,0.3);}
 #break-panel{position:absolute;bottom:60px;left:50%;transform:translateX(-50%);display:none;flex-direction:column;align-items:center;gap:6px;z-index:5;}
 #break-panel.show{display:flex;}
 .break-timer{font-size:14px;color:#d4af37;font-weight:700;}
+
+/* ===== PAGE SYSTEM ===== */
+.sm-page{display:none;width:100vw;height:100vh;overflow-y:auto;background:linear-gradient(to bottom,#0a0810,#06050a);color:#e8d8b0;font-family:'PingFang SC','Microsoft YaHei',system-ui,sans-serif;}
+.sm-page.active{display:flex;flex-direction:column;}
+.sm-top-bar{display:flex;align-items:center;padding:10px 16px;background:rgba(20,12,8,0.9);gap:10px;min-height:56px;border-bottom:1px solid rgba(212,175,55,0.15);position:sticky;top:0;z-index:50;}
+.sm-profile-bubble{display:flex;align-items:center;gap:10px;flex:1;cursor:pointer;}
+.sm-currency-bubble{background:rgba(212,175,55,0.08);border:1px solid rgba(212,175,55,0.25);border-radius:20px;padding:5px 12px;font-size:13px;font-weight:600;white-space:nowrap;color:#d4af37;}
+.sm-avatar{width:40px;height:40px;border-radius:50%;background:rgba(180,50,40,0.2);display:flex;align-items:center;justify-content:center;font-size:22px;border:2px solid rgba(212,175,55,0.4);}
+.sm-profile-info{display:flex;flex-direction:column;gap:2px;}
+.sm-profile-info .name-row{display:flex;align-items:center;gap:6px;}
+.sm-profile-info .nickname{font-weight:600;font-size:15px;color:#e8d8b0;}
+.sm-settings-btn{cursor:pointer;font-size:18px;opacity:0.7;transition:opacity .2s;}
+.sm-settings-btn:hover{opacity:1;}
+.sm-home-content{flex:1;display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;padding:12px;padding-bottom:64px;min-height:calc(100vh - 56px);}
+.sm-home-content .col{display:flex;flex-direction:column;gap:8px;}
+.sm-col-left{justify-content:center;align-items:center;}
+.sm-play-card{background:linear-gradient(135deg,rgba(180,50,40,0.2),rgba(120,30,25,0.15));border:2px solid rgba(180,50,40,0.4);border-radius:12px;padding:20px 12px;text-align:center;cursor:pointer;transition:transform .15s,box-shadow .15s;width:100%;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;}
+.sm-play-card:hover{transform:scale(1.03);box-shadow:0 0 16px rgba(180,50,40,.3);}
+.sm-play-card .icon{font-size:40px;}
+.sm-play-card .title{font-weight:700;font-size:16px;color:#d4af37;letter-spacing:2px;}
+.sm-play-card .sub{font-size:11px;color:#a08060;line-height:1.4;}
+.sm-col-lc{justify-content:center;align-items:center;}
+.sm-display-card{background:rgba(20,12,8,0.6);border:1px solid rgba(212,175,55,0.2);border-radius:12px;padding:20px;text-align:center;width:100%;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;}
+.sm-display-card .preview{width:80px;height:80px;background:rgba(180,50,40,0.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:44px;border:2px solid rgba(212,175,55,0.3);}
+.sm-display-card .label{font-size:13px;color:#a08060;}
+.sm-display-card .value{font-size:14px;font-weight:600;color:#e8d8b0;}
+.sm-col-rc{gap:8px;}
+.sm-mode-card{background:rgba(20,12,8,0.6);border:1px solid rgba(212,175,55,0.15);border-radius:12px;padding:16px;text-align:center;cursor:pointer;transition:transform .15s,box-shadow .15s;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;}
+.sm-mode-card:hover{transform:scale(1.03);box-shadow:0 0 12px rgba(212,175,55,.2);border-color:rgba(212,175,55,0.4);}
+.sm-mode-card .icon{font-size:32px;}
+.sm-mode-card .name{font-weight:600;font-size:14px;color:#e8d8b0;}
+.sm-mode-card .desc{font-size:11px;color:#a08060;}
+.sm-col-right{gap:8px;}
+.sm-col-right .top-row{display:flex;gap:6px;}
+.sm-col-right .top-row .mini-card{flex:1;background:rgba(20,12,8,0.6);border:1px solid rgba(212,175,55,0.15);border-radius:12px;padding:10px;text-align:center;cursor:pointer;font-size:12px;font-weight:600;color:#e8d8b0;transition:transform .15s;}
+.sm-col-right .top-row .mini-card:hover{transform:scale(1.05);}
+.sm-col-right .top-row .mini-card .icon{font-size:22px;display:block;margin-bottom:4px;}
+.sm-info-panel{background:rgba(20,12,8,0.6);border:1px solid rgba(212,175,55,0.15);border-radius:12px;padding:14px;flex:1;overflow-y:auto;}
+.sm-info-panel h3{font-size:13px;margin-bottom:8px;color:#d4af37;}
+.sm-info-panel .info-item{padding:6px 0;border-bottom:1px solid rgba(212,175,55,0.08);font-size:12px;color:#a08060;}
+.sm-info-panel .info-item:last-child{border-bottom:none;}
+.sm-bottom-bar{position:fixed;bottom:0;left:0;right:0;height:56px;background:rgba(20,12,8,0.95);display:flex;align-items:center;justify-content:space-around;border-top:1px solid rgba(212,175,55,0.15);z-index:100;}
+.sm-bottom-bar .tab{display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:6px 16px;border-radius:8px;transition:background .2s;font-size:12px;color:#d4af37;}
+.sm-bottom-bar .tab:hover{background:rgba(212,175,55,0.08);}
+.sm-bottom-bar .tab .icon{font-size:20px;}
+.sm-back-btn{position:absolute;top:12px;left:12px;cursor:pointer;font-size:24px;z-index:10;color:#d4af37;text-decoration:none;}
+.sm-levels-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:12px;width:100%;max-width:600px;margin:20px auto 0;}
+.sm-level-card{background:linear-gradient(135deg,rgba(180,50,40,0.15),rgba(120,30,25,0.1));border:2px solid rgba(212,175,55,0.25);border-radius:12px;padding:20px 12px;text-align:center;cursor:pointer;transition:all .15s;position:relative;}
+.sm-level-card:hover{transform:scale(1.05);border-color:#d4af37;box-shadow:0 0 12px rgba(212,175,55,0.2);}
+.sm-level-card.locked{opacity:0.3;cursor:not-allowed;}
+.sm-level-card .level-num{font-size:22px;font-weight:700;color:#d4af37;}
+.sm-level-card .level-name{font-size:11px;color:#a08060;margin-top:4px;}
+.sm-level-card .boss-tag{position:absolute;top:-6px;right:-6px;background:#b43228;color:#fff;font-size:10px;padding:2px 8px;border-radius:10px;font-weight:700;}
+.sm-enhance-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;width:100%;max-width:600px;margin:20px auto 0;}
+.sm-enhance-slot{background:rgba(20,12,8,0.6);border:2px dashed rgba(212,175,55,0.25);border-radius:12px;padding:16px;text-align:center;min-height:100px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:#a08060;}
+.sm-enhance-slot .placeholder{font-size:14px;}
+.sm-enhance-slot .hint{font-size:11px;color:#604030;}
+.sm-modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;align-items:center;justify-content:center;}
+.sm-modal-overlay.show{display:flex;}
+.sm-modal{background:linear-gradient(135deg,#1a1208,#0d0806);border:2px solid rgba(212,175,55,0.3);border-radius:16px;padding:24px;width:90%;max-width:400px;max-height:80vh;overflow-y:auto;box-shadow:0 0 40px rgba(212,175,55,0.1);}
+.sm-modal h3{color:#d4af37;font-size:18px;text-align:center;margin-bottom:12px;letter-spacing:2px;}
+.sm-modal-close{float:right;cursor:pointer;font-size:18px;color:#a08060;transition:color .2s;}
+.sm-modal-close:hover{color:#d4af37;}
+.sm-exchange-box{background:rgba(212,175,55,0.05);border:1px solid rgba(212,175,55,0.15);border-radius:8px;padding:12px;margin:8px 0;}
+.sm-exchange-row{display:flex;justify-content:space-between;align-items:center;margin:6px 0;}
+.sm-exchange-btn{padding:6px 16px;font-size:13px;font-weight:700;background:linear-gradient(135deg,#d4af37,#a08020);color:#fff;border:none;border-radius:6px;cursor:pointer;transition:transform .1s;}
+.sm-exchange-btn:hover{transform:scale(1.05);}
+.sm-exchange-btn:disabled{opacity:0.4;cursor:not-allowed;transform:none;}
+@media(max-width:768px){
+.sm-home-content{grid-template-columns:1fr 1fr;gap:6px;padding:8px;padding-bottom:64px;}
+.sm-play-card{padding:14px 8px;}.sm-play-card .icon{font-size:32px;}
+.sm-display-card{padding:14px;}.sm-display-card .preview{width:60px;height:60px;font-size:32px;}
+.sm-levels-grid{grid-template-columns:repeat(auto-fill,minmax(100px,1fr));}
+.sm-enhance-grid{grid-template-columns:1fr;}
+}
 </style>
 </head>
 <body>
+<!-- ===== HOME PAGE ===== -->
+<div id="sm-page-home" class="sm-page active">
+  <div class="sm-top-bar">
+    <div class="sm-profile-bubble">
+      <div class="sm-avatar">⚔️</div>
+      <div class="sm-profile-info"><div class="name-row"><span class="nickname" id="sm-nick">少年剑客</span></div></div>
+    </div>
+    <div class="sm-currency-bubble">💰 <span id="sm-home-coins">0</span></div>
+    <div class="sm-currency-bubble">📜 <span id="sm-home-seals">0</span></div>
+    <span class="sm-settings-btn" onclick="alert('设置建设中 ⚙️')">⚙️</span>
+  </div>
+  <div class="sm-home-content">
+    <div class="col sm-col-left">
+      <div class="sm-play-card" onclick="smShowPage('levels')">
+        <div class="icon">⛩️</div>
+        <div class="title">开始闯关</div>
+        <div class="sub">选择关卡，闯荡江湖</div>
+      </div>
+    </div>
+    <div class="col sm-col-lc">
+      <div class="sm-display-card">
+        <div class="preview">🗡️</div>
+        <div class="label">当前武器</div>
+        <div class="value" id="sm-home-weapon">铁剑</div>
+      </div>
+    </div>
+    <div class="col sm-col-rc">
+      <div class="sm-mode-card" onclick="smShowPage('enhance')">
+        <div class="icon">⚔️</div>
+        <div class="name">强化</div>
+        <div class="desc">消耗宝印升级装备</div>
+      </div>
+      <div class="sm-mode-card" onclick="smShowPage('levels')">
+        <div class="icon">📋</div>
+        <div class="name">关卡</div>
+        <div class="desc">已到第<span id="sm-home-highest">1</span>层</div>
+      </div>
+    </div>
+    <div class="col sm-col-right">
+      <div class="top-row">
+        <div class="mini-card" onclick="smOpenBag()"><span class="icon">🏆</span>战绩</div>
+        <div class="mini-card" onclick="smOpenBag()"><span class="icon">📖</span>江湖志</div>
+      </div>
+      <div class="sm-info-panel">
+        <h3>⚔️ 江湖动态</h3>
+        <div class="info-item">🏆 最高第<span id="sm-home-highest-2">1</span>层</div>
+        <div class="info-item">💰 金币 <span id="sm-home-coins-2">0</span></div>
+        <div class="info-item">📜 宝印 <span id="sm-home-seals-2">0</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="sm-bottom-bar">
+    <div class="tab" onclick="smOpenBank()"><span class="icon">🏦</span>银行</div>
+    <div class="tab" onclick="smShowPage('enhance')"><span class="icon">⚔️</span>强化</div>
+    <div class="tab" onclick="smOpenBag()"><span class="icon">🎒</span>背包</div>
+  </div>
+</div>
+<!-- ===== LEVELS PAGE ===== -->
+<div id="sm-page-levels" class="sm-page">
+  <a class="sm-back-btn" onclick="smShowPage('home')">←</a>
+  <div style="text-align:center;padding:20px 0 8px;">
+    <div style="font-size:28px;color:#d4af37;font-weight:700;letter-spacing:4px;">⛩️ 选择关卡</div>
+    <div style="font-size:13px;color:#a08060;margin-top:4px;">每5层有Boss镇守</div>
+  </div>
+  <div class="sm-levels-grid" id="sm-levels-grid"></div>
+</div>
+<!-- ===== ENHANCE PAGE ===== -->
+<div id="sm-page-enhance" class="sm-page">
+  <a class="sm-back-btn" onclick="smShowPage('home')">←</a>
+  <div style="text-align:center;padding:20px 0 8px;">
+    <div style="font-size:28px;color:#d4af37;font-weight:700;letter-spacing:4px;">⚔️ 强化</div>
+    <div style="font-size:13px;color:#a08060;margin-top:4px;">消耗📜剑客宝印强化装备（建设中）</div>
+    <div style="font-size:14px;color:#d4af37;margin-top:6px;">📜 宝印：<span id="sm-enhance-seals">0</span></div>
+  </div>
+  <div class="sm-enhance-grid" id="sm-enhance-grid">
+    <div class="sm-enhance-slot"><div class="placeholder">🔓 待添加</div><div class="hint">ThawPaw 来添加强化项</div></div>
+    <div class="sm-enhance-slot"><div class="placeholder">🔓 待添加</div><div class="hint">ThawPaw 来添加强化项</div></div>
+    <div class="sm-enhance-slot"><div class="placeholder">🔓 待添加</div><div class="hint">ThawPaw 来添加强化项</div></div>
+    <div class="sm-enhance-slot"><div class="placeholder">🔓 待添加</div><div class="hint">ThawPaw 来添加强化项</div></div>
+  </div>
+</div>
+<!-- ===== BANK MODAL ===== -->
+<div class="sm-modal-overlay" id="sm-modal-bank">
+  <div class="sm-modal">
+    <span class="sm-modal-close" onclick="smCloseModal('bank')">✕</span>
+    <h3>🏦 银行</h3>
+    <div style="text-align:center;margin-bottom:12px;font-size:14px;color:#a08060;">💰 金币：<span id="sm-bank-coins">0</span> · 📜 宝印：<span id="sm-bank-seals">0</span></div>
+    <div class="sm-exchange-box">
+      <div style="font-size:14px;font-weight:600;color:#e8d8b0;margin-bottom:8px;">💰 → 📜 兑换剑客宝印</div>
+      <div style="font-size:12px;color:#a08060;margin-bottom:8px;">汇率：100💰 = 1📜</div>
+      <div class="sm-exchange-row">
+        <span>兑换数量：</span>
+        <input type="number" id="sm-exchange-input" min="0" value="0" style="width:80px;padding:4px 8px;background:rgba(212,175,55,0.1);border:1px solid rgba(212,175,55,0.3);border-radius:6px;color:#e8d8b0;font-size:14px;text-align:center;">
+      </div>
+      <div style="text-align:center;margin-top:8px;">
+        <button class="sm-exchange-btn" onclick="smDoExchange()">兑换</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- ===== BAG MODAL ===== -->
+<div class="sm-modal-overlay" id="sm-modal-bag">
+  <div class="sm-modal">
+    <span class="sm-modal-close" onclick="smCloseModal('bag')">✕</span>
+    <h3>🎒 背包</h3>
+    <div style="font-size:14px;color:#a08060;line-height:2;">
+      <div>💰 金币：<span id="sm-bag-coins">0</span></div>
+      <div>📜 剑客宝印：<span id="sm-bag-seals">0</span></div>
+      <div>🏆 最高层数：<span id="sm-bag-highest">1</span></div>
+    </div>
+  </div>
+</div>
+<!-- ===== GAME PAGE ===== -->
+<div id="sm-page-game" class="sm-page" style="display:none;">
 <div id="wrap">
 <canvas id="c"></canvas>
 <button id="back-btn" onclick="goBack()" title="返回">←</button>
@@ -177,11 +366,12 @@ canvas{display:block;box-shadow:0 0 40px rgba(180,50,40,0.3);}
     ⚠️ 敌人更强了！
   </div>
   <button class="btn" onclick="enterNextLevel()">🚪 推开庙门（第<span id="next-level">2</span>层）</button>
-  <button class="btn small" style="background:linear-gradient(135deg,#666,#444);font-size:14px;" onclick="resetAll()">🔙 回到标题</button>
+  <button class="btn small" style="background:linear-gradient(135deg,#666,#444);font-size:14px;" onclick="resetAll()">🔙 返回首页</button>
 </div>
 <div class="overlay hidden" id="screen-defeat">
   <div style="font-size:56px;">💀</div><div class="title" style="color:#806040;">壮烈牺牲</div><div class="subtitle" id="defeat-text">你倒下了……</div>
   <button class="btn" onclick="fullRestart()">😤 从头再来</button>
+</div>
 </div>
 </div>
 
@@ -635,9 +825,14 @@ function updateShopUI(){
 }
 
 // ===== 波次流程 =====
-function startGame(){
-  ia();document.getElementById('screen-title').classList.add('hidden');
-  currentWave=0;currentLevel=1;resetPlayer(true);updateGold();updateItems();updatePlayerHP();updateWeaponDisplay();
+function startGame(startLevel){
+  ia();
+  document.querySelectorAll('.sm-page').forEach(p=>{p.classList.remove('active');p.style.display='none';});
+  const gp=document.getElementById('sm-page-game');gp.classList.add('active');gp.style.display='';
+  document.getElementById('screen-title').classList.add('hidden');
+  currentWave=0;currentLevel=startLevel||1;resetPlayer(true);
+  if(currentLevel>1)player.gold=(currentLevel-1)*300;
+  updateGold();updateItems();updatePlayerHP();updateWeaponDisplay();
   document.getElementById('hud').style.display='flex';document.getElementById('bottom-hud').style.display='flex';document.getElementById('hint').style.display='flex';
   startWave();
 }
@@ -696,6 +891,7 @@ function startBreak(){
 function skipBreak(){if(gameState!=='break')return;currentWave++;startWave();}
 function victory(){
   gameState='clear';SFX.win();
+  if(currentLevel>smSave.highestLevel){smSave.highestLevel=currentLevel;smSaveSave();}
   document.getElementById('hud').style.display='none';document.getElementById('bottom-hud').style.display='none';document.getElementById('hint').style.display='none';
   document.getElementById('break-panel').classList.remove('show');closeShop();
   document.getElementById('clear-level').textContent=currentLevel;
@@ -704,6 +900,7 @@ function victory(){
 }
 function enterNextLevel(){
   currentLevel++;
+  if(currentLevel>smSave.highestLevel){smSave.highestLevel=currentLevel;smSaveSave();}
   currentWave=0;
   // 小幅回血作为奖励
   player.hp=Math.min(player.maxHp,player.hp+40);
@@ -712,13 +909,16 @@ function enterNextLevel(){
   document.getElementById('hud').style.display='flex';document.getElementById('bottom-hud').style.display='flex';document.getElementById('hint').style.display='flex';
   startWave();
 }
-function playerDie(){gameState='defeat';SFX.lose();document.getElementById('defeat-text').textContent=`第${currentLevel}层 · 你被${WAVES[currentWave].name}击败了……从头再来！`;setTimeout(()=>document.getElementById('screen-defeat').classList.remove('hidden'),1000);}
-function fullRestart(){document.getElementById('screen-defeat').classList.add('hidden');resetAll();startGame();}
-function resetAll(){
-  document.getElementById('screen-victory').classList.add('hidden');
-  document.getElementById('hud').style.display='none';document.getElementById('bottom-hud').style.display='none';document.getElementById('hint').style.display='none';
-  document.getElementById('screen-title').classList.remove('hidden');enemies=[];coins=[];particles=[];floatTexts=[];slashes=[];currentWave=0;currentLevel=1;gameState='title';resetPlayer(true);
+function playerDie(){
+  smSave.coins+=player.gold;
+  if(currentLevel>smSave.highestLevel)smSave.highestLevel=currentLevel;
+  smSaveSave();
+  gameState='defeat';SFX.lose();
+  document.getElementById('defeat-text').textContent=`第${currentLevel}层 · 你被${WAVES[currentWave].name}击败了……💰${player.gold}金币已存入银行！`;
+  setTimeout(()=>document.getElementById('screen-defeat').classList.remove('hidden'),1000);
 }
+function fullRestart(){document.getElementById('screen-defeat').classList.add('hidden');smGoHome();}
+function resetAll(){smGoHome();}
 
 // ===== 敌人 AI =====
 function updateEnemies(){
@@ -1177,6 +1377,7 @@ function updateBuffs(){
 
 // ===== 主循环 =====
 function loop(){
+  const _gpg=document.getElementById('sm-page-game');if(_gpg&&_gpg.style.display==='none'){requestAnimationFrame(loop);return;}
   if(gameState==='battle'){
     if(hitStop>0)hitStop--;else{updatePlayer();updateEnemies();updateProjectiles();updateCoins();}
   }else if(gameState==='break'){updatePlayer();updateCoins();breakTimer--;document.getElementById('break-timer').textContent=`休息中 ⏱ ${Math.ceil(breakTimer/60)}s`;if(breakTimer<=0){currentWave++;startWave();}}
@@ -1208,15 +1409,7 @@ function drawSnow(){
 }
 
 // ===== 返回键 =====
-function goBack(){
-  if(gameState==='battle'||gameState==='break'){
-    // 确认返回标题
-    resetAll();
-  } else if(gameState==='clear'||gameState==='victory'){
-    document.getElementById('screen-victory').classList.add('hidden');
-    resetAll();
-  }
-}
+function goBack(){smGoHome();}
 // 在 startGame 和 startWave 时显示返回键
 function updateBackBtn(){
   document.getElementById('back-btn').classList.toggle('show',gameState==='battle'||gameState==='break'||gameState==='clear');
@@ -1351,6 +1544,55 @@ updatePlayer=function(){
 
 // 初始化触屏
 setupTouchControls();
+
+// ===== PAGE SYSTEM =====
+const SM_RATE=100;
+function smGetKey(){const id=localStorage.getItem('thawpawActiveId')||'default';return 'sword_master_save_'+id;}
+function smLoadSave(){try{const d=JSON.parse(localStorage.getItem(smGetKey()));return d||{coins:0,seals:0,highestLevel:1};}catch(e){return{coins:0,seals:0,highestLevel:1};}}
+function smSaveSave(){localStorage.setItem(smGetKey(),JSON.stringify(smSave));}
+let smSave=smLoadSave();
+function smGetNick(){try{const id=localStorage.getItem('thawpawActiveId');if(id){const ps=JSON.parse(localStorage.getItem('thawpawPlayers')||'{}');if(ps[id]&&ps[id].nickname)return ps[id].nickname;}}catch(e){}return'少年剑客';}
+function smShowPage(name){
+  document.querySelectorAll('.sm-page').forEach(p=>{p.classList.remove('active');p.style.display='none';});
+  const pg=document.getElementById('sm-page-'+name);if(pg){pg.classList.add('active');pg.style.display='';}
+  if(name==='home')smUpdateHome();
+  if(name==='levels')smRenderLevels();
+  if(name==='enhance')document.getElementById('sm-enhance-seals').textContent=smSave.seals;
+}
+function smGoHome(){
+  if(gameState==='battle'||gameState==='break'||gameState==='clear'){smSave.coins+=player.gold;if(currentLevel>smSave.highestLevel)smSave.highestLevel=currentLevel;smSaveSave();}
+  document.getElementById('hud').style.display='none';document.getElementById('bottom-hud').style.display='none';document.getElementById('hint').style.display='none';
+  document.getElementById('shop-panel').classList.remove('show');document.getElementById('back-btn').classList.remove('show');
+  document.getElementById('screen-title').classList.add('hidden');document.getElementById('screen-victory').classList.add('hidden');document.getElementById('screen-defeat').classList.add('hidden');
+  enemies=[];coins=[];particles=[];floatTexts=[];slashes=[];currentWave=0;currentLevel=1;gameState='title';resetPlayer(true);
+  smShowPage('home');
+}
+function smUpdateHome(){
+  const nick=smGetNick();const el=document.getElementById('sm-nick');if(el)el.textContent=nick;
+  document.getElementById('sm-home-coins').textContent=smSave.coins;
+  document.getElementById('sm-home-seals').textContent=smSave.seals;
+  document.getElementById('sm-home-highest').textContent=smSave.highestLevel;
+  document.getElementById('sm-home-highest-2').textContent=smSave.highestLevel;
+  document.getElementById('sm-home-coins-2').textContent=smSave.coins;
+  document.getElementById('sm-home-seals-2').textContent=smSave.seals;
+}
+function smRenderLevels(){
+  const grid=document.getElementById('sm-levels-grid');grid.innerHTML='';
+  const maxLevel=Math.max(smSave.highestLevel+1,5);
+  for(let i=1;i<=maxLevel;i++){
+    const locked=i>smSave.highestLevel+1;const isBoss=i%5===0;
+    const card=document.createElement('div');
+    card.className='sm-level-card'+(locked?' locked':'');
+    card.innerHTML='<div class="level-num">第'+i+'层</div><div class="level-name">'+(isBoss?'👹 Boss层':'⚔️ 挑战')+'</div>'+(isBoss?'<div class="boss-tag">BOSS</div>':'');
+    if(!locked)card.onclick=()=>startGame(i);
+    grid.appendChild(card);
+  }
+}
+function smOpenBank(){document.getElementById('sm-bank-coins').textContent=smSave.coins;document.getElementById('sm-bank-seals').textContent=smSave.seals;document.getElementById('sm-exchange-input').max=Math.floor(smSave.coins/SM_RATE);document.getElementById('sm-modal-bank').classList.add('show');}
+function smOpenBag(){document.getElementById('sm-bag-coins').textContent=smSave.coins;document.getElementById('sm-bag-seals').textContent=smSave.seals;document.getElementById('sm-bag-highest').textContent=smSave.highestLevel;document.getElementById('sm-modal-bag').classList.add('show');}
+function smCloseModal(n){document.getElementById('sm-modal-'+n).classList.remove('show');}
+function smDoExchange(){const amt=parseInt(document.getElementById('sm-exchange-input').value)||0;if(amt<=0)return;const cost=amt*SM_RATE;if(smSave.coins<cost)return;smSave.coins-=cost;smSave.seals+=amt;smSaveSave();smOpenBank();smUpdateHome();}
+smShowPage('home');
 </script>
 </body>
 </html>
