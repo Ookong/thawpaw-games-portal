@@ -280,7 +280,7 @@ canvas{display:block;box-shadow:0 0 40px rgba(180,50,40,0.3);}
     <div style="text-align:center;margin-bottom:12px;font-size:14px;color:#a08060;">💰 金币：<span id="sm-bank-coins">0</span> · 📜 宝印：<span id="sm-bank-seals">0</span></div>
     <div class="sm-exchange-box">
       <div style="font-size:14px;font-weight:600;color:#e8d8b0;margin-bottom:8px;">💰 → 📜 兑换剑客宝印</div>
-      <div style="font-size:12px;color:#a08060;margin-bottom:8px;">汇率：100💰 = 1📜</div>
+      <div style="font-size:12px;color:#a08060;margin-bottom:8px;">汇率：50💰 = 1📜</div>
       <div class="sm-exchange-row">
         <span>兑换数量：</span>
         <input type="number" id="sm-exchange-input" min="0" value="0" style="width:80px;padding:4px 8px;background:rgba(212,175,55,0.1);border:1px solid rgba(212,175,55,0.3);border-radius:6px;color:#e8d8b0;font-size:14px;text-align:center;">
@@ -1562,7 +1562,7 @@ updatePlayer=function(){
 setupTouchControls();
 
 // ===== PAGE SYSTEM =====
-const SM_RATE=100;
+const SM_RATE=50;
 function smGetKey(){const id=localStorage.getItem('thawpawActiveId')||'default';return 'sword_master_save_'+id;}
 function smLoadSave(){try{const d=JSON.parse(localStorage.getItem(smGetKey()));return d||{coins:0,seals:0,highestLevel:1};}catch(e){return{coins:0,seals:0,highestLevel:1};}}
 function smSaveSave(){localStorage.setItem(smGetKey(),JSON.stringify(smSave));}
