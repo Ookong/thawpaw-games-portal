@@ -395,7 +395,7 @@ canvas{display:block;box-shadow:0 0 40px rgba(180,50,40,0.3);}
 const cv=document.getElementById('c'),ctx=cv.getContext('2d');
 const W=960,H=640;cv.width=W;cv.height=H;
 // 响应式缩放
-function fitCanvas(){const r=Math.min(innerWidth/W,innerHeight/H);cv.style.width=(W*r)+'px';cv.style.height=(H*r)+'px';}
+function fitCanvas(){const r=Math.min(innerWidth/W,innerHeight/H)*0.95;cv.style.width=(W*r)+'px';cv.style.height=(H*r)+'px';}
 fitCanvas();addEventListener('resize',fitCanvas);
 const rand=(a,b)=>a+Math.random()*(b-a),clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y),ang=(a,b)=>Math.atan2(b.y-a.y,b.x-a.x);
 let actx=null;function ia(){if(!actx)actx=new(window.AudioContext||window.webkitAudioContext)();}
