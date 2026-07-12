@@ -229,6 +229,7 @@ canvas{display:block;box-shadow:0 0 40px rgba(180,50,40,0.3);}
   </div>
   <div class="sm-bottom-bar">
     <div class="tab" onclick="smOpenBank()"><span class="icon">🏦</span>银行</div>
+    <div class="tab" onclick="smShowPage('shop')"><span class="icon">🏪</span>商店</div>
     <div class="tab" onclick="smShowPage('enhance')"><span class="icon">⚔️</span>强化</div>
     <div class="tab" onclick="smOpenBag()"><span class="icon">🎒</span>背包</div>
   </div>
@@ -241,6 +242,20 @@ canvas{display:block;box-shadow:0 0 40px rgba(180,50,40,0.3);}
     <div style="font-size:13px;color:#a08060;margin-top:4px;">每5层有Boss镇守</div>
   </div>
   <div class="sm-levels-grid" id="sm-levels-grid"></div>
+</div>
+<!-- ===== SHOP PAGE (首页商店，货物 ThawPaw 自己加) ===== -->
+<div id="sm-page-shop" class="sm-page">
+  <a class="sm-back-btn" onclick="smShowPage('home')">←</a>
+  <div style="text-align:center;padding:20px 0 8px;">
+    <div style="font-size:28px;color:#d4af37;font-weight:700;letter-spacing:4px;">🏪 商店</div>
+    <div style="font-size:13px;color:#a08060;margin-top:4px;">💰 金币：<span id="sm-shop-coins">0</span></div>
+  </div>
+  <div class="sm-enhance-grid" id="sm-shop-grid">
+    <div class="sm-enhance-slot"><div class="placeholder">🔓 待添加</div><div class="hint">ThawPaw 来添加商品</div></div>
+    <div class="sm-enhance-slot"><div class="placeholder">🔓 待添加</div><div class="hint">ThawPaw 来添加商品</div></div>
+    <div class="sm-enhance-slot"><div class="placeholder">🔓 待添加</div><div class="hint">ThawPaw 来添加商品</div></div>
+    <div class="sm-enhance-slot"><div class="placeholder">🔓 待添加</div><div class="hint">ThawPaw 来添加商品</div></div>
+  </div>
 </div>
 <!-- ===== ENHANCE PAGE ===== -->
 <div id="sm-page-enhance" class="sm-page">
@@ -1559,6 +1574,7 @@ function smShowPage(name){
   if(name==='home')smUpdateHome();
   if(name==='levels')smRenderLevels();
   if(name==='enhance')document.getElementById('sm-enhance-seals').textContent=smSave.seals;
+  if(name==='shop')document.getElementById('sm-shop-coins').textContent=smSave.coins;
 }
 function smGoHome(){
   if(gameState==='battle'||gameState==='break'||gameState==='clear'){smSave.coins+=player.gold;if(currentLevel>smSave.highestLevel)smSave.highestLevel=currentLevel;smSaveSave();}
