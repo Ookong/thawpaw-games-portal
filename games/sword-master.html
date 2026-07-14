@@ -6,9 +6,9 @@
 <title>少年剑客闯江湖 · Boss战</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
-body{background:#06050a;overflow:hidden;font-family:'PingFang SC','Microsoft YaHei',system-ui,sans-serif;}
-#wrap{width:100vw;height:100vh;display:flex;align-items:center;justify-content:center;position:relative;}
-canvas{display:block;box-shadow:0 0 40px rgba(180,50,40,0.3);}
+body{background:#06050a;overflow:hidden;font-family:'PingFang SC','Microsoft YaHei',system-ui,sans-serif;display:flex;align-items:center;justify-content:center;}
+#wrap{position:relative;margin:auto;align-self:center;justify-self:center;}
+canvas{display:block;width:100%;height:100%;box-shadow:0 0 40px rgba(180,50,40,0.3);}
 .overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(to bottom,rgba(6,5,10,0.75) 0%,rgba(8,6,12,0.5) 30%,rgba(10,8,6,0.55) 70%,rgba(6,5,8,0.8) 100%);z-index:10;gap:12px;}
 .overlay.hidden{display:none;}
 .title{font-size:48px;font-weight:700;color:#d4af37;letter-spacing:8px;text-shadow:0 0 40px rgba(212,175,55,0.5);animation:tg 3s ease-in-out infinite;}
@@ -90,7 +90,6 @@ canvas{display:block;box-shadow:0 0 40px rgba(180,50,40,0.3);}
 .tb-shop{background:rgba(120,80,40,0.4);border-color:#785028;color:#d4af37;}
 
 @media(max-width:768px){
-  canvas{width:100vw!important;height:100vh!important;}
   #shop-panel{width:240px;right:8px;}
   .controls-hint{display:none!important;}
 }
@@ -393,10 +392,50 @@ canvas{display:block;box-shadow:0 0 40px rgba(180,50,40,0.3);}
 
 <script>
 const cv=document.getElementById('c'),ctx=cv.getContext('2d');
+const wrap=document.getElementById('wrap');
 const W=960,H=640;cv.width=W;cv.height=H;
-// 响应式缩放
-function fitCanvas(){const r=Math.min(innerWidth/W,innerHeight/H)*0.95;cv.style.width=(W*r)+'px';cv.style.height=(H*r)+'px';}
+// 响应式缩放 + 自动适应屏幕形状
+function fitCanvas(){
+  const screenR=innerWidth/innerHeight;
+  // 矮胖（横屏桌面/平板）用 95% 边距；高瘦（手机竖屏）用 88% 留更多保险
+  const margin=screenR<0.85?0.88:0.95;
+  const r=Math.min(innerWidth/W,innerHeight/H)*margin;
+  const cw=W*r,ch=H*r;
+  cv.style.width=cw+'px';cv.style.height=ch+'px';
+  wrap.style.width=cw+'px';wrap.style.height=ch+'px';
+  wrap.style.display='block';
+  // 触摸 UI 缩放：根据 canvas 高度动态调整（canvas 越高，UI 越大；越矮则缩小）
+  const ui=Math.max(0.55,Math.min(1.15,ch/380));
+  const j=document.getElementById('joystick');
+  if(j){
+    const sz=Math.round(120*ui);
+    j.style.width=sz+'px';j.style.height=sz+'px';
+    j.style.bottom=Math.round(18*ui)+'px';j.style.left=Math.round(18*ui)+'px';
+    const knob=document.getElementById('joystick-knob');
+    if(knob){const ksz=Math.round(50*ui);knob.style.width=ksz+'px';knob.style.height=ksz+'px';}
+  }
+  const ab=document.getElementById('action-buttons');
+  if(ab){
+    const bsz=Math.round(56*ui),gap=Math.round(8*ui);
+    ab.style.right=Math.round(10*ui)+'px';ab.style.bottom=Math.round(18*ui)+'px';
+    ab.style.gap=gap+'px';
+    ab.querySelectorAll('.touch-btn').forEach(b=>{b.style.width=bsz+'px';b.style.height=bsz+'px';b.style.fontSize=Math.round(22*ui)+'px';});
+  }
+  const bp=document.getElementById('break-panel');
+  if(bp){bp.style.bottom=Math.round(170*ui)+'px';bp.style.fontSize=Math.round(14*ui)+'px';}
+  const hint=document.getElementById('hint');
+  if(hint){hint.style.bottom=Math.round(230*ui)+'px';hint.style.fontSize=Math.round(11*ui)+'px';}
+  const hud=document.getElementById('hud');
+  if(hud){hud.style.fontSize=Math.round(12*Math.min(1.2,ch/320))+'px';}
+  const bhud=document.getElementById('bottom-hud');
+  if(bhud){bhud.style.fontSize=Math.round(14*Math.min(1.2,ch/320))+'px';}
+  // 形状分类（方便 CSS 也按形状微调）
+  document.body.classList.toggle('shape-portrait',screenR<0.9);
+  document.body.classList.toggle('shape-wide',screenR>1.8);
+  document.body.classList.toggle('shape-square',screenR>=0.9&&screenR<=1.8);
+}
 fitCanvas();addEventListener('resize',fitCanvas);
+addEventListener('orientationchange',()=>setTimeout(fitCanvas,100));
 const rand=(a,b)=>a+Math.random()*(b-a),clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y),ang=(a,b)=>Math.atan2(b.y-a.y,b.x-a.x);
 let actx=null;function ia(){if(!actx)actx=new(window.AudioContext||window.webkitAudioContext)();}
 function snd(f,d,t='sine',v=0.15){if(!actx)return;const o=actx.createOscillator(),g=actx.createGain();o.type=t;o.frequency.value=f;g.gain.setValueAtTime(v,actx.currentTime);g.gain.exponentialRampToValueAtTime(0.001,actx.currentTime+d);o.connect(g).connect(actx.destination);o.start();o.stop(actx.currentTime+d);}
@@ -845,6 +884,7 @@ function startGame(startLevel){
   ia();
   document.querySelectorAll('.sm-page').forEach(p=>{p.classList.remove('active');p.style.display='none';});
   const gp=document.getElementById('sm-page-game');gp.classList.add('active');gp.style.display='';
+  fitCanvas();
   document.getElementById('screen-title').classList.add('hidden');
   currentWave=0;currentLevel=startLevel||1;resetPlayer(true);
   if(currentLevel>1)player.gold=(currentLevel-1)*300;
