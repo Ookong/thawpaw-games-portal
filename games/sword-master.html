@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
 <title>少年剑客闯江湖 · Boss战</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
@@ -164,12 +164,75 @@ canvas{display:block;width:100%;height:100%;box-shadow:0 0 40px rgba(180,50,40,0
 .sm-exchange-btn{padding:6px 16px;font-size:13px;font-weight:700;background:linear-gradient(135deg,#d4af37,#a08020);color:#fff;border:none;border-radius:6px;cursor:pointer;transition:transform .1s;}
 .sm-exchange-btn:hover{transform:scale(1.05);}
 .sm-exchange-btn:disabled{opacity:0.4;cursor:not-allowed;transform:none;}
+/* ===== 屏幕形状自适应 ===== */
+/* 竖屏手机：canvas 缩放后 UI 更紧凑 */
+body.shape-portrait #shop-panel{width:200px;right:4px;font-size:12px;}
+body.shape-portrait .sm-home-content{grid-template-columns:1fr 1fr;gap:6px;padding:6px;padding-bottom:68px;}
+body.shape-portrait .sm-play-card{padding:12px 6px;}
+body.shape-portrait .sm-play-card .icon{font-size:28px;}
+body.shape-portrait .sm-play-card .title{font-size:14px;}
+body.shape-portrait .sm-display-card{padding:10px;}
+body.shape-portrait .sm-display-card .preview{width:54px;height:54px;font-size:28px;}
+body.shape-portrait .sm-mode-card{padding:10px 6px;}
+body.shape-portrait .sm-mode-card .icon{font-size:24px;}
+body.shape-portrait .sm-mode-card .name{font-size:12px;}
+body.shape-portrait .sm-info-panel{padding:10px;font-size:11px;}
+body.shape-portrait .sm-top-bar{padding:8px 10px;min-height:48px;}
+body.shape-portrait .sm-avatar{width:34px;height:34px;font-size:18px;}
+body.shape-portrait .sm-currency-bubble{font-size:11px;padding:4px 8px;}
+body.shape-portrait .sm-bottom-bar{height:48px;}
+body.shape-portrait .sm-bottom-bar .tab{font-size:11px;padding:4px 10px;}
+body.shape-portrait .sm-bottom-bar .tab .icon{font-size:18px;}
+body.shape-portrait .sm-levels-grid{grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px;}
+body.shape-portrait .sm-enhance-grid{grid-template-columns:1fr;}
+
+/* 超宽屏（横屏桌面/平板）：内容居中限宽，不拉伸过度 */
+body.shape-wide .sm-page{padding-left:max(0px,calc((100vw - 1200px)/2));padding-right:max(0px,calc((100vw - 1200px)/2));}
+body.shape-wide .sm-home-content{max-width:1200px;margin:0 auto;}
+body.shape-wide .sm-levels-grid{max-width:800px;margin:20px auto;}
+body.shape-wide .sm-enhance-grid{max-width:800px;margin:20px auto;}
+
+/* 方形/普通横屏：默认体验最佳 */
+body.shape-square .sm-home-content{max-width:900px;margin:0 auto;}
+
 @media(max-width:768px){
 .sm-home-content{grid-template-columns:1fr 1fr;gap:6px;padding:8px;padding-bottom:64px;}
 .sm-play-card{padding:14px 8px;}.sm-play-card .icon{font-size:32px;}
 .sm-display-card{padding:14px;}.sm-display-card .preview{width:60px;height:60px;font-size:32px;}
 .sm-levels-grid{grid-template-columns:repeat(auto-fill,minmax(100px,1fr));}
 .sm-enhance-grid{grid-template-columns:1fr;}
+#shop-panel{width:220px;}
+}
+
+@media(max-width:480px){
+.sm-home-content{grid-template-columns:1fr 1fr;gap:4px;padding:4px;padding-bottom:60px;}
+.sm-play-card{padding:10px 4px;}.sm-play-card .icon{font-size:24px;}.sm-play-card .title{font-size:13px;}
+.sm-display-card{padding:8px;}.sm-display-card .preview{width:48px;height:48px;font-size:24px;}
+.sm-display-card .value{font-size:12px;}
+.sm-mode-card{padding:8px 4px;}.sm-mode-card .icon{font-size:20px;}.sm-mode-card .name{font-size:11px;}
+.sm-info-panel{padding:8px;font-size:10px;}
+.sm-info-panel h3{font-size:11px;}
+.sm-top-bar{padding:6px 8px;min-height:44px;gap:6px;}
+.sm-avatar{width:30px;height:30px;font-size:16px;}
+.sm-currency-bubble{font-size:10px;padding:3px 6px;}
+.sm-profile-info .nickname{font-size:13px;}
+.sm-bottom-bar{height:44px;}
+.sm-bottom-bar .tab{font-size:10px;padding:4px 8px;}
+.sm-bottom-bar .tab .icon{font-size:16px;}
+#shop-panel{width:180px;font-size:11px;padding:10px;}
+#shop-panel .shop-item{padding:6px;}
+#shop-panel .shop-item .iname{font-size:12px;}
+#shop-panel .shop-item .idesc{font-size:9px;}
+.hp-bg{width:140px;height:14px;}
+.title{font-size:32px;letter-spacing:4px;}
+.subtitle{font-size:14px;}
+}
+
+@media(max-width:360px){
+.sm-home-content{grid-template-columns:1fr;gap:4px;}
+.sm-play-card{padding:16px 8px;}
+#shop-panel{width:160px;}
+.hp-bg{width:110px;}
 }
 </style>
 </head>
@@ -394,15 +457,18 @@ canvas{display:block;width:100%;height:100%;box-shadow:0 0 40px rgba(180,50,40,0
 const cv=document.getElementById('c'),ctx=cv.getContext('2d');
 const wrap=document.getElementById('wrap');
 const W=960,H=640;cv.width=W;cv.height=H;
-// 响应式缩放 + 自动适应屏幕形状
+// 响应式缩放 + 自动适应屏幕形状（contain 填满）
 function fitCanvas(){
-  const screenR=innerWidth/innerHeight;
-  // 矮胖（横屏桌面/平板）用 95% 边距；高瘦（手机竖屏）用 88% 留更多保险
-  const margin=screenR<0.85?0.88:0.95;
-  const r=Math.min(innerWidth/W,innerHeight/H)*margin;
-  const cw=W*r,ch=H*r;
+  const sw=innerWidth,sh=innerHeight;
+  const screenR=sw/sh,gameR=W/H;
+  // contain：完整显示游戏画面，居中，不裁切
+  const scale=Math.min(sw/W,sh/H);
+  const cw=W*scale,ch=H*scale;
+  const offsetX=(sw-cw)/2,offsetY=(sh-ch)/2;
   cv.style.width=cw+'px';cv.style.height=ch+'px';
+  cv.style.position='fixed';cv.style.left=offsetX+'px';cv.style.top=offsetY+'px';
   wrap.style.width=cw+'px';wrap.style.height=ch+'px';
+  wrap.style.position='fixed';wrap.style.left=offsetX+'px';wrap.style.top=offsetY+'px';
   wrap.style.display='block';
   // 触摸 UI 缩放：根据 canvas 高度动态调整（canvas 越高，UI 越大；越矮则缩小）
   const ui=Math.max(0.55,Math.min(1.15,ch/380));

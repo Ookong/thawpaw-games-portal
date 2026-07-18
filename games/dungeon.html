@@ -2204,10 +2204,10 @@ function resizeCanvas(){
   const showTouch=isTouchControlsVisible();
   const topPad=showTouch?70:0;
   const botPad=showTouch?200:0;
-  const wAvail=window.innerWidth-side-16;
-  const hAvail=window.innerHeight-topPad-botPad-16;
+  const wAvail=window.innerWidth-side;
+  const hAvail=window.innerHeight-topPad-botPad;
   const maxPx=Math.min(wAvail,hAvail);
-  const tile=Math.max(16,Math.min(32,Math.floor(maxPx/Math.max(WIDTH,HEIGHT))));
+  const tile=Math.max(12,Math.floor(maxPx/Math.max(WIDTH,HEIGHT)));
   canvas.dataset.tile=tile;
   canvas.style.width=(tile*WIDTH)+'px';
   canvas.style.height=(tile*HEIGHT)+'px';

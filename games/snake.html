@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
 <title>Snake Game - Thawpaw Games</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
@@ -197,6 +197,131 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .avatar-picker{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:10px;}
 .avatar-option{width:50px;height:50px;border-radius:50%;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:28px;cursor:pointer;border:2px solid transparent;transition:border .2s;}
 .avatar-option:hover,.avatar-option.selected{border-color:var(--accent);}
+
+/* ===== RESPONSIVE — 屏幕形状自适应 ===== */
+
+/* 平板竖屏 / 大手机横屏：4列→仍保持但收紧 */
+@media(max-width:1024px){
+  .home-content{gap:6px;padding:8px;padding-bottom:64px;}
+  .practice-card{padding:14px 8px;}
+  .practice-card .practice-icon{font-size:28px;}
+  .skin-display{padding:14px;}
+  .skin-display .skin-preview{width:60px;height:60px;font-size:30px;}
+  .mode-card{padding:12px 8px;}
+  .mode-card .mode-icon{font-size:26px;}
+  .hot-events{padding:10px;}
+  .hot-events .event-item{font-size:11px;padding:6px 4px;}
+}
+
+/* 手机：4列→2列 */
+@media(max-width:768px){
+  .home-content{
+    grid-template-columns:1fr 1fr;
+    gap:6px;padding:8px;padding-bottom:64px;
+  }
+  /* 重新编排：左列=练习+皮肤，右列=模式+活动 */
+  .col-left{justify-content:flex-start;}
+  .col-lc{justify-content:flex-start;}
+  .col-rc{gap:6px;}
+  .col-right{gap:6px;}
+  .practice-card{padding:12px 6px;min-height:100px;}
+  .practice-card .practice-icon{font-size:24px;}
+  .practice-card .practice-title{font-size:13px;}
+  .practice-card .practice-sub{font-size:9px;}
+  .skin-display{padding:12px;min-height:100px;}
+  .skin-display .skin-preview{width:50px;height:50px;font-size:26px;}
+  .skin-label{font-size:11px;}
+  .mode-card{padding:10px 6px;min-height:80px;}
+  .mode-card .mode-icon{font-size:22px;}
+  .mode-card .mode-name{font-size:12px;}
+  .mode-card .mode-desc{font-size:10px;}
+  .col-right .top-row .mini-card{padding:8px 4px;font-size:11px;}
+  .col-right .top-row .mini-card .icon{font-size:18px;}
+  .hot-events{padding:10px;}
+  .hot-events h3{font-size:11px;}
+  .hot-events .event-item{font-size:10px;padding:5px 4px;}
+  .top-bar{padding:8px 10px;min-height:48px;gap:8px;}
+  .avatar{width:34px;height:34px;font-size:18px;}
+  .home-currency-bubble{font-size:11px;padding:4px 8px;}
+  .profile-info .nickname{font-size:13px;}
+  .level-badge{font-size:10px;padding:1px 6px;}
+  .bottom-bar{height:48px;}
+  .bottom-bar .tab{font-size:11px;padding:4px 10px;}
+  .bottom-bar .tab .icon{font-size:18px;}
+  .game-page .score-bar{font-size:12px;gap:12px;}
+  .game-page .score-bar span{padding:3px 10px;}
+  .joystick-zone{bottom:60px;left:15px;}
+  .joystick-base{width:100px;height:100px;}
+  .joystick-knob{width:42px;height:42px;}
+}
+
+/* 小屏手机：2列更紧凑 */
+@media(max-width:480px){
+  .home-content{
+    grid-template-columns:1fr 1fr;
+    gap:4px;padding:4px;padding-bottom:60px;
+  }
+  .practice-card{padding:10px 4px;min-height:84px;}
+  .practice-card .practice-icon{font-size:20px;}
+  .practice-card .practice-title{font-size:12px;}
+  .practice-card .practice-sub{font-size:8px;}
+  .skin-display{padding:8px;min-height:84px;}
+  .skin-display .skin-preview{width:42px;height:42px;font-size:22px;}
+  .skin-label{font-size:10px;}
+  .mode-card{padding:8px 4px;min-height:70px;}
+  .mode-card .mode-icon{font-size:18px;}
+  .mode-card .mode-name{font-size:11px;}
+  .mode-card .mode-desc{font-size:9px;}
+  .col-right .top-row{gap:4px;}
+  .col-right .top-row .mini-card{padding:6px 2px;font-size:10px;}
+  .col-right .top-row .mini-card .icon{font-size:16px;}
+  .hot-events{padding:8px;}
+  .hot-events h3{font-size:10px;margin-bottom:4px;}
+  .hot-events .event-item{font-size:9px;padding:4px 2px;}
+  .top-bar{padding:6px 8px;min-height:44px;gap:6px;}
+  .avatar{width:30px;height:30px;font-size:16px;}
+  .home-currency-bubble{font-size:10px;padding:3px 6px;}
+  .profile-info .nickname{font-size:12px;}
+  .profile-info .level-badge{font-size:9px;}
+  .level-bar-wrap{width:60px;}
+  .bottom-bar{height:44px;}
+  .bottom-bar .tab{font-size:10px;padding:4px 8px;}
+  .bottom-bar .tab .icon{font-size:16px;}
+  .profile-page{padding:12px;padding-bottom:60px;gap:12px;}
+  .profile-page .big-avatar{width:70px;height:70px;font-size:36px;}
+  .profile-page .name-section .nickname{font-size:17px;}
+  .settings-page{padding:12px;padding-bottom:60px;gap:14px;}
+  .game-page .score-bar{font-size:11px;gap:8px;}
+  .game-page .score-bar span{padding:2px 8px;}
+  .game-back{font-size:22px;top:6px;left:6px;}
+}
+
+/* 超小屏：2列→单列纵向滚动 */
+@media(max-width:360px){
+  .home-content{
+    grid-template-columns:1fr 1fr;
+    gap:3px;padding:3px;padding-bottom:56px;
+  }
+  .practice-card{padding:8px 3px;min-height:72px;}
+  .practice-card .practice-icon{font-size:18px;}
+  .practice-card .practice-title{font-size:11px;}
+  .skin-display{padding:6px;min-height:72px;}
+  .skin-display .skin-preview{width:36px;height:36px;font-size:18px;}
+  .mode-card{padding:6px 3px;min-height:60px;}
+  .mode-card .mode-icon{font-size:16px;}
+  .mode-card .mode-name{font-size:10px;}
+  .hot-events{padding:6px;}
+  .hot-events .event-item{font-size:8px;padding:3px 2px;}
+  .bottom-bar{height:40px;}
+  .bottom-bar .tab{font-size:9px;padding:3px 6px;}
+  .bottom-bar .tab .icon{font-size:14px;}
+}
+
+/* 超宽屏：内容居中限宽 */
+@media(min-width:1600px){
+  .home-content{max-width:1200px;margin:0 auto;}
+  .top-bar{max-width:1200px;margin:0 auto;width:100%;}
+}
 </style>
 </head>
 <body>
@@ -909,6 +1034,23 @@ function savePlayer(){
   localStorage.setItem(getSaveKey(), JSON.stringify(toSave));
 }
 
+// Auto-fit: re-size canvas on window resize (classic mode)
+window.addEventListener('resize', function(){
+  if (typeof canvas !== 'undefined' && canvas && typeof cellSize !== 'undefined' && typeof gridSize !== 'undefined' && gameActive) {
+    var maxW = window.innerWidth - 40;
+    var maxH = window.innerHeight - 180;
+    var maxPx = Math.min(maxW, maxH);
+    var newCell = Math.max(8, Math.floor(maxPx / gridSize));
+    if (newCell !== cellSize) {
+      cellSize = newCell;
+      canvas.width = cellSize * gridSize;
+      canvas.height = cellSize * gridSize;
+      canvas.style.width = (cellSize * gridSize) + 'px';
+      canvas.style.height = (cellSize * gridSize) + 'px';
+    }
+  }
+});
+
 // ===== PAGES =====
 let currentPage = 'home';
 function showPage(name){
@@ -1260,11 +1402,11 @@ function startGame(){
   speedIndex = sp;
   canvas = document.getElementById('game-canvas');
   ctx = canvas.getContext('2d');
-  // Fit screen but cap cell size so the board stays small and centered
+  // Fit screen — auto-adapt cell size, no hard cap
   const maxW = window.innerWidth - 40;
   const maxH = window.innerHeight - 180;
   const maxPx = Math.min(maxW, maxH);
-  cellSize = Math.min(Math.floor(maxPx / gridSize), 18);
+  cellSize = Math.max(8, Math.floor(maxPx / gridSize));
   canvas.width = cellSize * gridSize;
   canvas.height = cellSize * gridSize;
   canvas.style.width = (cellSize * gridSize) + 'px';
@@ -1508,7 +1650,7 @@ function onlineEnterGame() {
   onlineState.grid = 20;
   onlineState.speed = 130;
   onlineState.speedIdx = 1;
-  onlineState.cell = Math.min(Math.floor(Math.min(window.innerWidth * (isPK ? 0.42 : 0.95), window.innerHeight - 240) / onlineState.grid), isPK ? 14 : 18);
+  onlineState.cell = Math.max(6, Math.floor(Math.min(window.innerWidth * (isPK ? 0.42 : 0.95), window.innerHeight - 240) / onlineState.grid));
   onlineState.mySnake = [];
   var mid = Math.floor(onlineState.grid / 2);
   for (var i = 0; i < 3; i++) onlineState.mySnake.push({ x: mid - i, y: mid });
@@ -2016,7 +2158,7 @@ function startDuo() {
   duoCanvas = document.getElementById('duo-canvas');
   duoCtx = duoCanvas.getContext('2d');
   var maxPx = Math.min(window.innerWidth - 20, window.innerHeight - 200);
-  duoCell = Math.min(Math.floor(maxPx / duoGrid), 18);
+  duoCell = Math.max(6, Math.floor(maxPx / duoGrid));
   duoCanvas.width = duoCell * duoGrid;
   duoCanvas.height = duoCell * duoGrid;
   duoCanvas.style.width = (duoCell * duoGrid) + 'px';
@@ -2321,7 +2463,7 @@ function startPractice(){
   const maxW = window.innerWidth - 40;
   const maxH = window.innerHeight - 200;
   const maxPx = Math.min(maxW, maxH);
-  pCell = Math.min(Math.floor(maxPx / pGrid), 18);
+  pCell = Math.max(6, Math.floor(maxPx / pGrid));
   pCanvas.width = pCell * pGrid;
   pCanvas.height = pCell * pGrid;
   pCanvas.style.width = (pCell * pGrid) + 'px';
