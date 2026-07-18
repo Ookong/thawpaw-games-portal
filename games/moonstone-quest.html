@@ -2492,11 +2492,9 @@ function resizeCanvas(){
   const wrap=document.getElementById('canvasWrap');
   if(!wrap) return;
   const cw=wrap.clientWidth, ch=wrap.clientHeight;
-  var maxScale=1.5;
   var tc=document.getElementById('touchControls');
-  if(tc && tc.classList.contains('active')) maxScale=1.0;
   const cssW=MAP_W*TILE, cssH=MAP_H*TILE;
-  const scale=Math.min(cw/cssW,ch/cssH,maxScale);
+  const scale=Math.min(cw/cssW,ch/cssH);
   const dispW=Math.floor(cssW*scale), dispH=Math.floor(cssH*scale);
   const dpr=Math.min(window.devicePixelRatio||1,2);
   canvas.style.width=dispW+'px';
