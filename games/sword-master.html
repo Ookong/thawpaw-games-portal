@@ -1024,7 +1024,7 @@ function startWave(){
   if(cfg.type==='mobs'){for(let i=0;i<cfg.count;i++)enemies.push(createEnemy(TEMPLATES.mob,TEMPLE.x+(i-cfg.count/2+0.5)*60,TEMPLE.y+40));}
   else{
     // 每过一层 Boss数量+1：第1层1个，第2层2个，以此类推
-    const bossCount=Math.min(currentLevel,4);
+    const bossCount=Math.min(currentLevel,3);
     const tmpl=TEMPLATES[cfg.type];
     for(let i=0;i<bossCount;i++){
       const ox=(i-(bossCount-1)/2)*100;
