@@ -335,14 +335,26 @@ body.shape-square .sm-home-content{max-width:100%;}
   <a class="sm-back-btn" onclick="smShowPage('home')">←</a>
   <div style="text-align:center;padding:20px 0 8px;">
     <div style="font-size:28px;color:#d4af37;font-weight:700;letter-spacing:4px;">⚔️ 强化</div>
-    <div style="font-size:13px;color:#a08060;margin-top:4px;">消耗📜剑客宝印强化装备（建设中）</div>
+    <div style="font-size:13px;color:#a08060;margin-top:4px;">消耗📜剑客宝印永久强化属性</div>
     <div style="font-size:14px;color:#d4af37;margin-top:6px;">📜 宝印：<span id="sm-enhance-seals">0</span></div>
   </div>
   <div class="sm-enhance-grid" id="sm-enhance-grid">
-    <div class="sm-enhance-slot"><div class="placeholder">🔓 待添加</div><div class="hint">ThawPaw 来添加强化项</div></div>
-    <div class="sm-enhance-slot"><div class="placeholder">🔓 待添加</div><div class="hint">ThawPaw 来添加强化项</div></div>
-    <div class="sm-enhance-slot"><div class="placeholder">🔓 待添加</div><div class="hint">ThawPaw 来添加强化项</div></div>
-    <div class="sm-enhance-slot"><div class="placeholder">🔓 待添加</div><div class="hint">ThawPaw 来添加强化项</div></div>
+    <div class="sm-enhance-slot" id="enhc-speed">
+      <div style="font-size:28px;">🏃</div>
+      <div style="font-size:15px;font-weight:700;color:#e8d8b0;">速度强化</div>
+      <div style="font-size:12px;color:#a08060;">提升移动速度</div>
+      <div style="font-size:13px;color:#d4af37;margin-top:4px;">当前：<span id="enhc-speed-lv">Lv.0</span></div>
+      <div style="font-size:12px;color:#a08060;">下一级：<span id="enhc-speed-cost">8 📜</span></div>
+      <button class="sm-exchange-btn" id="enhc-speed-btn" onclick="enhanceStat('speed')">强化</button>
+    </div>
+    <div class="sm-enhance-slot" id="enhc-defense">
+      <div style="font-size:28px;">🛡️</div>
+      <div style="font-size:15px;font-weight:700;color:#e8d8b0;">防御强化</div>
+      <div style="font-size:12px;color:#a08060;">减少受到的伤害</div>
+      <div style="font-size:13px;color:#d4af37;margin-top:4px;">当前：<span id="enhc-defense-lv">Lv.0</span></div>
+      <div style="font-size:12px;color:#a08060;">下一级：<span id="enhc-defense-cost">10 📜</span></div>
+      <button class="sm-exchange-btn" id="enhc-defense-btn" onclick="enhanceStat('defense')">强化</button>
+    </div>
   </div>
 </div>
 <!-- ===== BANK MODAL ===== -->
@@ -675,7 +687,13 @@ function getWeaponStat(){return WEAPONS[player.weapon];}
 function resetPlayer(full){
   player.x=W/2;player.y=H/2+120;
   if(full){
-    player.hp=player.maxHp;player.gold=0;player.defense=0;player.defLevel=0;
+    // 应用永久强化
+    const spLv=smSave.speedLevel||0;
+    const defLv=smSave.defLevel||0;
+    player.hp=player.maxHp;player.gold=0;
+    player.speed=3.2+SPEED_BONUS[spLv];
+    player.defense=DEF_BONUS[defLv];player.defLevel=0;
+    player.enhSpdLevel=spLv;player.enhDefLevel=defLv;
     player.weapon='fists';player.ownedWeapons=new Set(['fists']);
     player.items={potion:1,ginseng:0,bomb:0,mine:0,circle:0};player.ginsengSips=0;
     player.transforms=[];player.transformActive=0;player.transformType=null;player.transformCD=0;
@@ -1656,7 +1674,7 @@ function updateItems(){
     const wn=WEAPONS[w];
     html+=`<div class="item-slot ${player.weapon===w?'usable':''}" onclick="switchWeapon(${idx})" title="${wn.name}"><span class="key">${idx+3}</span>${wn.emoji}</div>`;
   });
-  if(player.defLevel>0)html+=`<div class="item-slot" title="防御 Lv.${player.defLevel}">🛡️<span class="count">${player.defLevel}</span></div>`;
+  if(player.enhDefLevel>0||player.defLevel>0)html+=`<div class="item-slot" title="防御 Lv.${player.defLevel+player.enhDefLevel}">🛡️<span class="count">${player.defLevel+player.enhDefLevel}</span></div>`;
   // 变身
   if(player.transforms.length>0){
     const lastT=player.transforms[player.transforms.length-1];
@@ -1862,6 +1880,50 @@ setupTouchControls();
 
 // ===== PAGE SYSTEM =====
 const SM_RATE=200;
+
+// ===== 强化系统 =====
+const ENHANCE_COST={
+  speed:[8,10,14,20,25],   // Lv0→1, 1→2, 2→3, 3→4, 4→5
+  defense:[10,13,17,23,27],
+};
+const ENHANCE_MAX=5; // 最高5级
+const SPEED_BONUS=[0,0.4,0.8,1.2,1.6,2.0]; // 每级速度加成
+const DEF_BONUS=[0,3,6,10,15,20]; // 每级减伤
+
+function enhanceStat(stat){
+  const lvKey=stat==='speed'?'speedLevel':'defLevel';
+  const cur=smSave[lvKey]||0;
+  if(cur>=ENHANCE_MAX){return;}
+  const cost=ENHANCE_COST[stat][cur];
+  if(smSave.seals<cost){return;}
+  smSave.seals-=cost;
+  smSave[lvKey]=cur+1;
+  smSaveSave();
+  smRefreshEnhance();
+  smUpdateHome();
+  // 飘字效果
+  const el=document.getElementById('enhc-'+stat);
+  if(el){el.style.boxShadow='0 0 20px rgba(212,175,55,0.6)';setTimeout(()=>{el.style.boxShadow='';},500);}
+}
+function smRefreshEnhance(){
+  document.getElementById('sm-enhance-seals').textContent=smSave.seals;
+  ['speed','defense'].forEach(stat=>{
+    const lvKey=stat==='speed'?'speedLevel':'defLevel';
+    const cur=smSave[lvKey]||0;
+    const lvEl=document.getElementById('enhc-'+stat+'-lv');
+    const costEl=document.getElementById('enhc-'+stat+'-cost');
+    const btn=document.getElementById('enhc-'+stat+'-btn');
+    if(lvEl)lvEl.textContent='Lv.'+cur;
+    if(cur>=ENHANCE_MAX){
+      if(costEl)costEl.textContent='已满级';
+      if(btn){btn.disabled=true;btn.textContent='已满级';}
+    }else{
+      const cost=ENHANCE_COST[stat][cur];
+      if(costEl)costEl.textContent=cost+' 📜';
+      if(btn){btn.disabled=smSave.seals<cost;btn.textContent='强化';}
+    }
+  });
+}
 function smGetKey(){const id=localStorage.getItem('thawpawActiveId')||'default';return 'sword_master_save_'+id;}
 function smLoadSave(){try{const d=JSON.parse(localStorage.getItem(smGetKey()));return d||{coins:0,seals:0,highestLevel:1};}catch(e){return{coins:0,seals:0,highestLevel:1};}}
 function smSaveSave(){localStorage.setItem(smGetKey(),JSON.stringify(smSave));}
@@ -1872,7 +1934,7 @@ function smShowPage(name){
   const pg=document.getElementById('sm-page-'+name);if(pg){pg.classList.add('active');pg.style.display='';}
   if(name==='home')smUpdateHome();
   if(name==='levels')smRenderLevels();
-  if(name==='enhance')document.getElementById('sm-enhance-seals').textContent=smSave.seals;
+  if(name==='enhance'){document.getElementById('sm-enhance-seals').textContent=smSave.seals;smRefreshEnhance();}
   if(name==='shop')document.getElementById('sm-shop-coins').textContent=smSave.coins;
 }
 function smGoHome(){
