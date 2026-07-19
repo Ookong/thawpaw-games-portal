@@ -6,7 +6,8 @@
 <title>少年剑客闯江湖 · Boss战</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
-body{background:#06050a;overflow:hidden;font-family:'PingFang SC','Microsoft YaHei',system-ui,sans-serif;display:flex;align-items:center;justify-content:center;}
+html,body{width:100%;height:100%;overflow:hidden;}
+body{background:#06050a;overflow:hidden;font-family:'PingFang SC','Microsoft YaHei',system-ui,sans-serif;}
 #wrap{position:relative;margin:auto;align-self:center;justify-self:center;}
 canvas{display:block;width:100%;height:100%;box-shadow:0 0 40px rgba(180,50,40,0.3);}
 .overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(to bottom,rgba(6,5,10,0.75) 0%,rgba(8,6,12,0.5) 30%,rgba(10,8,6,0.55) 70%,rgba(6,5,8,0.8) 100%);z-index:10;gap:12px;}
@@ -98,7 +99,7 @@ canvas{display:block;width:100%;height:100%;box-shadow:0 0 40px rgba(180,50,40,0
 .break-timer{font-size:14px;color:#d4af37;font-weight:700;}
 
 /* ===== PAGE SYSTEM ===== */
-.sm-page{display:none;width:100vw;height:100vh;overflow-y:auto;background:linear-gradient(to bottom,#0a0810,#06050a);color:#e8d8b0;font-family:'PingFang SC','Microsoft YaHei',system-ui,sans-serif;}
+.sm-page{display:none;width:100%;height:100%;overflow-y:auto;background:linear-gradient(to bottom,#0a0810,#06050a);color:#e8d8b0;font-family:'PingFang SC','Microsoft YaHei',system-ui,sans-serif;position:relative;}
 .sm-page.active{display:flex;flex-direction:column;}
 .sm-top-bar{display:flex;align-items:center;padding:10px 16px;background:rgba(20,12,8,0.9);gap:10px;min-height:56px;border-bottom:1px solid rgba(212,175,55,0.15);position:sticky;top:0;z-index:50;}
 .sm-profile-bubble{display:flex;align-items:center;gap:10px;flex:1;cursor:pointer;}
@@ -109,7 +110,7 @@ canvas{display:block;width:100%;height:100%;box-shadow:0 0 40px rgba(180,50,40,0
 .sm-profile-info .nickname{font-weight:600;font-size:15px;color:#e8d8b0;}
 .sm-settings-btn{cursor:pointer;font-size:18px;opacity:0.7;transition:opacity .2s;}
 .sm-settings-btn:hover{opacity:1;}
-.sm-home-content{flex:1;display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;padding:12px;padding-bottom:64px;min-height:calc(100vh - 56px);}
+.sm-home-content{flex:1;display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;padding:12px;padding-bottom:64px;min-height:calc(100% - 56px);}
 .sm-home-content .col{display:flex;flex-direction:column;gap:8px;}
 .sm-col-left{justify-content:center;align-items:center;}
 .sm-play-card{background:linear-gradient(135deg,rgba(180,50,40,0.2),rgba(120,30,25,0.15));border:2px solid rgba(180,50,40,0.4);border-radius:12px;padding:20px 12px;text-align:center;cursor:pointer;transition:transform .15s,box-shadow .15s;width:100%;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;}
@@ -141,15 +142,15 @@ canvas{display:block;width:100%;height:100%;box-shadow:0 0 40px rgba(180,50,40,0
 .sm-bottom-bar .tab{display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:6px 16px;border-radius:8px;transition:background .2s;font-size:12px;color:#d4af37;}
 .sm-bottom-bar .tab:hover{background:rgba(212,175,55,0.08);}
 .sm-bottom-bar .tab .icon{font-size:20px;}
-.sm-back-btn{position:absolute;top:12px;left:12px;cursor:pointer;font-size:24px;z-index:10;color:#d4af37;text-decoration:none;}
-.sm-levels-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:12px;width:100%;max-width:600px;margin:20px auto 0;}
+.sm-back-btn{position:absolute;top:12px;left:12px;cursor:pointer;font-size:24px;z-index:100;color:#d4af37;text-decoration:none;pointer-events:auto;display:inline-block;padding:4px 8px;}
+.sm-levels-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:12px;width:100%;margin:20px 0 0;}
 .sm-level-card{background:linear-gradient(135deg,rgba(180,50,40,0.15),rgba(120,30,25,0.1));border:2px solid rgba(212,175,55,0.25);border-radius:12px;padding:20px 12px;text-align:center;cursor:pointer;transition:all .15s;position:relative;}
 .sm-level-card:hover{transform:scale(1.05);border-color:#d4af37;box-shadow:0 0 12px rgba(212,175,55,0.2);}
 .sm-level-card.locked{opacity:0.3;cursor:not-allowed;}
 .sm-level-card .level-num{font-size:22px;font-weight:700;color:#d4af37;}
 .sm-level-card .level-name{font-size:11px;color:#a08060;margin-top:4px;}
 .sm-level-card .boss-tag{position:absolute;top:-6px;right:-6px;background:#b43228;color:#fff;font-size:10px;padding:2px 8px;border-radius:10px;font-weight:700;}
-.sm-enhance-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;width:100%;max-width:600px;margin:20px auto 0;}
+.sm-enhance-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;width:100%;margin:20px 0 0;}
 .sm-enhance-slot{background:rgba(20,12,8,0.6);border:2px dashed rgba(212,175,55,0.25);border-radius:12px;padding:16px;text-align:center;min-height:100px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:#a08060;}
 .sm-enhance-slot .placeholder{font-size:14px;}
 .sm-enhance-slot .hint{font-size:11px;color:#604030;}
@@ -168,6 +169,13 @@ canvas{display:block;width:100%;height:100%;box-shadow:0 0 40px rgba(180,50,40,0
 /* 竖屏手机：canvas 缩放后 UI 更紧凑 */
 body.shape-portrait #shop-panel{width:200px;right:4px;font-size:12px;}
 body.shape-portrait .sm-home-content{grid-template-columns:1fr 1fr;gap:6px;padding:6px;padding-bottom:68px;}
+body.shape-portrait:not(.is-phone) .sm-home-content{grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;padding:10px;padding-bottom:64px;}
+body.shape-portrait:not(.is-phone) .sm-play-card{padding:16px 8px;}
+body.shape-portrait:not(.is-phone) .sm-play-card .icon{font-size:36px;}
+body.shape-portrait:not(.is-phone) .sm-display-card{padding:14px;}
+body.shape-portrait:not(.is-phone) .sm-display-card .preview{width:64px;height:64px;font-size:32px;}
+body.shape-portrait:not(.is-phone) .sm-mode-card{padding:12px 8px;}
+body.shape-portrait:not(.is-phone) .sm-levels-grid{grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px;}
 body.shape-portrait .sm-play-card{padding:12px 6px;}
 body.shape-portrait .sm-play-card .icon{font-size:28px;}
 body.shape-portrait .sm-play-card .title{font-size:14px;}
@@ -186,22 +194,25 @@ body.shape-portrait .sm-bottom-bar .tab .icon{font-size:18px;}
 body.shape-portrait .sm-levels-grid{grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px;}
 body.shape-portrait .sm-enhance-grid{grid-template-columns:1fr;}
 
-/* 超宽屏（横屏桌面/平板）：内容居中限宽，不拉伸过度 */
-body.shape-wide .sm-page{padding-left:max(0px,calc((100vw - 1200px)/2));padding-right:max(0px,calc((100vw - 1200px)/2));}
-body.shape-wide .sm-home-content{max-width:1200px;margin:0 auto;}
-body.shape-wide .sm-levels-grid{max-width:800px;margin:20px auto;}
-body.shape-wide .sm-enhance-grid{max-width:800px;margin:20px auto;}
+/* 超宽屏（横屏桌面/平板）：铺满全屏，不限宽 */
+body.shape-wide .sm-home-content{max-width:100%;}
+body.shape-wide .sm-levels-grid{max-width:100%;margin:20px 0 0;}
+body.shape-wide .sm-enhance-grid{max-width:100%;margin:20px 0 0;}
 
 /* 方形/普通横屏：默认体验最佳 */
-body.shape-square .sm-home-content{max-width:900px;margin:0 auto;}
+body.shape-square .sm-home-content{max-width:100%;}
 
-@media(max-width:768px){
+@media(max-width:600px){
 .sm-home-content{grid-template-columns:1fr 1fr;gap:6px;padding:8px;padding-bottom:64px;}
 .sm-play-card{padding:14px 8px;}.sm-play-card .icon{font-size:32px;}
 .sm-display-card{padding:14px;}.sm-display-card .preview{width:60px;height:60px;font-size:32px;}
 .sm-levels-grid{grid-template-columns:repeat(auto-fill,minmax(100px,1fr));}
 .sm-enhance-grid{grid-template-columns:1fr;}
 #shop-panel{width:220px;}
+}
+
+@media(max-width:600px) and (max-height:500px){
+.sm-home-content{grid-template-columns:1fr 1fr 1fr 1fr;gap:4px;padding:4px;padding-bottom:56px;}
 }
 
 @media(max-width:480px){
@@ -499,6 +510,9 @@ function fitCanvas(){
   document.body.classList.toggle('shape-portrait',screenR<0.9);
   document.body.classList.toggle('shape-wide',screenR>1.8);
   document.body.classList.toggle('shape-square',screenR>=0.9&&screenR<=1.8);
+  // 手机 vs 平板判断：小于 600px 宽或小于 500px 高才算手机
+  const isPhone=sw<600||(sw<=768&&sh<500);
+  document.body.classList.toggle('is-phone',isPhone);
 }
 fitCanvas();addEventListener('resize',fitCanvas);
 addEventListener('orientationchange',()=>setTimeout(fitCanvas,100));
@@ -530,7 +544,39 @@ yaBoss1:()=>{sndVoice(rand(280,380),0.14,0.14,1200);},
 yaBoss2:()=>{sndVoice(rand(100,150),0.22,0.18,500);snd(rand(50,80),0.2,'square',0.06);},
 // 黑风老祖：最低沉
 yaBoss3:()=>{sndVoice(rand(55,85),0.3,0.2,300);snd(rand(30,50),0.28,'square',0.08);},
+// 影刹：冷酷尖锐 + 金属质感
+yaBoss4:()=>{sndVoice(rand(400,550),0.08,0.1,2500);snd(rand(800,1200),0.05,'sawtooth',0.04);},
+// 影刹瞬移音效
+yaTeleport:()=>{snd(rand(200,400),0.15,'sine',0.06);snd(rand(600,900),0.1,'sine',0.04);},
 };
+
+// ===== Boss 进化表（5层以后变形态）=====
+// 每个boss在指定层级变身为更强形态：新名字、新外观、新能力
+const BOSS_EVOLUTION={
+  '山贼头目':[
+    {lv:5,name:'赤焰刀鬼',emoji:'🔥',color:'#6b1a0a',accent:'#ff4400',hpMul:1.5,dmgMul:1.4,extraSkill:'fireTrail',skillName:'焰径'},
+    {lv:10,name:'炎魔煞',emoji:'💢',color:'#4a0500',accent:'#ff2200',hpMul:2.0,dmgMul:1.8,extraSkill:'fireTrail',skillName:'业火径'},
+  ],
+  '铁臂熊':[
+    {lv:5,name:'罡铁巨熊',emoji:'🐻‍❄️',color:'#1a3a5a',accent:'#4488ff',hpMul:1.5,dmgMul:1.4,extraSkill:'iceSlam',skillName:'冰震'},
+    {lv:10,name:'玄冰熊王',emoji:'🐻‍❄️',color:'#0a1a3a',accent:'#00aaff',hpMul:2.0,dmgMul:1.8,extraSkill:'iceSlam',skillName:'霜冻震'},
+  ],
+  '黑风老祖':[
+    {lv:5,name:'噬魂老魔',emoji:'💀',color:'#1a0030',accent:'#aa00ff',hpMul:1.5,dmgMul:1.4,extraSkill:'darkNova',skillName:'噬魂'},
+    {lv:10,name:'万魔之祖',emoji:'☠️',color:'#0a0010',accent:'#ff00aa',hpMul:2.0,dmgMul:1.8,extraSkill:'darkNova',skillName:'万魔噬'},
+  ],
+  '影刹':[
+    {lv:5,name:'幻影刺客',emoji:'👤',color:'#0a0a3e',accent:'#00ffaa',hpMul:1.5,dmgMul:1.4,extraSkill:'cloneAttack',skillName:'分身'},
+    {lv:10,name:'虚空影帝',emoji:'🌀',color:'#000020',accent:'#00ffff',hpMul:2.0,dmgMul:1.8,extraSkill:'cloneAttack',skillName:'虚空分身'},
+  ],
+};
+// 获取Boss当前进化形态（返回null表示用原始数据）
+function getBossEvo(templateName,level){
+  const list=BOSS_EVOLUTION[templateName];if(!list)return null;
+  let result=null;
+  for(const e of list){if(level>=e.lv)result=e;}
+  return result;
+}
 
 // ===== 波次 =====
 const WAVES=[
@@ -540,6 +586,8 @@ const WAVES=[
   {name:'无名小贼',type:'mobs',count:2,banner:'第四波'},
   {name:'无名小贼',type:'mobs',count:2,banner:'第五波'},
   {name:'黑风老祖',type:'boss3',banner:'第六波'},
+  {name:'无名小贼',type:'mobs',count:3,banner:'第七波'},
+  {name:'影刹',type:'boss4',banner:'第八波'},
 ];
 
 // ===== 敌人 =====
@@ -548,6 +596,7 @@ const TEMPLATES={
   boss1:{name:'山贼头目',emoji:'🗡️',hp:120,size:22,speed:2.6,color:'#8B4513',accent:'#d4af37',damage:12,attackRange:48,attackCD:55,movePattern:'chase',killGold:100},
   boss2:{name:'铁臂熊',emoji:'🐻',hp:250,size:34,speed:1.5,color:'#4a2a1a',accent:'#8B4513',damage:22,attackRange:68,attackCD:85,movePattern:'slam',killGold:500},
   boss3:{name:'黑风老祖',emoji:'👹',hp:420,size:48,speed:1.1,color:'#2a0a0a',accent:'#b43228',damage:30,attackRange:88,attackCD:72,movePattern:'complex',killGold:1000},
+  boss4:{name:'影刹',emoji:'🥷',hp:350,size:26,speed:3.2,color:'#1a1a2e',accent:'#9333ea',damage:26,attackRange:52,attackCD:48,movePattern:'shadow',killGold:800},
 };
 
 // ===== 武器 =====
@@ -600,6 +649,10 @@ const BOSS2_DEATH_LINES=['嗷——！！','我的铁臂……竟然……'];
 // 黑风老祖最嚣张
 const BOSS3_TAUNTS=['你是来找死的吗？','愚蠢的蝼蚁！','本座纵横江湖数十年，你算什么？','哈哈哈你让我想起了当年的自己——不过是个笑话！','跪下，本座或许赏你个全尸！','你以为打败前面那些废物就能挑战本座了？天真！'];
 const BOSS3_DEATH_LINES=['不可能……本座怎么会……你不过是……','这不可能！！本座乃黑风老祖！！','后会有期……小子……']
+
+// 影刹——冷酷忍者
+const BOSS4_TAUNTS=['你甚至看不见我的影子。','太慢了。','你的剑法全是破绽。','我已经在你的身后了。','影子不会原谅你。','下一刀，就是最后一刀。','你以为你在追我？可笑。','我的刀锋已经舔过你的呼吸。'];
+const BOSS4_DEATH_LINES=['我的影子……竟然被看穿了……','不可能……我明明……已经在身后了……','这一刀……我认了。'];
 
 // ===== 玩家 =====
 const player={
@@ -962,16 +1015,27 @@ function startWave(){
   inBreak=false;gameState='battle';document.getElementById('break-panel').classList.remove('show');closeShop();
   const cfg=WAVES[currentWave];enemies=[];
   const banner=document.getElementById('wave-banner');
+  // 显示进化后的Boss名字
+  let displayName=cfg.name;
+  if(cfg.type!=='mobs'){const evo=getBossEvo(cfg.name,currentLevel);if(evo)displayName=evo.name;}
   document.getElementById('wave-num').textContent='第'+currentLevel+'层 · '+cfg.banner;
-  document.getElementById('wave-name').textContent=cfg.name+(currentLevel>1?' Lv'+currentLevel:'');
+  document.getElementById('wave-name').textContent=displayName+(currentLevel>1?' Lv'+currentLevel:'');
   banner.classList.add('show');setTimeout(()=>banner.classList.remove('show'),2200);
   if(cfg.type==='mobs'){for(let i=0;i<cfg.count;i++)enemies.push(createEnemy(TEMPLATES.mob,TEMPLE.x+(i-cfg.count/2+0.5)*60,TEMPLE.y+40));}
-  else{enemies.push(createEnemy(TEMPLATES[cfg.type],TEMPLE.x,TEMPLE.y+40));}
+  else{
+    // 每过一层 Boss数量+1：第1层1个，第2层2个，以此类推
+    const bossCount=Math.min(currentLevel,4);
+    const tmpl=TEMPLATES[cfg.type];
+    for(let i=0;i<bossCount;i++){
+      const ox=(i-(bossCount-1)/2)*100;
+      enemies.push(createEnemy(tmpl,TEMPLE.x+ox,TEMPLE.y+40));
+    }
+  }
   // Boss出场喊话
   const firstEnemy=enemies[0];
   if(firstEnemy&&firstEnemy.taunts){
     setTimeout(()=>{
-      const intro={boss1:'哈哈哈！又来送死的！',boss2:'想过去？先过我这关。',boss3:'你是来找死的吗？'};
+      const intro={boss1:'哈哈哈！又来送死的！',boss2:'想过去？先过我这关。',boss3:'你是来找死的吗？',boss4:'你看不见我的影子。'};
       const introLine=intro[firstEnemy.templateType]||'';
       if(introLine)floatTexts.push({x:firstEnemy.x,y:firstEnemy.y-firstEnemy.size-20,text:introLine,color:firstEnemy.tauntColor||'#ff6622',life:120,vy:-0.3,fontSize:17});
       firstEnemy.speaking=90;
@@ -987,13 +1051,21 @@ function createEnemy(tmpl,x,y){
   const spMul=1+(lv-1)*0.08;
   const goldMul=1+(lv-1)*0.3;
   const isMob=tmpl.name==='无名小贼';
+  // Boss进化检查
+  const evo=!isMob?getBossEvo(tmpl.name,lv):null;
+  const baseName=evo?evo.name:tmpl.name;
+  const displayName=lv>1?baseName+' Lv'+lv:baseName;
+  const finalHpMul=evo?hpMul*evo.hpMul:hpMul;
+  const finalDmgMul=evo?dmgMul*evo.dmgMul:dmgMul;
   const e={...tmpl,
-    name:lv>1?tmpl.name+' Lv'+lv:tmpl.name,
-    hp:Math.round(tmpl.hp*hpMul),maxHp:Math.round(tmpl.hp*hpMul),
-    damage:Math.round(tmpl.damage*dmgMul),
+    name:displayName,
+    hp:Math.round(tmpl.hp*finalHpMul),maxHp:Math.round(tmpl.hp*finalHpMul),
+    damage:Math.round(tmpl.damage*finalDmgMul),
     speed:tmpl.speed*spMul,
     killGold:Math.round(tmpl.killGold*goldMul),
     x,y,vx:0,vy:0,state:'idle',stateTimer:0,attackTimer:tmpl.attackCD,hitFlash:0,projectiles:[],shockwaves:[],phase:0,templateType:tmpl.name};
+  // 应用进化外观
+  if(evo){e.emoji=evo.emoji;e.color=evo.color;e.accent=evo.accent;e.evoSkill=evo.extraSkill;e.evoSkillName=evo.skillName;}
   // 小贼会说话
   if(isMob){
     e.tauntCD=rand(60,180);
@@ -1003,6 +1075,7 @@ function createEnemy(tmpl,x,y){
   if(tmpl.name==='山贼头目'){e.tauntCD=rand(80,160);e.tauntTimer=0;e.taunts=BOSS1_TAUNTS;e.deathLines=BOSS1_DEATH_LINES;e.tauntColor='#ff6622';}
   if(tmpl.name==='铁臂熊'){e.tauntCD=rand(100,200);e.tauntTimer=0;e.taunts=BOSS2_TAUNTS;e.deathLines=BOSS2_DEATH_LINES;e.tauntColor='#cc4422';}
   if(tmpl.name==='黑风老祖'){e.tauntCD=rand(120,240);e.tauntTimer=0;e.taunts=BOSS3_TAUNTS;e.deathLines=BOSS3_DEATH_LINES;e.tauntColor='#b43228';}
+  if(tmpl.name==='影刹'){e.tauntCD=rand(90,180);e.tauntTimer=0;e.taunts=BOSS4_TAUNTS;e.deathLines=BOSS4_DEATH_LINES;e.tauntColor='#9333ea';}
   if(isMob){e.taunts=MOB_TAUNTS;e.deathLines=MOB_DEATH_LINES;e.tauntColor='#ffaa44';}
   return e;
 }
@@ -1093,6 +1166,55 @@ function updateEnemies(){
       }
       if(e.state==='slam'){if(e.stateTimer===40){e.shockwaves.push({x:e.x,y:e.y,r:0,maxR:e.attackRange+80,life:35});if(e.phase>=1)setTimeout(()=>{if(e&&e.hp>0)e.shockwaves.push({x:e.x,y:e.y,r:0,maxR:e.attackRange+60,life:30});},200);screenShake=15;SFX.hit();}if(e.stateTimer>60){e.state='idle';e.stateTimer=0;}}
     }
+    else if(e.movePattern==='shadow'){
+      // 影刹：瞬移忍者 AI
+      e.phase=Math.floor((1-e.hp/e.maxHp)*3); // 0-2 三阶段
+      if(e.state==='idle'){
+        if(d>200){e.state='dash';e.stateTimer=0;}
+        else{const r=Math.random();if(r<0.4){e.state='teleport';e.stateTimer=0;SFX.yaBoss4();}else if(r<0.7){e.state='shadowShot';e.stateTimer=0;SFX.yaBoss4();}else{e.state='dash';e.stateTimer=0;}}
+      }
+      // 瞬移突袭：消失 → 出现在玩家身后 → 斩击
+      if(e.state==='teleport'){
+        if(e.stateTimer===10){
+          e.x=player.x+Math.cos(a+Math.PI)*80;e.y=player.y+Math.sin(a+Math.PI)*80;
+          e.x=clamp(e.x,e.size,W-e.size);e.y=clamp(e.y,e.size,H-e.size);
+          SFX.yaTeleport();
+          for(let i=0;i<8;i++)particles.push({x:e.x,y:e.y,vx:rand(-3,3),vy:rand(-3,3),life:rand(15,25),size:rand(2,4),color:'#9333ea'});
+        }
+        if(e.stateTimer===18){
+          // 斩击
+          if(dist(e,player)<e.attackRange+10){hitPlayer(e.damage);}
+          slashes.push({x:e.x,y:e.y,angle:ang(e,player),arc:Math.PI*0.4,life:12,color:'#9333ea'});
+          screenShake=8;SFX.slash();
+        }
+        if(e.stateTimer>35){e.state='idle';e.stateTimer=0;e.attackTimer=60;}
+      }
+      // 暗影弹：散射 5 发扇形
+      if(e.state==='shadowShot'){
+        if(e.stateTimer===15){
+          const numBullets=5+e.phase*2;
+          for(let i=0;i<numBullets;i++){
+            const sa=a+(i-(numBullets-1)/2)*0.18;
+            e.projectiles.push({x:e.x,y:e.y,vx:Math.cos(sa)*5,vy:Math.sin(sa)*5,r:7,life:120,damage:e.damage*0.5});
+          }
+          SFX.arrow();
+        }
+        if(e.stateTimer>40){e.state='idle';e.stateTimer=0;e.attackTimer=80;}
+      }
+      // 快速冲撞（正常移动用）
+      if(e.state==='dash'){
+        const sp=e.speed*(1+e.phase*0.2);
+        e.x+=Math.cos(a)*sp;e.y+=Math.sin(a)*sp;
+        if(d<e.attackRange&&e.attackTimer<=0){
+          // 近身快斩
+          if(dist(e,player)<e.attackRange+8){hitPlayer(e.damage*0.8);}
+          slashes.push({x:e.x,y:e.y,angle:a,arc:Math.PI*0.3,life:8,color:'#9333ea'});
+          SFX.slash();
+          e.attackTimer=e.attackCD;
+        }
+        if(e.stateTimer>50){e.state='idle';e.stateTimer=0;}
+      }
+    }
     // 接触伤害
     if(!frozen)if(d<e.size+player.r-4&&(e.state==='chase'||e.state==='attack')){if(player.invuln<=0&&player.buffs.invuln<=0)hitPlayer(e.damage*0.5);}
     } // end if(!frozen)
@@ -1100,6 +1222,48 @@ function updateEnemies(){
     if(!frozen)e.projectiles=e.projectiles.filter(p=>{p.x+=p.vx;p.y+=p.vy;p.life--;if(p.life<=0||p.x<-20||p.x>W+20||p.y<-20||p.y>H+20)return false;if(dist(p,player)<player.r+p.r){hitPlayer(p.damage);return false;}return true;});
     // 冲击波 - 冰冻时暂停
     if(!frozen)e.shockwaves=e.shockwaves.filter(s=>{s.r+=(s.maxR-s.r)*0.08;s.life--;if(s.life<=0)return false;if(s.life>15){const dd=dist(s,player);if(Math.abs(dd-s.r)<player.r+10){hitPlayer(e.damage);return false;}}return true;});
+    // ===== Boss进化技能 =====
+    if(!frozen&&e.evoSkill){
+      e.evoTimer=(e.evoTimer||0)+1;
+      // 焰径：移动时留下火焰粒子，踩到掉血
+      if(e.evoSkill==='fireTrail'&&e.evoTimer%8===0){
+        e.fireTrails=e.fireTrails||[];
+        e.fireTrails.push({x:e.x,y:e.y,r:20,life:60,damage:e.damage*0.3});
+      }
+      // 冰震：每6秒释放冰圈，范围比普通震波大
+      if(e.evoSkill==='iceSlam'&&e.evoTimer%360===0&&e.hp<e.maxHp*0.7){
+        e.shockwaves.push({x:e.x,y:e.y,r:0,maxR:e.attackRange+120,life:40});
+        screenShake=12;SFX.hit();
+        // 冰冻减速效果（给玩家短暂减速感）
+        floatTexts.push({x:e.x,y:e.y-e.size-15,text:e.evoSkillName+'！',color:'#00aaff',life:60,vy:-0.8,fontSize:18});
+      }
+      // 噜魂：每5秒范围吸取，回血+对玩家伤害
+      if(e.evoSkill==='darkNova'&&e.evoTimer%300===0&&e.hp<e.maxHp*0.6){
+        const novaR=150;
+        if(dist(e,player)<novaR){hitPlayer(e.damage*0.5);}
+        e.hp=Math.min(e.maxHp,e.hp+e.maxHp*0.03);
+        for(let i=0;i<12;i++)particles.push({x:e.x,y:e.y,vx:rand(-4,4),vy:rand(-4,4),life:rand(20,35),size:rand(3,5),color:'#aa00ff'});
+        floatTexts.push({x:e.x,y:e.y-e.size-15,text:e.evoSkillName+'！',color:'#aa00ff',life:60,vy:-0.8,fontSize:18});
+        screenShake=10;
+      }
+      // 分身：每8秒生成一个幻影冲向玩家
+      if(e.evoSkill==='cloneAttack'&&e.evoTimer%480===0&&e.hp<e.maxHp*0.5){
+        for(let i=0;i<2;i++){
+          const ca=ang(e,player)+rand(-0.5,0.5);
+          e.projectiles.push({x:e.x,y:e.y,vx:Math.cos(ca)*6,vy:Math.sin(ca)*6,r:10,life:80,damage:e.damage*0.4});
+        }
+        floatTexts.push({x:e.x,y:e.y-e.size-15,text:e.evoSkillName+'！',color:'#00ffff',life:60,vy:-0.8,fontSize:18});
+      }
+    }
+    // 火焰径渲染 + 碰撞
+    if(e.fireTrails){
+      e.fireTrails=e.fireTrails.filter(ft=>{
+        ft.life--;ft.r*=0.98;
+        if(ft.life<=0)return false;
+        if(!frozen&&dist(ft,player)<ft.r+player.r){hitPlayer(ft.damage);}
+        return true;
+      });
+    }
     e.x=clamp(e.x,e.size,W-e.size);e.y=clamp(e.y,e.size,H-e.size);
   });
   updateEnemyHP();
@@ -1435,6 +1599,39 @@ function drawEnemy(e){
   }
   if(e.state==='slam'&&e.stateTimer<40){const c=e.stateTimer/40;ctx.strokeStyle=`rgba(180,50,40,${c})`;ctx.lineWidth=3;ctx.setLineDash([5,5]);ctx.beginPath();ctx.arc(e.x,e.y,e.size+8+c*15,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);}
   if(e.state==='shoot'&&e.stateTimer<15){ctx.strokeStyle='rgba(180,50,40,0.35)';ctx.lineWidth=2;const a2=ang(e,player);ctx.beginPath();ctx.moveTo(e.x,e.y);ctx.lineTo(e.x+Math.cos(a2)*120,e.y+Math.sin(a2)*120);ctx.stroke();}
+  // 影刹特效
+  if(e.templateType==='影刹'){
+    // 紫色残影光环
+    ctx.shadowColor='#9333ea';ctx.shadowBlur=16;
+    ctx.strokeStyle='rgba(147,51,234,0.5)';ctx.lineWidth=2;ctx.beginPath();ctx.arc(e.x,e.y,e.size+6,0,Math.PI*2);ctx.stroke();
+    ctx.shadowBlur=0;
+    // 瞬移预警：闪烁
+    if(e.state==='teleport'&&e.stateTimer<10){
+      ctx.fillStyle=`rgba(147,51,234,${0.6-e.stateTimer*0.06})`;ctx.beginPath();ctx.arc(e.x,e.y,e.size+12,0,Math.PI*2);ctx.fill();
+    }
+    // 暗影弹蓄力：紫色光圈
+    if(e.state==='shadowShot'&&e.stateTimer<15){
+      const c=e.stateTimer/15;
+      ctx.strokeStyle=`rgba(147,51,234,${c})`;ctx.lineWidth=4;ctx.beginPath();ctx.arc(e.x,e.y,e.size+c*20,0,Math.PI*2);ctx.stroke();
+    }
+  }
+  // 进化Boss光环
+  if(e.evoSkill){
+    ctx.shadowColor=e.accent;ctx.shadowBlur=20;
+    ctx.strokeStyle=`rgba(${e.evoSkill==='fireTrail'?'255,68,0':e.evoSkill==='iceSlam'?'0,170,255':e.evoSkill==='darkNova'?'170,0,255':'0,255,255'},0.4)`;
+    ctx.lineWidth=3;ctx.beginPath();ctx.arc(e.x,e.y,e.size+10,0,Math.PI*2);ctx.stroke();
+    ctx.shadowBlur=0;
+    // 火焰径渲染
+    if(e.fireTrails){
+      e.fireTrails.forEach(ft=>{
+        const a=ft.life/60;
+        ctx.fillStyle=`rgba(255,${Math.round(100*a)},0,${a*0.6})`;
+        ctx.beginPath();ctx.arc(ft.x,ft.y,ft.r,0,Math.PI*2);ctx.fill();
+        ctx.fillStyle=`rgba(255,200,0,${a*0.3})`;
+        ctx.beginPath();ctx.arc(ft.x,ft.y,ft.r*0.6,0,Math.PI*2);ctx.fill();
+      });
+    }
+  }
   ctx.font='bold 10px sans-serif';ctx.fillStyle=e.accent;ctx.textAlign='center';ctx.fillText(e.name,e.x,e.y-e.size-5);
   // 说话时冒出气泡图标
   if(e.speaking>0){
