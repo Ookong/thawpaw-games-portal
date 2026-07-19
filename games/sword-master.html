@@ -1861,7 +1861,7 @@ updatePlayer=function(){
 setupTouchControls();
 
 // ===== PAGE SYSTEM =====
-const SM_RATE=50;
+const SM_RATE=200;
 function smGetKey(){const id=localStorage.getItem('thawpawActiveId')||'default';return 'sword_master_save_'+id;}
 function smLoadSave(){try{const d=JSON.parse(localStorage.getItem(smGetKey()));return d||{coins:0,seals:0,highestLevel:1};}catch(e){return{coins:0,seals:0,highestLevel:1};}}
 function smSaveSave(){localStorage.setItem(smGetKey(),JSON.stringify(smSave));}
