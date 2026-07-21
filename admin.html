@@ -776,9 +776,7 @@ function loadActivity(){
         '<div style="flex:1">' +
           '<div class="fb-content" style="font-size:.9rem">' + escapeHtml(a.message) + '</div>' +
           '<div class="fb-header" style="margin-top:4px">' +
-            '<span class="mono">' + escapeHtml(a.playerId) + '</span>' +
-            '<span>·</span>' +
-            '<span>' + escapeHtml(a.nickname) + '</span>' +
+            '<span class="mono">' + escapeHtml(a.playerId) + ' ' + escapeHtml(a.nickname) + '</span>' +
             roleBadge +
             '<span style="margin-left:auto">' + time + '</span>' +
           '</div>' +
