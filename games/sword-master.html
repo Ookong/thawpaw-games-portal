@@ -110,25 +110,32 @@ canvas{display:block;width:100%;height:100%;box-shadow:0 0 40px rgba(180,50,40,0
 .sm-profile-info .nickname{font-weight:600;font-size:15px;color:#e8d8b0;}
 .sm-settings-btn{cursor:pointer;font-size:18px;opacity:0.7;transition:opacity .2s;}
 .sm-settings-btn:hover{opacity:1;}
-.sm-home-content{flex:1;display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;padding:12px;padding-bottom:64px;min-height:calc(100% - 56px);}
+.sm-home-content{flex:1;display:grid;grid-template-columns:1fr 2fr 1fr;gap:8px;padding:12px;padding-bottom:64px;min-height:calc(100% - 56px);}
 .sm-home-content .col{display:flex;flex-direction:column;gap:8px;}
+/* 左区：当前武器 */
 .sm-col-left{justify-content:center;align-items:center;}
+.sm-display-card{background:rgba(20,12,8,0.6);border:1px solid rgba(212,175,55,0.2);border-radius:12px;padding:20px;text-align:center;width:100%;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;}
+.sm-display-card .preview{width:80px;height:80px;background:rgba(180,50,40,0.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:44px;border:2px solid rgba(212,175,55,0.3);}
+.sm-display-card .label{font-size:13px;color:#a08060;}
+.sm-display-card .value{font-size:14px;font-weight:600;color:#e8d8b0;}
+/* 中区：上下平分 */
+.sm-col-mid{gap:8px;}
+.sm-mid-top{flex:1;display:flex;}
+.sm-mid-top .sm-play-card{width:100%;}
 .sm-play-card{background:linear-gradient(135deg,rgba(180,50,40,0.2),rgba(120,30,25,0.15));border:2px solid rgba(180,50,40,0.4);border-radius:12px;padding:20px 12px;text-align:center;cursor:pointer;transition:transform .15s,box-shadow .15s;width:100%;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;}
 .sm-play-card:hover{transform:scale(1.03);box-shadow:0 0 16px rgba(180,50,40,.3);}
 .sm-play-card .icon{font-size:40px;}
 .sm-play-card .title{font-weight:700;font-size:16px;color:#d4af37;letter-spacing:2px;}
 .sm-play-card .sub{font-size:11px;color:#a08060;line-height:1.4;}
-.sm-col-lc{justify-content:center;align-items:center;}
-.sm-display-card{background:rgba(20,12,8,0.6);border:1px solid rgba(212,175,55,0.2);border-radius:12px;padding:20px;text-align:center;width:100%;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;}
-.sm-display-card .preview{width:80px;height:80px;background:rgba(180,50,40,0.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:44px;border:2px solid rgba(212,175,55,0.3);}
-.sm-display-card .label{font-size:13px;color:#a08060;}
-.sm-display-card .value{font-size:14px;font-weight:600;color:#e8d8b0;}
-.sm-col-rc{gap:8px;}
-.sm-mode-card{background:rgba(20,12,8,0.6);border:1px solid rgba(212,175,55,0.15);border-radius:12px;padding:16px;text-align:center;cursor:pointer;transition:transform .15s,box-shadow .15s;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;}
+.sm-mid-bottom{flex:1;display:flex;gap:8px;}
+.sm-mid-bottom .sm-half{flex:1;}
+.sm-mode-card{background:rgba(20,12,8,0.6);border:1px solid rgba(212,175,55,0.15);border-radius:12px;padding:16px;text-align:center;cursor:pointer;transition:transform .15s,box-shadow .15s;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;width:100%;height:100%;}
 .sm-mode-card:hover{transform:scale(1.03);box-shadow:0 0 12px rgba(212,175,55,.2);border-color:rgba(212,175,55,0.4);}
 .sm-mode-card .icon{font-size:32px;}
 .sm-mode-card .name{font-weight:600;font-size:14px;color:#e8d8b0;}
 .sm-mode-card .desc{font-size:11px;color:#a08060;}
+.sm-empty-card{background:rgba(20,12,8,0.3);border:1px dashed rgba(212,175,55,0.12);border-radius:12px;flex:1;width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:13px;color:#555;}
+/* 右区 */
 .sm-col-right{gap:8px;}
 .sm-col-right .top-row{display:flex;gap:6px;}
 .sm-col-right .top-row .mini-card{flex:1;background:rgba(20,12,8,0.6);border:1px solid rgba(212,175,55,0.15);border-radius:12px;padding:10px;text-align:center;cursor:pointer;font-size:12px;font-weight:600;color:#e8d8b0;transition:transform .15s;}
@@ -169,7 +176,7 @@ canvas{display:block;width:100%;height:100%;box-shadow:0 0 40px rgba(180,50,40,0
 /* 竖屏手机：canvas 缩放后 UI 更紧凑 */
 body.shape-portrait #shop-panel{width:200px;right:4px;font-size:12px;}
 body.shape-portrait .sm-home-content{grid-template-columns:1fr 1fr;gap:6px;padding:6px;padding-bottom:68px;}
-body.shape-portrait:not(.is-phone) .sm-home-content{grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;padding:10px;padding-bottom:64px;}
+body.shape-portrait:not(.is-phone) .sm-home-content{grid-template-columns:1fr 2fr 1fr;gap:8px;padding:10px;padding-bottom:64px;}
 body.shape-portrait:not(.is-phone) .sm-play-card{padding:16px 8px;}
 body.shape-portrait:not(.is-phone) .sm-play-card .icon{font-size:36px;}
 body.shape-portrait:not(.is-phone) .sm-display-card{padding:14px;}
@@ -205,14 +212,13 @@ body.shape-square .sm-home-content{max-width:100%;}
 @media(max-width:600px){
 .sm-home-content{grid-template-columns:1fr 1fr;gap:6px;padding:8px;padding-bottom:64px;}
 .sm-play-card{padding:14px 8px;}.sm-play-card .icon{font-size:32px;}
-.sm-display-card{padding:14px;}.sm-display-card .preview{width:60px;height:60px;font-size:32px;}
 .sm-levels-grid{grid-template-columns:repeat(auto-fill,minmax(100px,1fr));}
 .sm-enhance-grid{grid-template-columns:1fr;}
 #shop-panel{width:220px;}
 }
 
 @media(max-width:600px) and (max-height:500px){
-.sm-home-content{grid-template-columns:1fr 1fr 1fr 1fr;gap:4px;padding:4px;padding-bottom:56px;}
+.sm-home-content{grid-template-columns:1fr 2fr 1fr;gap:4px;padding:4px;padding-bottom:56px;}
 }
 
 @media(max-width:480px){
@@ -261,39 +267,44 @@ body.shape-square .sm-home-content{max-width:100%;}
     <span class="sm-settings-btn" onclick="alert('设置建设中 ⚙️')">⚙️</span>
   </div>
   <div class="sm-home-content">
+    <!-- 左区：当前武器 -->
     <div class="col sm-col-left">
-      <div class="sm-play-card" onclick="smShowPage('levels')">
-        <div class="icon">⛩️</div>
-        <div class="title">开始闯关</div>
-        <div class="sub">选择关卡，闯荡江湖</div>
-      </div>
-    </div>
-    <div class="col sm-col-lc">
       <div class="sm-display-card">
         <div class="preview">🗡️</div>
         <div class="label">当前武器</div>
         <div class="value" id="sm-home-weapon">铁剑</div>
       </div>
     </div>
-    <div class="col sm-col-rc">
-      <div class="sm-mode-card" onclick="smShowPage('enhance')">
-        <div class="icon">⚔️</div>
-        <div class="name">强化</div>
-        <div class="desc">消耗宝印升级装备</div>
+    <!-- 中区：上=关卡，下左=强化，下右=空 -->
+    <div class="col sm-col-mid">
+      <div class="sm-mid-top">
+        <div class="sm-play-card" onclick="smShowPage('levels')">
+          <div class="icon">⛩️</div>
+          <div class="title">开始闯关</div>
+          <div class="sub">已到第<span id="sm-home-highest">1</span>层</div>
+        </div>
       </div>
-      <div class="sm-mode-card" onclick="smShowPage('levels')">
-        <div class="icon">📋</div>
-        <div class="name">关卡</div>
-        <div class="desc">已到第<span id="sm-home-highest">1</span>层</div>
+      <div class="sm-mid-bottom">
+        <div class="sm-half">
+          <div class="sm-mode-card" onclick="smShowPage('enhance')">
+            <div class="icon">⚔️</div>
+            <div class="name">强化</div>
+            <div class="desc">消耗宝印升级装备</div>
+          </div>
+        </div>
+        <div class="sm-half">
+          <div class="sm-empty-card">待定</div>
+        </div>
       </div>
     </div>
+    <!-- 右区：活动 / 福利 / 我的乐园 -->
     <div class="col sm-col-right">
       <div class="top-row">
-        <div class="mini-card" onclick="smOpenBag()"><span class="icon">🏆</span>战绩</div>
-        <div class="mini-card" onclick="smOpenBag()"><span class="icon">📖</span>江湖志</div>
+        <div class="mini-card" onclick="smShowPage('activities')"><span class="icon">🎯</span>活动</div>
+        <div class="mini-card" onclick="smShowPage('welfare')"><span class="icon">🎁</span>福利</div>
       </div>
       <div class="sm-info-panel">
-        <h3>⚔️ 江湖动态</h3>
+        <h3>🎡 我的乐园</h3>
         <div class="info-item">🏆 最高第<span id="sm-home-highest-2">1</span>层</div>
         <div class="info-item">💰 金币 <span id="sm-home-coins-2">0</span></div>
         <div class="info-item">📜 宝印 <span id="sm-home-seals-2">0</span></div>
@@ -340,6 +351,28 @@ body.shape-square .sm-home-content{max-width:100%;}
     <div class="sm-enhance-slot"><div class="placeholder">🔓 待添加</div><div class="hint">ThawPaw 来添加强化项</div></div>
     <div class="sm-enhance-slot"><div class="placeholder">🔓 待添加</div><div class="hint">ThawPaw 来添加强化项</div></div>
     <div class="sm-enhance-slot"><div class="placeholder">🔓 待添加</div><div class="hint">ThawPaw 来添加强化项</div></div>
+  </div>
+</div>
+<!-- ===== ACTIVITIES PAGE ===== -->
+<div id="sm-page-activities" class="sm-page">
+  <a class="sm-back-btn" onclick="smShowPage('home')">←</a>
+  <div style="text-align:center;padding:20px 0 8px;">
+    <div style="font-size:28px;color:#d4af37;font-weight:700;letter-spacing:4px;">🎯 活动</div>
+    <div style="font-size:13px;color:#a08060;margin-top:4px;">参加限时活动，获得丰厚奖励</div>
+  </div>
+  <div class="sm-enhance-grid" id="sm-activities-grid">
+    <div class="sm-enhance-slot"><div class="placeholder">📭</div><div class="hint">活动即将上线，敬请期待</div></div>
+  </div>
+</div>
+<!-- ===== WELFARE PAGE ===== -->
+<div id="sm-page-welfare" class="sm-page">
+  <a class="sm-back-btn" onclick="smShowPage('home')">←</a>
+  <div style="text-align:center;padding:20px 0 8px;">
+    <div style="font-size:28px;color:#d4af37;font-weight:700;letter-spacing:4px;">🎁 福利</div>
+    <div style="font-size:13px;color:#a08060;margin-top:4px;">丰厚福利等你领取</div>
+  </div>
+  <div class="sm-enhance-grid" id="sm-welfare-grid">
+    <div class="sm-enhance-slot"><div class="placeholder">📭</div><div class="hint">福利即将上线，敬请期待</div></div>
   </div>
 </div>
 <!-- ===== BANK MODAL ===== -->
