@@ -324,10 +324,7 @@ body.shape-square .sm-home-content{max-width:100%;}
     <div style="font-size:13px;color:#a08060;margin-top:4px;">💰 金币：<span id="sm-shop-coins">0</span></div>
   </div>
   <div class="sm-enhance-grid" id="sm-shop-grid">
-    <div class="sm-enhance-slot"><div class="placeholder">🔓 待添加</div><div class="hint">ThawPaw 来添加商品</div></div>
-    <div class="sm-enhance-slot"><div class="placeholder">🔓 待添加</div><div class="hint">ThawPaw 来添加商品</div></div>
-    <div class="sm-enhance-slot"><div class="placeholder">🔓 待添加</div><div class="hint">ThawPaw 来添加商品</div></div>
-    <div class="sm-enhance-slot"><div class="placeholder">🔓 待添加</div><div class="hint">ThawPaw 来添加商品</div></div>
+    <!-- 盔甲商品由 smRenderShop() 动态渲染 -->
   </div>
 </div>
 <!-- ===== ENHANCE PAGE ===== -->
@@ -373,6 +370,7 @@ body.shape-square .sm-home-content{max-width:100%;}
       <div>💰 金币：<span id="sm-bag-coins">0</span></div>
       <div>📜 剑客宝印：<span id="sm-bag-seals">0</span></div>
       <div>🏆 最高层数：<span id="sm-bag-highest">1</span></div>
+      <div>🛡️ 当前装备：<span id="sm-bag-armor">无</span></div>
     </div>
   </div>
 </div>
@@ -849,13 +847,64 @@ function killEnemy(e){
   if(e.templateType&&e.templateType.includes('boss')){SFX.win();screenShake=18;floatTexts.push({x:W/2,y:H/2-40,text:'击破！获得变身：'+e.name,color:'#d4af37',life:80,vy:-0.6});player.transforms.push(e.templateType);updateItems();}
   if(enemies.length===0){if(currentWave>=WAVES.length-1)setTimeout(victory,1500);else setTimeout(startBreak,800);}
 }
+let smZhuqueRevives=0; // track朱雀 revives per game
+
+function smGetArmorDef(){const k=smSave.equippedArmor;if(!k)return null;return SM_ARMORS.find(a=>a.key===k)||null;}
+
 function hitPlayer(dmg){
   if(player.invuln>0||player.buffs.invuln>0)return;
-  const realDmg=Math.max(1,Math.round(dmg*getEnemyDamageMult())-player.defense);
-  player.hp-=realDmg;player.invuln=35;screenShake=Math.max(screenShake,8);hitStop=4;SFX.hurt();
-  floatTexts.push({x:player.x,y:player.y-28,text:'-'+realDmg,color:'#ff4444',life:30,vy:-1.3});
-  for(let i=0;i<6;i++)particles.push({x:player.x,y:player.y,vx:rand(-4,4),vy:rand(-4,4),life:rand(10,24),size:rand(2,4),color:'#ff4444'});
-  updatePlayerHP();if(player.hp<=0){player.hp=0;updatePlayerHP();playerDie();}
+  const armor=smGetArmorDef();
+  const armorKey=armor?armor.key:null;
+  let realDmg=Math.max(1,Math.round(dmg*getEnemyDamageMult())-player.defense);
+  let hit=true;
+
+  if(armorKey){
+    // 🥷 夜行衣: even levels = can't be targeted
+    if(armorKey==='yexingyi' && currentLevel%2===0){
+      return; // monsters can't lock on at night
+    }
+    // 🐊 饕餮甲: 50% devour + 2x counter
+    if(armorKey==='taotiejia' && Math.random()<0.5){
+      const counter=getDamage()*2;
+      // Hit nearest enemy
+      let nearest=null,nd=9999;
+      enemies.forEach(e=>{const d=dist(player,e);if(d<nd){nd=d;nearest=e;}});
+      if(nearest){
+        hitEnemy(nearest,counter);
+        floatTexts.push({x:player.x,y:player.y-28,text:'鳄吞噬！'+counter,color:'#ff44ff',life:35,vy:-1.3});
+        // Track random boss if exists
+        const bosses=enemies.filter(e=>e.isBoss);
+        if(bosses.length>0){const tb=bosses[Math.floor(Math.random()*bosses.length)];hitEnemy(tb,counter);floatTexts.push({x:tb.x,y:tb.y-20,text:'追踪!',color:'#ff44ff',life:30,vy:-1});}
+      }
+      hit=false;
+    }
+    // 🐉 青龙甲: 30% blink-dodge + vine + 99% block
+    if(armorKey==='qinglongjia' && Math.random()<0.3){
+      realDmg=1;
+      let nearest=null,nd=9999;
+      enemies.forEach(e=>{const d=dist(player,e);if(d<nd){nd=d;nearest=e;}});
+      if(nearest){const vineDmg=Math.floor(nearest.maxHp*0.1);hitEnemy(nearest,vineDmg);floatTexts.push({x:nearest.x,y:nearest.y-20,text:'藤蔓-'+vineDmg,color:'#44ff44',life:30,vy:-1});}
+      floatTexts.push({x:player.x,y:player.y-28,text:'青龙闪!',color:'#44ff88',life:30,vy:-1.3});
+    }
+  }
+
+  if(hit&&realDmg>0){
+    player.hp-=realDmg;player.invuln=35;screenShake=Math.max(screenShake,8);hitStop=4;SFX.hurt();
+    floatTexts.push({x:player.x,y:player.y-28,text:'-'+realDmg,color:'#ff4444',life:30,vy:-1.3});
+    for(let i=0;i<6;i++)particles.push({x:player.x,y:player.y,vx:rand(-4,4),vy:rand(-4,4),life:rand(10,24),size:rand(2,4),color:'#ff4444'});
+    updatePlayerHP();if(player.hp<=0){
+      // 🔥 朱雀甲: revive twice
+      if(armorKey==='zhuquejia'&&smZhuqueRevives<2){
+        smZhuqueRevives++;
+        player.hp=Math.floor(player.maxHp*0.5);player.invuln=60;
+        enemies.forEach(e=>{const inc=Math.floor(e.maxHp*0.25);e.maxHp+=inc;e.hp+=inc;});
+        floatTexts.push({x:player.x,y:player.y-30,text:'朱雀重生 '+smZhuqueRevives+'/2!',color:'#ff6644',life:50,vy:-1.5});
+        SFX.heal&&SFX.heal();updatePlayerHP();
+        return;
+      }
+      player.hp=0;updatePlayerHP();playerDie();
+    }
+  }
 }
 
 // ===== 道具 =====
@@ -1005,7 +1054,7 @@ function startGame(startLevel){
   const gp=document.getElementById('sm-page-game');gp.classList.add('active');gp.style.display='';
   fitCanvas();
   document.getElementById('screen-title').classList.add('hidden');
-  currentWave=0;currentLevel=startLevel||1;resetPlayer(true);
+  currentWave=0;currentLevel=startLevel||1;resetPlayer(true);smZhuqueRevives=0;
   if(currentLevel>1)player.gold=(currentLevel-1)*300;
   updateGold();updateItems();updatePlayerHP();updateWeaponDisplay();
   document.getElementById('hud').style.display='flex';document.getElementById('bottom-hud').style.display='flex';document.getElementById('hint').style.display='flex';
@@ -1866,8 +1915,82 @@ setupTouchControls();
 
 // ===== PAGE SYSTEM =====
 const SM_RATE=50;
+
+// ===== ARMOR SYSTEM =====
+const SM_ARMORS=[
+  {key:'yexingyi',name:'夜行衣',icon:'🥷',tier:6,
+   desc:'夜晚（偶数层）怪物无法锁定你，但盲打打到也掉血',
+   price:1000,currency:'coins',
+   unlockDesc:'商店直接购买',unlock:()=>true},
+  {key:'taotiejia',name:'饕餮甲',icon:'🐊',tier:5,
+   desc:'随机吞噬敌方攻击，吐出双倍反击，追踪随机Boss',
+   price:4000,currency:'coins',
+   unlockDesc:'商店直接购买',unlock:()=>true},
+  {key:'zhuquejia',name:'朱雀甲',icon:'🔥',tier:4,
+   desc:'可重生两次，每重生一次敌方全体+25%血量',
+   price:1,currency:'seals',costSeals:1,
+   unlockDesc:'通过第3关后解锁，需1剑客宝印',unlock:()=>smSave.highestLevel>=3&&smSave.seals>=1},
+  {key:'baihujia',name:'白虎甲',icon:'🐅',tier:3,
+   desc:'速度额外+3级，速度>5时可召唤5个分身',
+   price:2,currency:'seals',costSeals:2,
+   unlockDesc:'通过第6关后解锁，需2剑客宝印',unlock:()=>smSave.highestLevel>=6&&smSave.seals>=2},
+  {key:'qinglongjia',name:'青龙甲',icon:'🐉',tier:2,
+   desc:'随机闪移躲攻击，藤蔓缠怪减10%最大血，挡99%伤害',
+   price:0,currency:'event',
+   unlockDesc:'🎁 活动获得（ThawPaw安排）',unlock:()=>false},
+];
+
+
+function smRenderShop(){
+  const grid=document.getElementById('sm-shop-grid');if(!grid)return;
+  document.getElementById('sm-shop-coins').textContent=smSave.coins;
+  grid.innerHTML='';
+  SM_ARMORS.forEach(a=>{
+    const owned=!!smSave.ownedArmors[a.key];
+    const equipped=smSave.equippedArmor===a.key;
+    const unlocked=a.unlock();
+    const tierStars='⭐'.repeat(7-a.tier);
+    const el=document.createElement('div');
+    el.className='sm-enhance-slot';
+    el.style.minHeight='120px';
+    let priceText,btnHTML;
+    if(a.currency==='coins'){priceText='💰'+a.price;}
+    else if(a.currency==='seals'){priceText='📜'+a.price+' 宝印';}
+    else{priceText='🎁 活动';}
+    if(equipped){btnHTML='<span style="color:#6db84f;font-weight:700;font-size:12px;">✓ 已装备</span>';}
+    else if(owned){btnHTML=`<button onclick="smEquipArmor('${a.key}')" style="padding:4px 10px;font-size:11px;font-weight:700;background:#4676a0;color:#fff;border:none;border-radius:5px;cursor:pointer;">装备</button>`;}
+    else if(!unlocked){btnHTML=`<span style="color:#888;font-size:10px;">🔒 ${a.unlockDesc}</span>`;}
+    else{
+      const canAfford=a.currency==='coins'?smSave.coins>=a.price:(a.currency==='seals'&&smSave.seals>=(a.costSeals||0));
+      btnHTML=`<button onclick="smBuyArmor('${a.key}')" ${canAfford?'':'disabled'} style="padding:4px 10px;font-size:11px;font-weight:700;background:linear-gradient(135deg,#d4af37,#a08020);color:#fff;border:none;border-radius:5px;cursor:pointer;">${a.currency==='coins'?'💰'+a.price:a.currency==='seals'?'📜'+(a.costSeals||a.price)+'宝印':'兑换'}</button>`;
+    }
+    el.innerHTML=`
+      <div style="font-size:32px;margin-bottom:2px;">${a.icon}</div>
+      <div style="font-size:13px;font-weight:700;color:#e8d8b0;">${a.name}</div>
+      <div style="font-size:9px;color:#d4af37;margin-bottom:2px;">${tierStars}</div>
+      <div style="font-size:10px;color:#a08060;line-height:1.3;margin-bottom:4px;">${a.desc}</div>
+      ${btnHTML}
+    `;
+    if(!unlocked&&!owned)el.style.opacity='0.5';
+    grid.appendChild(el);
+  });
+}
+function smBuyArmor(key){
+  const a=SM_ARMORS.find(x=>x.key===key);if(!a)return;
+  if(!a.unlock())return;
+  if(smSave.ownedArmors[key])return;
+  if(a.currency==='coins'&&smSave.coins<a.price)return;
+  if(a.currency==='seals'){const c=a.costSeals||a.price;if(smSave.seals<c)return;smSave.seals-=c;}
+  if(a.currency==='coins')smSave.coins-=a.price;
+  smSave.ownedArmors[key]=true;smSave.equippedArmor=key;smSaveSave();
+  smRenderShop();smUpdateHome();
+}
+function smEquipArmor(key){
+  if(!smSave.ownedArmors[key])return;
+  smSave.equippedArmor=key;smSaveSave();smRenderShop();smUpdateHome();
+}
 function smGetKey(){const id=localStorage.getItem('thawpawActiveId')||'default';return 'sword_master_save_'+id;}
-function smLoadSave(){try{const d=JSON.parse(localStorage.getItem(smGetKey()));return d||{coins:0,seals:0,highestLevel:1};}catch(e){return{coins:0,seals:0,highestLevel:1};}}
+function smLoadSave(){try{const d=JSON.parse(localStorage.getItem(smGetKey()));if(!d)d={};return{coins:d.coins||0,seals:d.seals||0,highestLevel:d.highestLevel||1,ownedArmors:d.ownedArmors||{},equippedArmor:d.equippedArmor||null};}catch(e){return{coins:0,seals:0,highestLevel:1,ownedArmors:{},equippedArmor:null};}}
 function smSaveSave(){localStorage.setItem(smGetKey(),JSON.stringify(smSave));}
 let smSave=smLoadSave();
 function smGetNick(){try{const id=localStorage.getItem('thawpawActiveId');if(id){const ps=JSON.parse(localStorage.getItem('thawpawPlayers')||'{}');if(ps[id]&&ps[id].nickname)return ps[id].nickname;}}catch(e){}return'少年剑客';}
@@ -1877,7 +2000,7 @@ function smShowPage(name){
   if(name==='home')smUpdateHome();
   if(name==='levels')smRenderLevels();
   if(name==='enhance')document.getElementById('sm-enhance-seals').textContent=smSave.seals;
-  if(name==='shop')document.getElementById('sm-shop-coins').textContent=smSave.coins;
+  if(name==='shop')smRenderShop();
 }
 function smGoHome(){
   if(gameState==='battle'||gameState==='break'||gameState==='clear'){smSave.coins+=player.gold;if(currentLevel>smSave.highestLevel)smSave.highestLevel=currentLevel;smSaveSave();}
@@ -1910,7 +2033,7 @@ function smRenderLevels(){
   }
 }
 function smOpenBank(){document.getElementById('sm-bank-coins').textContent=smSave.coins;document.getElementById('sm-bank-seals').textContent=smSave.seals;document.getElementById('sm-exchange-input').max=Math.floor(smSave.coins/SM_RATE);document.getElementById('sm-modal-bank').classList.add('show');}
-function smOpenBag(){document.getElementById('sm-bag-coins').textContent=smSave.coins;document.getElementById('sm-bag-seals').textContent=smSave.seals;document.getElementById('sm-bag-highest').textContent=smSave.highestLevel;document.getElementById('sm-modal-bag').classList.add('show');}
+function smOpenBag(){document.getElementById('sm-bag-coins').textContent=smSave.coins;document.getElementById('sm-bag-seals').textContent=smSave.seals;document.getElementById('sm-bag-highest').textContent=smSave.highestLevel;const a=smGetArmorDef();document.getElementById('sm-bag-armor').textContent=a?(a.icon+' '+a.name):'无';document.getElementById('sm-modal-bag').classList.add('show');}
 function smCloseModal(n){document.getElementById('sm-modal-'+n).classList.remove('show');}
 function smDoExchange(){const amt=parseInt(document.getElementById('sm-exchange-input').value)||0;if(amt<=0)return;const cost=amt*SM_RATE;if(smSave.coins<cost)return;smSave.coins-=cost;smSave.seals+=amt;smSaveSave();smOpenBank();smUpdateHome();}
 smShowPage('home');
