@@ -118,8 +118,7 @@ a{color:#aa88ff;}
 .action-btn.secondary{background:var(--card2);color:var(--text);}
 
 /* ===== GAME PAGE ===== */
-.game-page{align-items:stretch;justify-content:flex-start;position:relative;background:#0a0a14;flex-direction:column;transition:background .3s;}
-#page-game.day{background:#d0d0d0;}
+.game-page{align-items:stretch;justify-content:flex-start;position:relative;background:#0a0a14;flex-direction:column;}
 .game-page canvas{border-radius:8px;background:#0a0a14;}
 .game-page .game-back{position:absolute;top:10px;left:10px;cursor:pointer;font-size:22px;z-index:10;background:rgba(10,10,20,.6);padding:4px 10px;border-radius:8px;}
 .game-page .game-exit{position:absolute;top:10px;right:10px;cursor:pointer;font-size:13px;z-index:10;background:rgba(170,68,68,.4);padding:5px 12px;border-radius:8px;color:#ffaaaa;font-weight:600;}
@@ -300,24 +299,6 @@ body.solo-touch #joystickP2{display:none;}
 .cat-item .item-name{font-size:13px;font-weight:600;margin-bottom:4px;}
 .cat-item .item-desc{font-size:11px;color:var(--text2);margin-bottom:4px;min-height:14px;}
 .cat-item .item-price{font-size:12px;color:var(--gold);font-weight:700;}
-/* Armor shop items */
-.cat-item-armor{padding:12px;border:1.5px solid #2a2a3e;border-radius:10px;}
-.cat-item-armor.locked{opacity:.5;filter:grayscale(.5);}
-.armor-row{display:flex;gap:10px;align-items:flex-start;}
-.armor-icon-lg{font-size:36px;flex-shrink:0;}
-.armor-info{flex:1;min-width:0;}
-.armor-name-row{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:3px;}
-.armor-tier{font-size:10px;white-space:nowrap;}
-.armor-desc{font-size:11px;line-height:1.4;margin-bottom:6px;}
-.armor-price-row{display:flex;align-items:center;justify-content:space-between;gap:8px;}
-.armor-status{font-size:11px;font-weight:600;padding:3px 8px;border-radius:5px;}
-.armor-status.equipped{color:#66ff66;background:rgba(50,255,50,.12);}
-.armor-status.locked{color:#ff6644;background:rgba(255,80,50,.08);}
-.armor-btn{border:none;border-radius:6px;padding:4px 14px;font-size:12px;font-weight:700;cursor:pointer;transition:transform .1s;}
-.armor-btn.buy{background:linear-gradient(135deg,#aa44ff,#ff6688);color:#fff;}
-.armor-btn.buy:hover{transform:scale(1.05);}
-.armor-btn.equip{background:#2a6a4a;color:#66ff66;border:1px solid #4a8a6a;}
-.armor-btn.equip:hover{background:#3a7a5a;}
 .cat-empty{padding:40px 20px;text-align:center;color:var(--text2);font-size:13px;grid-column:1/-1;}
 
 /* ===== MORE MODES ===== */
@@ -376,10 +357,8 @@ body.solo-touch #joystickP2{display:none;}
         <div class="level-bar-wrap"><div class="level-bar" id="home-level-bar"></div></div>
       </div>
     </div>
-    <div class="home-currency-bubble">💰 <span id="home-gold">0</span></div>
     <div class="home-currency-bubble">🗺️ <span id="home-maps">0</span></div>
     <div class="home-currency-bubble">💥 <span id="home-booms">0</span></div>
-    <div class="home-currency-bubble" id="home-seal-bubble" style="display:none">📜 <span id="home-seals">0</span></div>
     <div class="settings-btn" onclick="event.stopPropagation();openSettings()" title="设置">⚙️</div>
   </div>
 
@@ -713,31 +692,19 @@ const FOV_RADIUS = 6;
 const TILE = 24;
 
 const MONSTER_TYPES = [
-  { name:'Slime',         emoji:'🟢', color:'#44cc44', hp:6,  atk:2, def:0, xp:3, element:'grass' },
-  { name:'Rat',           emoji:'🐀', color:'#888888', hp:8,  atk:3, def:0, xp:4, element:'normal' },
-  { name:'Bat',           emoji:'🦇', color:'#9966cc', hp:10, atk:4, def:1, xp:5, element:'dark' },
-  { name:'Goblin',        emoji:'👺', color:'#44aa44', hp:14, atk:5, def:1, xp:7, element:'grass' },
-  { name:'Skeleton',      emoji:'💀', color:'#ddddcc', hp:18, atk:6, def:2, xp:9, element:'dark' },
-  { name:'Spider',        emoji:'🕷️', color:'#222244', hp:22, atk:7, def:2, xp:11, element:'dark' },
-  { name:'Wolf',          emoji:'🐺', color:'#888888', hp:26, atk:8, def:2, xp:13, element:'normal' },
-  { name:'Orc',           emoji:'👹', color:'#aa4422', hp:34, atk:10, def:3, xp:16, element:'fire' },
-  { name:'Wraith',        emoji:'👻', color:'#aaccff', hp:42, atk:12, def:3, xp:20, element:'dark' },
-  { name:'Ogre',          emoji:'👺', color:'#cc6622', hp:55, atk:14, def:4, xp:25, element:'fire' },
-  { name:'Dragon',        emoji:'🐉', color:'#ff4444', hp:80, atk:18, def:5, xp:35, element:'fire' },
-  { name:'Shadow Lord',   emoji:'👑', color:'#aa44ff', hp:120,atk:24, def:6, xp:60, element:'dark' },
+  { name:'Slime',         emoji:'🟢', color:'#44cc44', hp:6,  atk:2, def:0, xp:3 },
+  { name:'Rat',           emoji:'🐀', color:'#888888', hp:8,  atk:3, def:0, xp:4 },
+  { name:'Bat',           emoji:'🦇', color:'#9966cc', hp:10, atk:4, def:1, xp:5 },
+  { name:'Goblin',        emoji:'👺', color:'#44aa44', hp:14, atk:5, def:1, xp:7 },
+  { name:'Skeleton',      emoji:'💀', color:'#ddddcc', hp:18, atk:6, def:2, xp:9 },
+  { name:'Spider',        emoji:'🕷️', color:'#222244', hp:22, atk:7, def:2, xp:11 },
+  { name:'Wolf',          emoji:'🐺', color:'#888888', hp:26, atk:8, def:2, xp:13 },
+  { name:'Orc',           emoji:'👹', color:'#aa4422', hp:34, atk:10, def:3, xp:16 },
+  { name:'Wraith',        emoji:'👻', color:'#aaccff', hp:42, atk:12, def:3, xp:20 },
+  { name:'Ogre',          emoji:'👺', color:'#cc6622', hp:55, atk:14, def:4, xp:25 },
+  { name:'Dragon',        emoji:'🐉', color:'#ff4444', hp:80, atk:18, def:5, xp:35 },
+  { name:'Shadow Lord',   emoji:'👑', color:'#aa44ff', hp:120,atk:24, def:6, xp:60 },
 ];
-// Day/Night monster filter: fire monsters in day, others at night
-function getDayNightMonsters(maxIdx){
-  const pool=MONSTER_TYPES.slice(0,maxIdx+1);
-  if(isDaytime){
-    const f=pool.filter(m=>m.element==='fire');
-    return f.length>0?f:pool; // fallback to all if empty
-  }else{
-    const nf=pool.filter(m=>m.element!=='fire');
-    return nf.length>0?nf:pool;
-  }
-}
-
 const ITEM_TYPES = [
   { name:'Health Potion', emoji:'🧪', color:'#ff8888', effect:'heal', value:0 },
   { name:'Big Potion',    emoji:'❤️', color:'#ff4444', effect:'heal', value:0 },
@@ -805,53 +772,9 @@ const AVATAR_OPTIONS=['🧒','👦','👧','🧑','👨','👩','🧓','👴','�
 // ============================================================
 // 📦 DATA TO FILL (ThawPaw 亲自添加)
 // ============================================================
-// 已购买盔甲记录 (持久化在 homeData.ownedArmors)
-function getOwnedArmors(){ if(!homeData.ownedArmors) homeData.ownedArmors={}; return homeData.ownedArmors; }
-function getEquippedArmor(){ return homeData.equippedArmor||null; }
-function setEquippedArmor(key){ homeData.equippedArmor=key; saveHome(); }
-function getSwordSeals(){ return homeData.swordSeals||0; }
-function addSwordSeal(n){ homeData.swordSeals=(homeData.swordSeals||0)+(n||1); saveHome(); refreshHomeUI(); }
-
-// 盔甲定义
-const ARMOR_SHOP_ITEMS = [
-  {
-    key:'yexingyi', category:'盔甲', name:'夜行衣', icon:'🥷',
-    desc:'晚上怪物无法锁定你，但盲打打到也掉血',
-    price:1000, currency:'💰', tier:6,
-    unlockDesc:'首页商店', unlockCondition:()=>true,
-  },
-  {
-    key:'taotiejia', category:'盔甲', name:'饕餮甲', icon:'🐊',
-    desc:'随机吞噬敌方攻击，并吐出双倍攻击力反击，追踪随机Boss',
-    price:4000, currency:'💰', tier:5,
-    unlockDesc:'首页商店', unlockCondition:()=>true,
-  },
-  {
-    key:'zhuquejia', category:'盔甲', name:'朱雀甲', icon:'🔥',
-    desc:'可重生两次，每重生一次对方全体+25%血量',
-    price:1, currency:'📜', tier:4,
-    unlockDesc:'通过第3关后解锁，需1个剑客宝印',
-    unlockCondition:()=>maxLevelReached>=3 && getSwordSeals()>=1,
-    costSeals:1,
-  },
-  {
-    key:'baihujia', category:'盔甲', name:'白虎甲', icon:'🐅',
-    desc:'速度额外+3级，速度>5时召唤5个分身',
-    price:2, currency:'📜', tier:3,
-    unlockDesc:'通过第6关后解锁，需2个剑客宝印',
-    unlockCondition:()=>maxLevelReached>=6 && getSwordSeals()>=2,
-    costSeals:2,
-  },
-  {
-    key:'qinglongjia', category:'盔甲', name:'青龙甲', icon:'🐉',
-    desc:'随机闪移躲攻击，发射藤蔓缠怪减10%最大血量，挡住99%伤害',
-    price:0, currency:'🎁', tier:2,
-    unlockDesc:'活动获得（ThawPaw 安排）',
-    unlockCondition:()=>false,
-  },
+const SHOP_ITEMS = [
+  // { category: '道具', name: '...', icon: '...', desc: '...', price: 10, currency: '🗺️' },
 ];
-
-const SHOP_ITEMS = ARMOR_SHOP_ITEMS;
 const ACTIVITIES = [
   // { category: '日常', name: '...', icon: '...', desc: '...', reward: '...' },
 ];
@@ -863,7 +786,7 @@ const BAG_ITEMS = [
 ];
 
 // ===== HOME CURRENCIES (持久化) =====
-let homeData = { gold: 0, maps: 0, booms: 0 };
+let homeData = { maps: 0, booms: 0 };
 
 // ===== SETTINGS (音乐/音效，与所有 Thawpaw 游戏共享) =====
 let settings = { music: true, sfx: true };
@@ -951,7 +874,6 @@ let players = [];
 let activeIdx = 0;
 let level = 1;
 let maxLevelReached = 1;
-let isDaytime = true;
 let potions = 0, bigPotions = 0, bombs = 0;
 let gold = 0, kills = 0;
 let weaponName = 'Wooden Stick', armorName = 'Cloth Tunic';
@@ -1071,15 +993,8 @@ function refreshHomeUI(){
   document.getElementById('home-nickname').textContent=profile.nickname;
   document.getElementById('home-level').textContent='Lv.'+level;
   document.getElementById('home-level-bar').style.width=Math.min(100,(kills%10)*10)+'%';
-  document.getElementById('home-gold').textContent=homeData.gold;
   document.getElementById('home-maps').textContent=homeData.maps;
   document.getElementById('home-booms').textContent=homeData.booms;
-  // Show sword seals only if >0
-  const sealBubble=document.getElementById('home-seal-bubble');
-  if(sealBubble){
-    document.getElementById('home-seals').textContent=homeData.swordSeals||0;
-    sealBubble.style.display=(homeData.swordSeals>0)?'':'none';
-  }
   const hasSave = !!localStorage.getItem(SAVE_KEY+'_'+getUnifiedPlayerId());
   document.getElementById('zone-start-title').textContent = hasSave ? '继续探索' : '开始探索';
   document.getElementById('zone-start-desc').textContent = hasSave ? `当前深度：第 ${level} 层` : '无尽地下城，越深越危险';
@@ -1256,102 +1171,18 @@ function renderCatItems(which, cat){
   filtered.forEach(it=>{
     const el=document.createElement('div');
     el.className='cat-item';
-
-    // Armor shop items get special rendering
-    if(which==='shop' && it.key && it.unlockCondition){
-      const owned=getOwnedArmors();
-      const isOwned=!!owned[it.key];
-      const isEquipped=getEquippedArmor()===it.key;
-      const unlocked=it.unlockCondition();
-      const seals=getSwordSeals();
-      const tierStars='⭐'.repeat(7-(it.tier||6)); // tier 6=1 star, tier 2=5 stars
-      let actionHTML='';
-      if(isEquipped){
-        actionHTML='<div class="armor-status equipped">✓ 已装备</div>';
-      }else if(isOwned){
-        actionHTML=`<button class="armor-btn equip" onclick="equipArmor('${it.key}')">装备</button>`;
-      }else if(!unlocked){
-        actionHTML=`<div class="armor-status locked">🔒 ${it.unlockDesc||'未解锁'}</div>`;
-        if(it.costSeals && !it.unlockCondition()){
-          // show seal requirement separately
-        }
-      }else{
-        const canAfford = it.currency==='💰' ? homeData.gold>=it.price : true;
-        const haveSeals = !it.costSeals || seals>=it.costSeals;
-        if(canAfford && haveSeals){
-          actionHTML=`<button class="armor-btn buy" onclick="buyArmor('${it.key}')">购买</button>`;
-        }else{
-          const reasons=[];
-          if(!canAfford) reasons.push(`💰 不够`);
-          if(!haveSeals) reasons.push(`📜 剑客宝印不够 (需${it.costSeals})`);
-          actionHTML=`<div class="armor-status locked">${reasons.join(' · ')}</div>`;
-        }
-      }
-      el.classList.add('cat-item-armor');
-      if(!unlocked && !isOwned) el.classList.add('locked');
-      el.innerHTML=`
-        <div class="armor-row">
-          <div class="item-icon armor-icon-lg">${it.icon||'🛡️'}</div>
-          <div class="armor-info">
-            <div class="armor-name-row">
-              <span class="item-name">${it.name}</span>
-              <span class="armor-tier">${tierStars}</span>
-            </div>
-            <div class="item-desc armor-desc">${it.desc}</div>
-            <div class="armor-price-row">
-              <span class="item-price">${it.currency} ${it.price}</span>
-              ${actionHTML}
-            </div>
-          </div>
-        </div>
-      `;
-    }else{
-      let priceLine='';
-      if(it.price!=null) priceLine=`<div class="item-price">${it.currency||'🗺️'} ${it.price}</div>`;
-      else if(it.reward) priceLine=`<div class="item-price">${it.reward}</div>`;
-      else if(it.count!=null) priceLine=`<div class="item-price">x${it.count}</div>`;
-      el.innerHTML=`
-        <div class="item-icon">${it.icon||'📦'}</div>
-        <div class="item-name">${it.name||'?'}</div>
-        <div class="item-desc">${it.desc||''}</div>
-        ${priceLine}
-      `;
-    }
+    let priceLine='';
+    if(it.price!=null) priceLine=`<div class="item-price">${it.currency||'🗺️'} ${it.price}</div>`;
+    else if(it.reward) priceLine=`<div class="item-price">${it.reward}</div>`;
+    else if(it.count!=null) priceLine=`<div class="item-price">x${it.count}</div>`;
+    el.innerHTML=`
+      <div class="item-icon">${it.icon||'📦'}</div>
+      <div class="item-name">${it.name||'?'}</div>
+      <div class="item-desc">${it.desc||''}</div>
+      ${priceLine}
+    `;
     cont.appendChild(el);
   });
-}
-
-// ─── Armor Shop Actions ───
-function buyArmor(key){
-  const it=ARMOR_SHOP_ITEMS.find(a=>a.key===key);
-  if(!it) return;
-  if(!it.unlockCondition()) { showToast('🔒 尚未解锁'); return; }
-  const owned=getOwnedArmors();
-  if(owned[key]) { showToast('已拥有'); return; }
-  if(it.currency==='💰' && homeData.gold<it.price){ showToast('💰 金币不够'); return; }
-  if(it.costSeals && getSwordSeals()<it.costSeals){ showToast('📜 剑客宝印不够'); return; }
-  // Deduct
-  if(it.currency==='💰'){ homeData.gold-=it.price; gold=homeData.gold; }
-  if(it.costSeals){ homeData.swordSeals=(homeData.swordSeals||0)-it.costSeals; }
-  owned[key]=true;
-  homeData.equippedArmor=key;
-  saveHome();
-  refreshHomeUI();
-  renderCatPage('shop');
-  showToast(`✅ 已购买并装备 ${it.name}！`);
-}
-function equipArmor(key){
-  const owned=getOwnedArmors();
-  if(!owned[key]) return;
-  setEquippedArmor(key);
-  renderCatPage('shop');
-  const it=ARMOR_SHOP_ITEMS.find(a=>a.key===key);
-  showToast(`🛡️ 已装备 ${it?it.name:key}`);
-}
-function getEquippedArmorDef(){
-  const key=getEquippedArmor();
-  if(!key) return null;
-  return ARMOR_SHOP_ITEMS.find(a=>a.key===key)||null;
 }
 
 // ============================================================
@@ -1427,9 +1258,7 @@ function editNickname(){
 // 💾 PERSISTENCE
 // ============================================================
 function saveHome(){try{localStorage.setItem(HOME_KEY,JSON.stringify(homeData));}catch(e){}}
-function syncGoldToHome(){homeData.gold=gold;saveHome();refreshHomeUI();}
-function syncHomeToGold(){gold=homeData.gold||0;}
-function loadHome(){try{const d=localStorage.getItem(HOME_KEY);if(d){const o=JSON.parse(d);homeData.gold=(o.gold||o.coins||0);homeData.maps=o.maps||0;homeData.booms=o.booms||0;homeData.ownedArmors=o.ownedArmors||{};homeData.equippedArmor=o.equippedArmor||null;homeData.swordSeals=o.swordSeals||0;homeData.sealMilestones=o.sealMilestones||{};}}catch(e){}}
+function loadHome(){try{const d=localStorage.getItem(HOME_KEY);if(d){const o=JSON.parse(d);homeData.maps=o.maps||0;homeData.booms=o.booms||0;}}catch(e){}}
 function saveProfile(){try{localStorage.setItem(PROFILE_KEY+'_'+getUnifiedPlayerId(),JSON.stringify(profile));}catch(e){}}
 function loadProfile(){
   const id = getUnifiedPlayerId();
@@ -1485,7 +1314,7 @@ function loadGame(){
     if(d.mode && d.mode!==mode) return false;
     level=d.level||1;
     maxLevelReached=d.maxLevelReached||level;
-    gold=(d.gold!=null)?d.gold:(homeData.gold||0);
+    gold=d.gold||0;
     kills=d.kills||0;
     potions=d.potions||0;
     bigPotions=d.bigPotions||0;
@@ -1691,8 +1520,6 @@ function updateSpeedBtn(){
 
 // ─── Map generation ───
 function generateLevel(){
-  // Day/Night cycle: odd levels = day, even = night
-  isDaytime=(level%2===1);
   tiles=[];
   for(let y=0;y<HEIGHT;y++){
     const row=[];
@@ -1704,11 +1531,6 @@ function generateLevel(){
   monsters=[];
   items=[];
   shopPos=null;
-
-  // Day/night log
-  if(typeof logMsg==='function'){
-    logMsg(isDaytime?'☀️ 白天 — 火属性怪物出没':'🌙 夜晚 — 其他怪物出没','info');
-  }
 
   const rooms=[];
   for(let attempt=0;attempt<100&&rooms.length<MAX_ROOMS;attempt++){
@@ -1768,7 +1590,6 @@ function generateLevel(){
   }
 
   const maxIdx=Math.min(MONSTER_TYPES.length-1,level+2);
-  const dayNightPool=getDayNightMonsters(maxIdx);
   for(let i=1;i<rooms.length;i++){
     const r=rooms[i];
     const n=1+rnd(Math.max(1,Math.floor(level/2)));
@@ -1779,7 +1600,7 @@ function generateLevel(){
         const my=r.y+1+rnd(Math.max(1,r.h-2));
         if(tiles[my][mx]!=='floor') continue;
         if(players.some(p=>p.x===mx&&p.y===my)) continue;
-        const mtype=dayNightPool[rnd(dayNightPool.length)];
+        const mtype=MONSTER_TYPES[rnd(maxIdx+1)];
         const m={
           x:mx,y:my,
           name:mtype.name,emoji:mtype.emoji,color:mtype.color,
@@ -1796,9 +1617,7 @@ function generateLevel(){
 
   // BOSS every 5 floors
   if(level%5===0){
-    let bossPool=isDaytime?dayNightPool.filter(m=>m.element==='fire'):dayNightPool.filter(m=>m.element!=='fire');
-    if(bossPool.length===0) bossPool=dayNightPool;
-    const bossType=bossPool[bossPool.length-1];
+    const bossType=(level>=10)?MONSTER_TYPES[MONSTER_TYPES.length-1]:MONSTER_TYPES[MONSTER_TYPES.length-2];
     const bx=Math.min(WIDTH-2,lastRoom.x+(lastRoom.w>>1)+1);
     const by=lastRoom.y+(lastRoom.h>>1);
     const boss={
@@ -1925,7 +1744,7 @@ window.buyShop=function(i){
 };
 function doPurchase(i){
   const it=shopStock[i];
-  gold-=it.cost; syncGoldToHome();
+  gold-=it.cost;
   switch(it.key){
     case 'potion':potions++;break;
     case 'bigpotion':bigPotions++;break;
@@ -1991,7 +1810,7 @@ function attackMonster(pi,mon){
     logMsg(`💀 ${mon.name} defeated! +${mon.xp}xp`,'good');
     kills++;
     const goldDrop=1+rnd(3+level);
-    gold+=goldDrop; syncGoldToHome();
+    gold+=goldDrop;
     logMsg(`💰 +${goldDrop}g from ${mon.name}!`,'gold');
     // BOSS kill awards maps
     if(mon.isBoss){
@@ -2051,7 +1870,7 @@ function pickupItem(pi,it){
     armorName=randName(ARMOR_NAMES,armorName);
     logMsg(`🛡️ ${armorName}! DEF +${it.value} (both players) → ${players[0].defense}`,'good');
   }else if(it.effect==='gold'){
-    gold+=it.value; syncGoldToHome();
+    gold+=it.value;
     logMsg(`💰 +${it.value} gold! (Total: ${gold})`,'gold');
   }
   updateHud();
@@ -2070,43 +1889,7 @@ function endPlayerTurn(){
   if(!isDuo){monsterTurn();return;}
   if(p1Acted&&p2Acted){monsterTurn();p1Acted=false;p2Acted=false;}
 }
-// ─── Armor effect state ───
-let zhuqueRevives={1:0,2:0};
-
-function getArmorDef(){return getEquippedArmorDef();}
-function resetArmorState(){zhuqueRevives={1:0,2:0};}
-
 function monsterTurn(){
-  const armor=getArmorDef();
-  const armorKey=armor?armor.key:null;
-
-  // 🥷 夜行衣: at night, monsters can't lock onto you → no attacks
-  if(armorKey==='yexingyi' && !isDaytime){
-    for(const mon of monsters){
-      const targets=livingPlayers();
-      if(targets.length===0) break;
-      let best=targets[0],bestDist=Math.abs(mon.x-best.x)+Math.abs(mon.y-best.y);
-      for(let i=1;i<targets.length;i++){const t=targets[i];const d=Math.abs(mon.x-t.x)+Math.abs(mon.y-t.y);if(d<bestDist){best=t;bestDist=d;}}
-      const dx=best.x-mon.x,dy=best.y-mon.y;
-      const dist=Math.abs(dx)+Math.abs(dy);
-      if(dist>1 && dist<=FOV_RADIUS){
-        const mx=(dx>0)?1:(dx<0)?-1:0;
-        const my=(dy>0)?1:(dy<0)?-1:0;
-        const candidates=[[mx,my],[mx,0],[0,my]];
-        for(const [tdx,tdy] of candidates){
-          if(tdx===0&&tdy===0) continue;
-          const tnx=mon.x+tdx,tny=mon.y+tdy;
-          if(tnx<0||tny<0||tnx>=WIDTH||tny>=HEIGHT) continue;
-          if(tiles[tny][tnx]==='wall') continue;
-          if(monsters.some(m=>m!==mon&&m.x===tnx&&m.y===tny)) continue;
-          if(players.some(p=>p.x===tnx&&p.y===tny)) continue;
-          mon.x=tnx;mon.y=tny;break;
-        }
-      }
-    }
-    updateHud();updateContextPopup();return;
-  }
-
   for(const mon of monsters){
     const targets=livingPlayers();
     if(targets.length===0) break;
@@ -2119,67 +1902,12 @@ function monsterTurn(){
     const dx=best.x-mon.x,dy=best.y-mon.y;
     const dist=Math.abs(dx)+Math.abs(dy);
     if(dist===1){
-      let dmg=Math.max(1,mon.atk-best.defense+rnd(3)-1);
-      let hitPlayer=true;
-
-      if(armorKey){
-        // 🐊 饕餮甲: 50% devour + 2x counter + random boss track
-        if(armorKey==='taotiejia' && Math.random()<0.5){
-          const counter=Math.max(1,best.atk*2);
-          mon.hp-=counter;
-          spawnFx('hit',mon.x,mon.y,'#ff44ff');
-          logMsg(`🐊 饕餮甲吞噬攻击！反击 ${counter} 伤害！`,'good');
-          if(mon.hp<=0){
-            logMsg(`💀 ${mon.name} 被吞噬反杀！`,'good');
-            kills++;
-            monsters=monsters.filter(m=>m!==mon);
-            const bosses=monsters.filter(m=>m.isBoss);
-            if(bosses.length>0){
-              const tb=bosses[rnd(bosses.length)];
-              const td=Math.max(1,best.atk*2);
-              tb.hp-=td;
-              spawnFx('hit',tb.x,tb.y,'#ff44ff');
-              logMsg(`🐊 饕餮追踪Boss ${tb.name}！造成 ${td} 伤害！`,'good');
-              if(tb.hp<=0){kills++;monsters=monsters.filter(m=>m!==tb);}
-            }
-            updateHud();
-            continue;
-          }
-          hitPlayer=false;
-        }
-        // 🐉 青龙甲: 30% blink-dodge, vine reduces 10% max HP, 99% damage block
-        else if(armorKey==='qinglongjia' && Math.random()<0.3){
-          dmg=1;
-          const vineDmg=Math.floor(mon.maxHp*0.1);
-          mon.hp-=vineDmg;
-          spawnFx('hit',mon.x,mon.y,'#44ff44');
-          logMsg(`🐉 青龙甲闪移！仅受 1 伤害，藤蔓缠绕 ${mon.name} 减 ${vineDmg} 血！`,'good');
-          if(mon.hp<=0){
-            kills++;monsters=monsters.filter(m=>m!==mon);updateHud();continue;
-          }
-        }
-      }
-
-      if(hitPlayer && dmg>0){
-        best.hp-=dmg;
-        sfxHurt();
-        spawnFx('hit',best.x,best.y,'#ff4444');
-        logMsg(`💢 ${mon.name} hits ${best.emoji} for ${dmg}! (${Math.max(0,best.hp)}/${best.maxHp})`,'hurt');
-      }
+      const dmg=Math.max(1,mon.atk-best.defense+rnd(3)-1);
+      best.hp-=dmg;
+      sfxHurt();
+      spawnFx('hit',best.x,best.y,'#ff4444');
+      logMsg(`💢 ${mon.name} hits ${best.emoji} for ${dmg}! (${Math.max(0,best.hp)}/${best.maxHp})`,'hurt');
       if(best.hp<=0){
-        // 🔥 朱雀甲: revive up to 2 times
-        if(armorKey==='zhuquejia'){
-          const pIdx=best===players[0]?1:2;
-          if(zhuqueRevives[pIdx]<2){
-            zhuqueRevives[pIdx]++;
-            best.hp=Math.floor(best.maxHp*0.5);
-            best.alive=true;
-            for(const m of monsters){const inc=Math.floor(m.maxHp*0.25);m.maxHp+=inc;m.hp+=inc;}
-            spawnFx('revive',best.x,best.y,'#ff6644');
-            logMsg(`🔥 朱雀甲重生！第 ${zhuqueRevives[pIdx]}/2 次，全体怪物 +25% 血量！`,'revive');
-            sfxRevive();updateHud();continue;
-          }
-        }
         best.alive=false;
         logMsg(`💀 ${best.emoji} ${best.name} has fallen!`,'hurt');
         sfxHurt();
@@ -2253,7 +1981,7 @@ function useBomb(){
     kills++;
     if(m.isBoss){bossKilled=true;}
     const g=2+rnd(4+level);
-    gold+=g; syncGoldToHome();
+    gold+=g;
     spawnFx('boom',m.x,m.y,'#ffaa44');
     logMsg(`💣 ${m.name} destroyed! +${g}g!`,'gold');
   }
@@ -2292,11 +2020,7 @@ function descend(){
   sfxDescend();
   // Award maps for descending
   homeData.maps+=1;
-  // Award 剑客宝印 when first reaching level 4 and 7
-  if(level===4 && !homeData.sealMilestones?.lvl3){homeData.swordSeals=(homeData.swordSeals||0)+1;if(!homeData.sealMilestones)homeData.sealMilestones={};homeData.sealMilestones.lvl3=true;logMsg('📜 通过第3关！获得 1 剑客宝印！','gold');showToast('📜 获得 1 剑客宝印！');}
-  if(level===7 && !homeData.sealMilestones?.lvl6){homeData.swordSeals=(homeData.swordSeals||0)+2;if(!homeData.sealMilestones)homeData.sealMilestones={};homeData.sealMilestones.lvl6=true;logMsg('📜 通过第6关！获得 2 剑客宝印！','gold');showToast('📜 获得 2 剑客宝印！');}
   saveHome();
-  refreshHomeUI();
   logMsg(`🪜 Descending to Level ${level}... +1 🗺️`,'info');
   generateLevel();
   updateHud();
@@ -2356,9 +2080,7 @@ function newGame(fromRetry){
   if(rafId){cancelAnimationFrame(rafId);rafId=null;}
   if(shopOverlay) shopOverlay.classList.remove('active');
   level=1; maxLevelReached=1;
-  syncHomeToGold(); // Load gold from persistent homeData
-  kills=0; potions=0; bigPotions=0; bombs=0;
-  resetArmorState();
+  gold=0; kills=0; potions=0; bigPotions=0; bombs=0;
   weaponName='Wooden Stick'; armorName='Cloth Tunic';
   players=isDuo?[makePlayer('🐱','Hero Cat'),makePlayer('🐼','Panda Pal')]:[makePlayer('🐱','Hero Cat')];
   running=true;
@@ -2418,8 +2140,7 @@ function updateHud(){
   sAtk.textContent=p1.atk;
   sDef.textContent=p1.defense;
   sWpn.textContent=weaponName;
-  const eqA=getEquippedArmorDef();
-  sArm.textContent=eqA?(eqA.icon+' '+eqA.name):armorName;
+  sArm.textContent=armorName;
   pIcon1.textContent=p1.emoji;
   pName1.textContent=p1.name;
   pBlock1.classList.toggle('dead',!p1.alive);
@@ -2497,35 +2218,26 @@ function resizeCanvas(){
 function drawTile(x,y,tile,alpha){
   const px=x*tile,py=y*tile;
   const t=tiles[y][x];
-  const C=isDaytime?{
-    wall:'#b8b8c8',wallInner:'#c8c8d8',wallAcc:'#a0a0b0',
-    floor:'#d8d8e0',floorDot:'#c0c0d0',
-    stairs:'#d8d8e0',shopTile:'#3a3a08',
-  }:{
-    wall:'#1a1a2a',wallInner:'#2a2a3e',wallAcc:'#11111a',
-    floor:'#0e0e18',floorDot:'#1a1a2a',
-    stairs:'#0e0e18',shopTile:'#1a1408',
-  };
   ctx.globalAlpha=alpha;
   if(t==='wall'){
-    ctx.fillStyle=C.wall;
+    ctx.fillStyle='#1a1a2a';
     ctx.fillRect(px,py,tile,tile);
-    ctx.fillStyle=C.wallInner;
+    ctx.fillStyle='#2a2a3e';
     ctx.fillRect(px+1,py+1,tile-2,tile-2);
-    ctx.fillStyle=C.wallAcc;
+    ctx.fillStyle='#11111a';
     if(((x+y)&1)===0){
       ctx.fillRect(px+tile-2,py,1,1);
       ctx.fillRect(px,py+tile-2,1,1);
     }
   }else if(t==='floor'){
-    ctx.fillStyle=C.floor;
+    ctx.fillStyle='#0e0e18';
     ctx.fillRect(px,py,tile,tile);
-    ctx.fillStyle=C.floorDot;
+    ctx.fillStyle='#1a1a2a';
     const dx=(x*13+y*7)%(tile-2);
     const dy=(x*5+y*11)%(tile-2);
     ctx.fillRect(px+dx,py+dy,1,1);
   }else if(t==='stairs'){
-    ctx.fillStyle=C.stairs;
+    ctx.fillStyle='#0e0e18';
     ctx.fillRect(px,py,tile,tile);
     const cx=px+tile/2,cy=py+tile/2;
     const glow=ctx.createRadialGradient(cx,cy,2,cx,cy,tile*0.7);
@@ -2538,7 +2250,7 @@ function drawTile(x,y,tile,alpha){
     ctx.textAlign='center';ctx.textBaseline='middle';
     ctx.fillText('>',cx,cy+1);
   }else if(t==='shop'){
-    ctx.fillStyle=C.shopTile;
+    ctx.fillStyle='#1a1408';
     ctx.fillRect(px,py,tile,tile);
     const cx=px+tile/2,cy=py+tile/2;
     const glow=ctx.createRadialGradient(cx,cy,2,cx,cy,tile*0.7);
@@ -2588,9 +2300,7 @@ function drawMonster(mon,px,py,tile){
 function draw(){
   if(!canvas.dataset.tile) return;
   const tile=parseInt(canvas.dataset.tile,10);
-  const gp=document.getElementById('page-game');
-  if(gp){if(isDaytime)gp.classList.add('day');else gp.classList.remove('day');}
-  ctx.fillStyle=isDaytime?'#e8e8e8':'#0a0a14';ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.fillStyle='#0a0a14';ctx.fillRect(0,0,canvas.width,canvas.height);
   for(let y=0;y<HEIGHT;y++){
     for(let x=0;x<WIDTH;x++){
       const vis=visibleSet.has(x+','+y);
