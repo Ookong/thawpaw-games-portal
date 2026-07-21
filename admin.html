@@ -415,6 +415,21 @@ tr:hover td{background:var(--card2)}
         </div>
         <div style="font-size:.78rem;color:var(--dim);margin-top:.5rem">仅超级管理员可操作</div>
       </div>
+
+      <!-- Transfer super admin (super only) -->
+      <div class="add-admin-section" id="transfer-admin-section" style="border-color:#ffa8a8;background:#fff5f5">
+        <h3 style="color:#c92a2a">⚠️ 超级管理员转移</h3>
+        <div style="font-size:.82rem;color:#866a00;margin-bottom:.8rem;line-height:1.5">
+          将超级管理员权限转移给另一位玩家。转移后<strong style="color:#c92a2a">你将降级为副管理员</strong>，
+          无法再操作管理员、清空反馈等。此操作<strong>不可撤销</strong>。
+        </div>
+        <div class="add-admin-row">
+          <input type="text" id="transfer-admin-id" placeholder="目标 8 位 ID" maxlength="8">
+          <input type="text" id="transfer-admin-nick" placeholder="目标昵称" maxlength="16">
+          <button onclick="transferSuperAdmin()" style="background:#c92a2a">确认转移</button>
+        </div>
+        <div style="font-size:.78rem;color:var(--dim);margin-top:.5rem">仅超级管理员可操作 · 请仔细核对目标 ID 和昵称</div>
+      </div>
     </div>
 
     <!-- ===== Chatroom Tab ===== -->
@@ -667,6 +682,10 @@ function showDashboard(){
   const addMemSec = document.getElementById('add-member-section');
   addMemSec.style.display = isAdmin ? '' : 'none';
 
+  // Show/hide transfer section based on role
+  const transferSection = document.getElementById('transfer-admin-section');
+  if(transferSection) transferSection.style.display = (session.role === 'super') ? '' : 'none';
+
   // Load data
   loadStats();
   loadFeedback();
@@ -900,6 +919,42 @@ function removeSubAdmin(targetId){
       loadAdmins();
     } else {
       alert('❌ ' + (res.error || '移除失败'));
+    }
+  }).catch(err => alert('❌ 网络错误'));
+}
+
+function transferSuperAdmin(){
+  const targetId = document.getElementById('transfer-admin-id').value.trim();
+  const targetNick = document.getElementById('transfer-admin-nick').value.trim();
+  if(!targetId || !targetNick){ alert('请输入目标 ID 和昵称'); return; }
+  if(!/^\d{8}$/.test(targetId)){ alert('ID 必须是 8 位数字'); return; }
+  if(targetId === session.id){ alert('不能转移给自己'); return; }
+
+  const msg = '⚠️ 确认转移超级管理员权限？\n\n'
+    + '目标：' + targetNick + ' (' + targetId + ')\n'
+    + '转移后你 (' + session.nickname + ') 将降级为副管理员。\n'
+    + '此操作不可撤销。';
+
+  if(!confirm(msg)) return;
+  // Double confirm
+  if(!confirm('最后确认：你真的要交出超级管理员权限吗？')) return;
+
+  apiPost('transferSuperAdmin', {
+    id: session.id,
+    nickname: session.nickname,
+    targetId: targetId,
+    targetNickname: targetNick
+  }).then(res => {
+    if(res.ok){
+      alert('✅ 超级管理员已转移给 ' + res.newSuperNickname + '\n你现在是副管理员了。');
+      // Update local session to admin
+      session.role = 'admin'; isSuperAdmin = false;
+      sessionStorage.setItem('tpgHqSession', JSON.stringify(session));
+      // Update UI
+      showDashboard();
+      loadAdmins();
+    } else {
+      alert('❌ ' + (res.error || '转移失败'));
     }
   }).catch(err => alert('❌ 网络错误'));
 }
