@@ -335,26 +335,14 @@ body.shape-square .sm-home-content{max-width:100%;}
   <a class="sm-back-btn" onclick="smShowPage('home')">←</a>
   <div style="text-align:center;padding:20px 0 8px;">
     <div style="font-size:28px;color:#d4af37;font-weight:700;letter-spacing:4px;">⚔️ 强化</div>
-    <div style="font-size:13px;color:#a08060;margin-top:4px;">消耗📜剑客宝印永久强化属性</div>
+    <div style="font-size:13px;color:#a08060;margin-top:4px;">消耗📜剑客宝印强化装备（建设中）</div>
     <div style="font-size:14px;color:#d4af37;margin-top:6px;">📜 宝印：<span id="sm-enhance-seals">0</span></div>
   </div>
   <div class="sm-enhance-grid" id="sm-enhance-grid">
-    <div class="sm-enhance-slot" id="enhc-speed">
-      <div style="font-size:28px;">🏃</div>
-      <div style="font-size:15px;font-weight:700;color:#e8d8b0;">速度强化</div>
-      <div style="font-size:12px;color:#a08060;">提升移动速度</div>
-      <div style="font-size:13px;color:#d4af37;margin-top:4px;">当前：<span id="enhc-speed-lv">Lv.0</span></div>
-      <div style="font-size:12px;color:#a08060;">下一级：<span id="enhc-speed-cost">8 📜</span></div>
-      <button class="sm-exchange-btn" id="enhc-speed-btn" onclick="enhanceStat('speed')">强化</button>
-    </div>
-    <div class="sm-enhance-slot" id="enhc-defense">
-      <div style="font-size:28px;">🛡️</div>
-      <div style="font-size:15px;font-weight:700;color:#e8d8b0;">防御强化</div>
-      <div style="font-size:12px;color:#a08060;">减少受到的伤害</div>
-      <div style="font-size:13px;color:#d4af37;margin-top:4px;">当前：<span id="enhc-defense-lv">Lv.0</span></div>
-      <div style="font-size:12px;color:#a08060;">下一级：<span id="enhc-defense-cost">10 📜</span></div>
-      <button class="sm-exchange-btn" id="enhc-defense-btn" onclick="enhanceStat('defense')">强化</button>
-    </div>
+    <div class="sm-enhance-slot"><div class="placeholder">🔓 待添加</div><div class="hint">ThawPaw 来添加强化项</div></div>
+    <div class="sm-enhance-slot"><div class="placeholder">🔓 待添加</div><div class="hint">ThawPaw 来添加强化项</div></div>
+    <div class="sm-enhance-slot"><div class="placeholder">🔓 待添加</div><div class="hint">ThawPaw 来添加强化项</div></div>
+    <div class="sm-enhance-slot"><div class="placeholder">🔓 待添加</div><div class="hint">ThawPaw 来添加强化项</div></div>
   </div>
 </div>
 <!-- ===== BANK MODAL ===== -->
@@ -451,12 +439,11 @@ body.shape-square .sm-home-content{max-width:100%;}
 <div class="overlay" id="screen-title">
   <div style="font-size:52px;">⛩️⚔️</div>
   <div class="title">少年剑客闯江湖</div>
-  <div class="subtitle">—— 四波挑战·无限关卡 ——</div>
+  <div class="subtitle">—— 六波挑战·无限关卡 ——</div>
   <div style="color:#806040;font-size:13px;margin-top:6px;text-align:center;line-height:1.8;">
-    🗡️ 4波：山贼头目 ☀️ → 铁臂熊 🌙 → 黑风老祖 🌙 → 影刹 🌙<br>
+    🗡️ 6波：山贼头目 → 小贼 → 铁臂熊 → 小贼 → 小贼 → 黑风老祖<br>
     ⛩️ 通关后推开庙门，进入下一层——敌人更强！<br>
-    📈 装备金币保留，可以无限闯关！<br>
-    ☀️ 火属性Boss白天出没 · 🌙 其他Boss夜晚现身
+    📈 装备金币保留，可以无限闯关！
   </div>
   <button class="btn" onclick="startGame()">⚔️ 开始闯关</button>
   <div style="color:#604030;font-size:12px;margin-top:12px;">点子：范宝 | 程序：IcePaw 🐾</div>
@@ -592,21 +579,24 @@ function getBossEvo(templateName,level){
 }
 
 // ===== 波次 =====
-// element:'fire' → 白天☀️ | 其他 → 夜晚🌙
 const WAVES=[
-  {name:'山贼头目',type:'boss1',banner:'第一波',element:'fire'},
-  {name:'铁臂熊',type:'boss2',banner:'第二波',element:'earth'},
-  {name:'黑风老祖',type:'boss3',banner:'第三波',element:'shadow'},
-  {name:'影刹',type:'boss4',banner:'第四波',element:'shadow'},
+  {name:'山贼头目',type:'boss1',banner:'第一波'},
+  {name:'无名小贼',type:'mobs',count:2,banner:'第二波'},
+  {name:'铁臂熊',type:'boss2',banner:'第三波'},
+  {name:'无名小贼',type:'mobs',count:2,banner:'第四波'},
+  {name:'无名小贼',type:'mobs',count:2,banner:'第五波'},
+  {name:'黑风老祖',type:'boss3',banner:'第六波'},
+  {name:'无名小贼',type:'mobs',count:3,banner:'第七波'},
+  {name:'影刹',type:'boss4',banner:'第八波'},
 ];
 
 // ===== 敌人 =====
 const TEMPLATES={
-  mob:{name:'无名小贼',emoji:'🥷',hp:35,size:14,speed:2.2,color:'#553333',accent:'#888888',damage:8,attackRange:36,attackCD:70,movePattern:'chase',killGold:3,element:'dark'},
-  boss1:{name:'山贼头目',emoji:'🗡️',hp:120,size:22,speed:2.6,color:'#8B4513',accent:'#d4af37',damage:12,attackRange:48,attackCD:55,movePattern:'chase',killGold:100,element:'fire'},
-  boss2:{name:'铁臂熊',emoji:'🐻',hp:250,size:34,speed:1.5,color:'#4a2a1a',accent:'#8B4513',damage:22,attackRange:68,attackCD:85,movePattern:'slam',killGold:500,element:'earth'},
-  boss3:{name:'黑风老祖',emoji:'👹',hp:420,size:48,speed:1.1,color:'#2a0a0a',accent:'#b43228',damage:30,attackRange:88,attackCD:72,movePattern:'complex',killGold:1000,element:'shadow'},
-  boss4:{name:'影刹',emoji:'🥷',hp:350,size:26,speed:3.2,color:'#1a1a2e',accent:'#9333ea',damage:26,attackRange:52,attackCD:48,movePattern:'shadow',killGold:800,element:'shadow'},
+  mob:{name:'无名小贼',emoji:'🥷',hp:35,size:14,speed:2.2,color:'#553333',accent:'#888888',damage:8,attackRange:36,attackCD:70,movePattern:'chase',killGold:3},
+  boss1:{name:'山贼头目',emoji:'🗡️',hp:120,size:22,speed:2.6,color:'#8B4513',accent:'#d4af37',damage:12,attackRange:48,attackCD:55,movePattern:'chase',killGold:100},
+  boss2:{name:'铁臂熊',emoji:'🐻',hp:250,size:34,speed:1.5,color:'#4a2a1a',accent:'#8B4513',damage:22,attackRange:68,attackCD:85,movePattern:'slam',killGold:500},
+  boss3:{name:'黑风老祖',emoji:'👹',hp:420,size:48,speed:1.1,color:'#2a0a0a',accent:'#b43228',damage:30,attackRange:88,attackCD:72,movePattern:'complex',killGold:1000},
+  boss4:{name:'影刹',emoji:'🥷',hp:350,size:26,speed:3.2,color:'#1a1a2e',accent:'#9333ea',damage:26,attackRange:52,attackCD:48,movePattern:'shadow',killGold:800},
 };
 
 // ===== 武器 =====
@@ -689,13 +679,7 @@ function getWeaponStat(){return WEAPONS[player.weapon];}
 function resetPlayer(full){
   player.x=W/2;player.y=H/2+120;
   if(full){
-    // 应用永久强化
-    const spLv=smSave.speedLevel||0;
-    const defLv=smSave.defLevel||0;
-    player.hp=player.maxHp;player.gold=0;
-    player.speed=3.2+SPEED_BONUS[spLv];
-    player.defense=DEF_BONUS[defLv];player.defLevel=0;
-    player.enhSpdLevel=spLv;player.enhDefLevel=defLv;
+    player.hp=player.maxHp;player.gold=0;player.defense=0;player.defLevel=0;
     player.weapon='fists';player.ownedWeapons=new Set(['fists']);
     player.items={potion:1,ginseng:0,bomb:0,mine:0,circle:0};player.ginsengSips=0;
     player.transforms=[];player.transformActive=0;player.transformType=null;player.transformCD=0;
@@ -709,7 +693,6 @@ function resetPlayer(full){
 
 // ===== 全局状态 =====
 let gameState='title',currentWave=0,currentLevel=1,enemies=[],coins=[],particles=[],floatTexts=[],slashes=[],screenShake=0,hitStop=0,breakTimer=0,shopOpen=false,inBreak=false;
-let isDaytime=false; // 当前是否白天（由波次 element 决定）
 const SHOP_ZONE={x:16,y:H-110,w:120,h:94};
 
 // ===== 输入 =====
@@ -1031,18 +1014,17 @@ function startGame(startLevel){
 function startWave(){
   inBreak=false;gameState='battle';document.getElementById('break-panel').classList.remove('show');closeShop();
   const cfg=WAVES[currentWave];enemies=[];
-  // 昼夜切换：火属性 → 白天，其他 → 夜晚
-  isDaytime=(cfg.element==='fire');
   const banner=document.getElementById('wave-banner');
   // 显示进化后的Boss名字
   let displayName=cfg.name;
-  const evo=getBossEvo(cfg.name,currentLevel);if(evo)displayName=evo.name;
-  document.getElementById('wave-num').textContent='第'+currentLevel+'层 · '+cfg.banner+(isDaytime?' ☀️':' 🌙');
+  if(cfg.type!=='mobs'){const evo=getBossEvo(cfg.name,currentLevel);if(evo)displayName=evo.name;}
+  document.getElementById('wave-num').textContent='第'+currentLevel+'层 · '+cfg.banner;
   document.getElementById('wave-name').textContent=displayName+(currentLevel>1?' Lv'+currentLevel:'');
   banner.classList.add('show');setTimeout(()=>banner.classList.remove('show'),2200);
-  // Boss战（已无小贼波）
-  {
-    const bossCount=Math.min(currentLevel,3);
+  if(cfg.type==='mobs'){for(let i=0;i<cfg.count;i++)enemies.push(createEnemy(TEMPLATES.mob,TEMPLE.x+(i-cfg.count/2+0.5)*60,TEMPLE.y+40));}
+  else{
+    // 每过一层 Boss数量+1：第1层1个，第2层2个，以此类推
+    const bossCount=Math.min(currentLevel,4);
     const tmpl=TEMPLATES[cfg.type];
     for(let i=0;i<bossCount;i++){
       const ox=(i-(bossCount-1)/2)*100;
@@ -1364,84 +1346,8 @@ let bgStars=[],bgParticles=[],fireflies=[];
 for(let i=0;i<60;i++)bgStars.push({x:rand(0,W),y:rand(0,H*0.4),r:rand(0.5,2),tw:rand(0,Math.PI*2)});
 for(let i=0;i<8;i++)fireflies.push({x:rand(0,W),y:rand(H*0.3,H*0.8),vx:rand(-0.3,0.3),vy:rand(-0.3,0.3),life:rand(0,200),phase:rand(0,Math.PI*2)});
 let bgFrame=0;
-
-// ===== 白天背景 =====
-function drawDayBackground(){
-  bgFrame++;
-  // 1. 天空渐变（白色亮空）
-  const sky=ctx.createLinearGradient(0,0,0,H);
-  sky.addColorStop(0,'#c8d8e8');
-  sky.addColorStop(0.3,'#d8e0e8');
-  sky.addColorStop(0.6,'#e0e0d8');
-  sky.addColorStop(1,'#d8d0c0');
-  ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);
-  // 2. 太阳
-  const sx=W-110,sy=75;
-  ctx.save();
-  ctx.shadowColor='rgba(255,200,80,0.7)';ctx.shadowBlur=40;
-  ctx.fillStyle='#ffdd55';ctx.beginPath();ctx.arc(sx,sy,32,0,Math.PI*2);ctx.fill();
-  ctx.restore();
-  // 光芒
-  ctx.strokeStyle='rgba(255,210,60,0.35)';ctx.lineWidth=2;
-  for(let i=0;i<8;i++){
-    const a=i/8*Math.PI*2+bgFrame*0.005;
-    ctx.beginPath();ctx.moveTo(sx+Math.cos(a)*38,sy+Math.sin(a)*38);ctx.lineTo(sx+Math.cos(a)*52,sy+Math.sin(a)*52);ctx.stroke();
-  }
-  // 3. 云朵
-  ctx.fillStyle='rgba(255,255,255,0.7)';
-  for(let i=0;i<4;i++){
-    const cx=((i*280+bgFrame*0.3)%(W+120))-60;
-    const cy=40+i*28;
-    ctx.beginPath();
-    ctx.arc(cx,cy,18,0,Math.PI*2);ctx.arc(cx+20,cy-6,22,0,Math.PI*2);ctx.arc(cx+44,cy,18,0,Math.PI*2);ctx.arc(cx+22,cy+8,16,0,Math.PI*2);ctx.fill();
-  }
-  // 4. 远山
-  ctx.fillStyle='#a8b0bc';
-  ctx.beginPath();ctx.moveTo(0,H*0.45);
-  const peaks1=[0.1,0.18,0.28,0.38,0.48,0.58,0.68,0.78,0.88,1.0];
-  const heights1=[0.42,0.38,0.35,0.40,0.36,0.33,0.38,0.35,0.41,0.44];
-  peaks1.forEach((px,i)=>{ctx.lineTo(W*px,H*heights1[i]);});
-  ctx.lineTo(W,H);ctx.lineTo(0,H);ctx.closePath();ctx.fill();
-  // 5. 近山
-  ctx.fillStyle='#8a9090';
-  ctx.beginPath();ctx.moveTo(0,H*0.55);
-  const peaks2=[0.08,0.16,0.25,0.35,0.45,0.55,0.65,0.75,0.85,0.95,1.0];
-  const heights2=[0.50,0.46,0.52,0.48,0.54,0.50,0.55,0.49,0.53,0.50,0.56];
-  peaks2.forEach((px,i)=>{ctx.lineTo(W*px,H*heights2[i]);});
-  ctx.lineTo(W,H);ctx.lineTo(0,H);ctx.closePath();ctx.fill();
-  // 6. 树林剪影
-  ctx.fillStyle='#5a6048';
-  for(let i=0;i<12;i++){
-    const tx=i*18+(i%2)*6,ty=H-40-i*3;
-    ctx.beginPath();
-    ctx.moveTo(tx,H);ctx.lineTo(tx,ty);
-    ctx.moveTo(tx-10,ty+8);ctx.lineTo(tx,ty);ctx.lineTo(tx+10,ty+8);
-    ctx.fill();
-  }
-  for(let i=0;i<12;i++){
-    const tx=W-i*18-(i%2)*6,ty=H-40-i*3;
-    ctx.beginPath();
-    ctx.moveTo(tx,H);ctx.lineTo(tx,ty);
-    ctx.moveTo(tx-10,ty+8);ctx.lineTo(tx,ty);ctx.lineTo(tx+10,ty+8);
-    ctx.fill();
-  }
-  // 7. 庙宇
-  drawTemple();
-  // 8. 地面
-  const ground=ctx.createLinearGradient(0,H*0.7,0,H);
-  ground.addColorStop(0,'rgba(80,70,50,0)');
-  ground.addColorStop(0.4,'rgba(90,78,55,0.6)');
-  ground.addColorStop(1,'rgba(70,60,40,0.9)');
-  ctx.fillStyle=ground;ctx.fillRect(0,H*0.65,W,H*0.35);
-  // 战斗场地圈
-  ctx.strokeStyle='rgba(180,80,40,0.08)';ctx.lineWidth=1;ctx.setLineDash([8,6]);
-  ctx.beginPath();ctx.arc(W/2,H/2+80,270,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);
-}
-
 function drawBackground(){
   bgFrame++;
-  if(isDaytime){ drawDayBackground(); return; }
-  // ===== 夜晚背景（原有） =====
   // 1. 天空渐变
   const sky=ctx.createLinearGradient(0,0,0,H);
   sky.addColorStop(0,'#0a0a1a');
@@ -1754,7 +1660,7 @@ function updateItems(){
     const wn=WEAPONS[w];
     html+=`<div class="item-slot ${player.weapon===w?'usable':''}" onclick="switchWeapon(${idx})" title="${wn.name}"><span class="key">${idx+3}</span>${wn.emoji}</div>`;
   });
-  if(player.enhDefLevel>0||player.defLevel>0)html+=`<div class="item-slot" title="防御 Lv.${player.defLevel+player.enhDefLevel}">🛡️<span class="count">${player.defLevel+player.enhDefLevel}</span></div>`;
+  if(player.defLevel>0)html+=`<div class="item-slot" title="防御 Lv.${player.defLevel}">🛡️<span class="count">${player.defLevel}</span></div>`;
   // 变身
   if(player.transforms.length>0){
     const lastT=player.transforms[player.transforms.length-1];
@@ -1959,51 +1865,7 @@ updatePlayer=function(){
 setupTouchControls();
 
 // ===== PAGE SYSTEM =====
-const SM_RATE=200;
-
-// ===== 强化系统 =====
-const ENHANCE_COST={
-  speed:[8,10,14,20,25],   // Lv0→1, 1→2, 2→3, 3→4, 4→5
-  defense:[10,13,17,23,27],
-};
-const ENHANCE_MAX=5; // 最高5级
-const SPEED_BONUS=[0,0.4,0.8,1.2,1.6,2.0]; // 每级速度加成
-const DEF_BONUS=[0,3,6,10,15,20]; // 每级减伤
-
-function enhanceStat(stat){
-  const lvKey=stat==='speed'?'speedLevel':'defLevel';
-  const cur=smSave[lvKey]||0;
-  if(cur>=ENHANCE_MAX){return;}
-  const cost=ENHANCE_COST[stat][cur];
-  if(smSave.seals<cost){return;}
-  smSave.seals-=cost;
-  smSave[lvKey]=cur+1;
-  smSaveSave();
-  smRefreshEnhance();
-  smUpdateHome();
-  // 飘字效果
-  const el=document.getElementById('enhc-'+stat);
-  if(el){el.style.boxShadow='0 0 20px rgba(212,175,55,0.6)';setTimeout(()=>{el.style.boxShadow='';},500);}
-}
-function smRefreshEnhance(){
-  document.getElementById('sm-enhance-seals').textContent=smSave.seals;
-  ['speed','defense'].forEach(stat=>{
-    const lvKey=stat==='speed'?'speedLevel':'defLevel';
-    const cur=smSave[lvKey]||0;
-    const lvEl=document.getElementById('enhc-'+stat+'-lv');
-    const costEl=document.getElementById('enhc-'+stat+'-cost');
-    const btn=document.getElementById('enhc-'+stat+'-btn');
-    if(lvEl)lvEl.textContent='Lv.'+cur;
-    if(cur>=ENHANCE_MAX){
-      if(costEl)costEl.textContent='已满级';
-      if(btn){btn.disabled=true;btn.textContent='已满级';}
-    }else{
-      const cost=ENHANCE_COST[stat][cur];
-      if(costEl)costEl.textContent=cost+' 📜';
-      if(btn){btn.disabled=smSave.seals<cost;btn.textContent='强化';}
-    }
-  });
-}
+const SM_RATE=50;
 function smGetKey(){const id=localStorage.getItem('thawpawActiveId')||'default';return 'sword_master_save_'+id;}
 function smLoadSave(){try{const d=JSON.parse(localStorage.getItem(smGetKey()));return d||{coins:0,seals:0,highestLevel:1};}catch(e){return{coins:0,seals:0,highestLevel:1};}}
 function smSaveSave(){localStorage.setItem(smGetKey(),JSON.stringify(smSave));}
@@ -2014,7 +1876,7 @@ function smShowPage(name){
   const pg=document.getElementById('sm-page-'+name);if(pg){pg.classList.add('active');pg.style.display='';}
   if(name==='home')smUpdateHome();
   if(name==='levels')smRenderLevels();
-  if(name==='enhance'){document.getElementById('sm-enhance-seals').textContent=smSave.seals;smRefreshEnhance();}
+  if(name==='enhance')document.getElementById('sm-enhance-seals').textContent=smSave.seals;
   if(name==='shop')document.getElementById('sm-shop-coins').textContent=smSave.coins;
 }
 function smGoHome(){
