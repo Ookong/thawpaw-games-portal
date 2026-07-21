@@ -326,6 +326,7 @@ tr:hover td{background:var(--card2)}
       <button class="tab" data-tab="games" onclick="switchTab('games')">🎮 游戏数据</button>
       <button class="tab" data-tab="feedback" onclick="switchTab('feedback')">💬 反馈</button>
       <button class="tab" data-tab="admins" onclick="switchTab('admins')" id="admin-tab">👥 管理员</button>
+      <button class="tab" data-tab="mailbox" onclick="switchTab('mailbox')" id="mailbox-tab">✉️ 信箱</button>
       <button class="tab" data-tab="chatroom" onclick="switchTab('chatroom')" id="chatroom-tab">💬 聊天室</button>
     </div>
 
@@ -429,6 +430,17 @@ tr:hover td{background:var(--card2)}
           <button onclick="transferSuperAdmin()" style="background:#c92a2a">确认转移</button>
         </div>
         <div style="font-size:.78rem;color:var(--dim);margin-top:.5rem">仅超级管理员可操作 · 请仔细核对目标 ID 和昵称</div>
+      </div>
+    </div>
+
+    <!-- ===== Mailbox Tab ===== -->
+    <div class="panel" id="panel-mailbox">
+      <div class="table-header" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+        <h3>✉️ 官方信箱</h3>
+        <button class="export-btn" onclick="showComposeMail()" style="background:var(--accent)">✏️ 写邮件</button>
+      </div>
+      <div id="mail-list">
+        <div class="empty-state"><div class="empty-icon">✉️</div>加载中...</div>
       </div>
     </div>
 
@@ -665,12 +677,15 @@ function showDashboard(){
 
   // Admin tab visibility (only admins can see)
   const adminTab = document.getElementById('admin-tab');
+  const mailboxTab = document.getElementById('mailbox-tab');
   const chatroomTab = document.getElementById('chatroom-tab');
   if(isAdmin){
     adminTab.style.display = '';
+    mailboxTab.style.display = '';
     chatroomTab.style.display = '';
   } else {
     adminTab.style.display = 'none';
+    mailboxTab.style.display = 'none';
     chatroomTab.style.display = 'none';
   }
 
@@ -689,7 +704,7 @@ function showDashboard(){
   // Load data
   loadStats();
   loadFeedback();
-  if(isAdmin) { loadAdmins(); loadChatroomMembers(); }
+  if(isAdmin) { loadAdmins(); loadMail(); loadChatroomMembers(); }
 
   // 🔔 启动反馈监控（自动弹通知）
   startFeedbackWatcher();
@@ -1315,6 +1330,98 @@ async function doPlayerSearch(){
   }
 }
 function escapeHtml(s){return String(s||'').replace(/[<>&"]/g,function(c){return{'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c];});}
+</script>
+
+<!-- Mail Compose Modal -->
+<div id="mail-compose-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:center;justify-content:center;padding:20px" onclick="if(event.target===this)hideComposeMail()">
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;width:100%;max-width:520px;max-height:85vh;overflow-y:auto">
+    <h3 style="font-size:1.1rem;font-weight:700;margin-bottom:1rem">✏️ 写邮件</h3>
+    <div style="display:flex;gap:1rem;margin-bottom:1rem;font-size:.85rem">
+      <label style="display:flex;align-items:center;gap:6px;cursor:pointer"><input type="radio" name="mail-type" value="personal" checked onchange="onMailTypeChange()"> 指定玩家</label>
+      <label style="display:flex;align-items:center;gap:6px;cursor:pointer"><input type="radio" name="mail-type" value="broadcast" onchange="onMailTypeChange()"> 📢 全体广播</label>
+    </div>
+    <div id="mail-to-row">
+      <label style="display:block;font-size:.78rem;color:var(--text2);font-weight:600;margin-bottom:6px">收件人 ID</label>
+      <input type="text" id="mail-to" placeholder="8 位玩家 ID" maxlength="8" style="width:100%;padding:10px 12px;border:2px solid var(--border2);border-radius:8px;font-size:14px;margin-bottom:1rem">
+    </div>
+    <label style="display:block;font-size:.78rem;color:var(--text2);font-weight:600;margin-bottom:6px">标题</label>
+    <input type="text" id="mail-subject" placeholder="邮件标题" maxlength="200" style="width:100%;padding:10px 12px;border:2px solid var(--border2);border-radius:8px;font-size:14px;margin-bottom:1rem">
+    <label style="display:block;font-size:.78rem;color:var(--text2);font-weight:600;margin-bottom:6px">内容</label>
+    <textarea id="mail-content" placeholder="邮件内容..." maxlength="5000" style="width:100%;padding:10px 12px;border:2px solid var(--border2);border-radius:8px;font-size:14px;min-height:100px;resize:vertical;margin-bottom:1rem"></textarea>
+    <div style="display:flex;gap:.5rem;justify-content:flex-end">
+      <button onclick="hideComposeMail()" style="padding:10px 20px;border:none;border-radius:8px;background:var(--card2);color:var(--text2);font-size:14px;font-weight:600;cursor:pointer">取消</button>
+      <button onclick="sendMail()" style="padding:10px 20px;border:none;border-radius:8px;background:var(--accent);color:#fff;font-size:14px;font-weight:600;cursor:pointer">📤 发送</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function loadMail(){
+  apiGet('mail/list',{id:session.id,nickname:session.nickname,admin:'1'}).then(function(res){
+    if(!res.ok){
+      document.getElementById('mail-list').innerHTML='<div class="empty-state"><div class="empty-icon">⚠️</div>加载失败</div>';
+      return;
+    }
+    var mail=res.mail||[];
+    if(mail.length===0){
+      document.getElementById('mail-list').innerHTML='<div class="empty-state"><div class="empty-icon">✉️</div>暂无邮件</div>';
+      return;
+    }
+    mail.sort(function(a,b){return (b.ts||0)-(a.ts||0);});
+    var html='';
+    for(var i=0;i<mail.length;i++){
+      var m=mail[i];
+      var time=m.time?new Date(m.time).toLocaleString('zh-CN'):'';
+      var tagC=m.broadcast?'background:#fff4e6;color:#e8590c':'background:var(--accent-light);color:var(--accent)';
+      var tagT=m.broadcast?'📢 广播':'📩 私信';
+      var toT=m.broadcast?'全体玩家':(m._toPlayer||'私信');
+      html+='<div class="feedback-item">';
+      html+='<div class="fb-header"><span class="fb-cat" style="'+tagC+'">'+tagT+'</span><span>发件人: 官方('+escapeHtml(m.fromName||'')+') · 收件人: '+escapeHtml(toT)+'</span><span style="margin-left:auto">'+time+'</span></div>';
+      html+='<div style="font-weight:700;margin-bottom:4px">'+escapeHtml(m.subject||'(无标题)')+'</div>';
+      html+='<div class="fb-content">'+escapeHtml(m.content||'')+'</div>';
+      if(isSuperAdmin) html+='<div style="margin-top:8px"><button onclick="deleteMail(\''+escapeHtml(m.id)+'\')" style="background:rgba(255,70,90,.15);color:#ff7a99;border:1px solid rgba(255,70,90,.2);padding:4px 12px;border-radius:6px;font-size:12px;cursor:pointer">🗑️ 删除</button></div>';
+      html+='</div>';
+    }
+    document.getElementById('mail-list').innerHTML=html;
+  }).catch(function(){
+    document.getElementById('mail-list').innerHTML='<div class="empty-state"><div class="empty-icon">⚠️</div>加载失败</div>';
+  });
+}
+function showComposeMail(){
+  document.getElementById('mail-compose-overlay').style.display='flex';
+  document.getElementById('mail-to').value='';
+  document.getElementById('mail-subject').value='';
+  document.getElementById('mail-content').value='';
+}
+function hideComposeMail(){
+  document.getElementById('mail-compose-overlay').style.display='none';
+}
+function onMailTypeChange(){
+  var isBC=document.querySelector('input[name="mail-type"]:checked').value==='broadcast';
+  document.getElementById('mail-to-row').style.display=isBC?'none':'block';
+}
+function sendMail(){
+  var isBC=document.querySelector('input[name="mail-type"]:checked').value==='broadcast';
+  var subj=document.getElementById('mail-subject').value.trim();
+  var cont=document.getElementById('mail-content').value.trim();
+  var to=document.getElementById('mail-to').value.trim();
+  if(!subj||!cont){alert('标题和内容不能为空');return;}
+  if(!isBC&&!/^\d{8}$/.test(to)){alert('收件人 ID 必须是 8 位数字');return;}
+  var p={id:session.id,nickname:session.nickname,subject:subj,content:cont,broadcast:isBC};
+  if(!isBC)p.toPlayerId=to;
+  apiPost('mail/send',p).then(function(res){
+    if(res.ok){alert('✅ 邮件已发送！');hideComposeMail();loadMail();}
+    else alert('❌ '+(res.error||'发送失败'));
+  }).catch(function(){alert('❌ 网络错误');});
+}
+function deleteMail(mid){
+  if(!isSuperAdmin){alert('仅超级管理员可删除');return;}
+  if(!confirm('确定删除这封邮件？'))return;
+  apiPost('mail/delete',{id:session.id,nickname:session.nickname,mailId:mid}).then(function(res){
+    if(res.ok)loadMail();
+    else alert('❌ '+(res.error||'删除失败'));
+  }).catch(function(){alert('❌ 网络错误');});
+}
 </script>
 
 </body>
