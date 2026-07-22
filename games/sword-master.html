@@ -584,6 +584,12 @@ const BOSS_IMAGES={};
 function loadBossImage(key,src){const img=new Image();img.src=src;img.onload=()=>{BOSS_IMAGES[key]=img;};}
 loadBossImage('boss2','assets/boss2-bear.png');
 loadBossImage('boss3','assets/boss3-darklord.png');
+loadBossImage('boss4','assets/boss4-shadow.png');
+// 进化形态图片 (Lv5+)
+loadBossImage('boss1-lv5','assets/boss1-lv5.png');
+loadBossImage('boss2-lv5','assets/boss2-lv5.png');
+loadBossImage('boss3-lv5','assets/boss3-lv5.png');
+loadBossImage('boss4-lv5','assets/boss4-lv5.png');
 
 const SFX={slash:()=>{snd(800,0.06,'square',0.1);snd(400,0.1,'sawtooth',0.06);},hit:()=>snd(150,0.12,'sawtooth',0.15),bhit:()=>{snd(100,0.12,'sawtooth',0.12);snd(200,0.06,'square',0.06);},coin:()=>{snd(900,0.05,'sine',0.1);snd(1200,0.06,'sine',0.08);},heal:()=>{snd(600,0.1,'sine',0.12);setTimeout(()=>snd(800,0.1,'sine',0.12),50);},dash:()=>{snd(300,0.07,'sine',0.1);snd(500,0.04,'sine',0.06);},hurt:()=>snd(200,0.2,'sawtooth',0.18),win:()=>{[400,500,600,800].forEach((f,i)=>setTimeout(()=>snd(f,0.12,'sine',0.14),i*80));},lose:()=>{[400,300,200,150].forEach((f,i)=>setTimeout(()=>snd(f,0.2,'sawtooth',0.14),i*120));},roar:()=>{snd(80,0.25,'sawtooth',0.15);snd(60,0.3,'square',0.1);},buy:()=>{snd(700,0.06,'sine',0.12);setTimeout(()=>snd(1000,0.08,'sine',0.1),40);},buff:()=>{[400,600,800,1000,1200].forEach((f,i)=>setTimeout(()=>snd(f,0.1,'sine',0.12),i*35));},boom:()=>{snd(60,0.4,'sawtooth',0.25);snd(40,0.5,'square',0.15);snd(200,0.2,'sawtooth',0.1);},arrow:()=>{snd(600,0.05,'sine',0.08);snd(900,0.08,'sine',0.06);},
 // 敌人喊"哈"
@@ -1248,6 +1254,16 @@ function createEnemy(tmpl,x,y){
     x,y,vx:0,vy:0,state:'idle',stateTimer:0,attackTimer:tmpl.attackCD,hitFlash:0,projectiles:[],shockwaves:[],phase:0,templateType:tmpl.name};
   // 应用进化外观
   if(evo){e.emoji=evo.emoji;e.color=evo.color;e.accent=evo.accent;e.evoSkill=evo.extraSkill;e.evoSkillName=evo.skillName;}
+  // 图片 key：有进化用进化图，否则用基础图
+  const bossNum=tmpl.name==='山贼头目'?'boss1':tmpl.name==='铁臂熊'?'boss2':tmpl.name==='黑风老祖'?'boss3':tmpl.name==='影刹'?'boss4':tmpl.name==='毒蝎娘娘'?'boss5':tmpl.name==='雷鹰'?'boss6':tmpl.name==='岩甲巨人'?'boss7':tmpl.name==='天魔教主'?'boss8':'';
+  if(evo){
+    // Lv5+ 进化形态用专用图片（目前只有 boss1~4 的 Lv5 图）
+    const lv5Key=bossNum+'-lv5';
+    if(BOSS_IMAGES[lv5Key]) e.imgKey=lv5Key;
+    else if(BOSS_IMAGES[bossNum]) e.imgKey=bossNum;
+  }else{
+    if(BOSS_IMAGES[bossNum]) e.imgKey=bossNum;
+  }
   // 小贼会说话
   if(isMob){
     e.tauntCD=rand(60,180);
@@ -1847,9 +1863,8 @@ function drawEnemy(e){
   const frozen=player.enemyFreeze>0;
   const flash=e.hitFlash>0;
   ctx.save();ctx.translate(e.x,e.y);ctx.shadowColor=e.accent;ctx.shadowBlur=12;ctx.fillStyle=flash?'#fff':e.color;ctx.beginPath();ctx.arc(0,0,e.size,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;ctx.strokeStyle=e.accent;ctx.lineWidth=3;ctx.stroke();
-  // boss2、boss3 用自定义图片代替 emoji
-  if(e.templateType==='boss2'&&BOSS_IMAGES['boss2']){ctx.drawImage(BOSS_IMAGES['boss2'],-e.size,-e.size,e.size*2,e.size*2);}
-  else if(e.templateType==='boss3'&&BOSS_IMAGES['boss3']){const img=BOSS_IMAGES['boss3'];const s=e.size*2;ctx.drawImage(img,-s/2,-s/2,s,s*1.5);}
+  // 有自定义图片用图片，否则用 emoji
+  if(e.imgKey&&BOSS_IMAGES[e.imgKey]){const img=BOSS_IMAGES[e.imgKey];const s=e.size*2;ctx.drawImage(img,-s/2,-s/2,s,s*1.5);}
   else{ctx.font=`${e.size*1.1}px sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(e.emoji,0,2);}
   ctx.restore();
   if(frozen){
