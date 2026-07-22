@@ -884,7 +884,7 @@ function cancelCreateNew(){
 function finishLogin(){
   showHomeAfterLogin();
   refreshPortal();
-  refreshMailboxVisibility();
+  try{refreshMailboxVisibility()}catch(e){console.warn('[login] mailbox skipped:',e.message)}
 }
 function onLogout(){
   if(!confirm('🚪 退出登录？\n\n你的 ID 和进度会保留在设备上，下次重新输入 ID 就能恢复。')) return;
@@ -966,7 +966,7 @@ migrateLegacyData();
 if(getActiveId()){
   showHomeAfterLogin();
   refreshPortal();
-  refreshMailboxVisibility();
+  try{refreshMailboxVisibility()}catch(e){console.warn('[init] mailbox skipped:',e.message)}
 } else {
   // 无 ID → 游客模式（默认展示游戏，不挡新访客）
   enterGuestMode();
