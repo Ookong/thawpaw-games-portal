@@ -584,8 +584,16 @@ const SFX={slash:()=>{snd(800,0.06,'square',0.1);snd(400,0.1,'sawtooth',0.06);},
 ya:()=>{snd(rand(250,400),0.12,'sawtooth',0.06);snd(rand(120,180),0.08,'square',0.04);},
 // Boss喊"哈"
 yaBoss:()=>{snd(rand(150,220),0.18,'sawtooth',0.09);snd(rand(80,110),0.12,'square',0.06);},
-// 小贼：尖锐高频
+// 小贼：尖锐高频（已废弃，保留兼容）
 yaMob:()=>{sndVoice(rand(500,750),0.1,0.12,1800);},
+// Boss5 毒蝎娘娘：阴险沙哑
+yaBoss5:()=>{sndVoice(rand(180,260),0.18,0.15,900);snd(rand(400,600),0.06,'sawtooth',0.05);},
+// Boss6 雷鹰：尖锐高亢 + 电流
+yaBoss6:()=>{sndVoice(rand(500,700),0.1,0.1,2200);snd(rand(2000,3000),0.04,'square',0.03);},
+// Boss7 岩甲巨人：超低沉轰鸣
+yaBoss7:()=>{sndVoice(rand(40,70),0.35,0.22,200);snd(rand(25,45),0.3,'square',0.1);},
+// Boss8 天魔教主：多层回响
+yaBoss8:()=>{sndVoice(rand(90,130),0.25,0.2,400);sndVoice(rand(180,240),0.15,0.12,800);snd(rand(60,90),0.2,'sawtooth',0.08);},
 // 贼头：正常中频
 yaBoss1:()=>{sndVoice(rand(280,380),0.14,0.14,1200);},
 // 铁臂熊：沉闷低频
@@ -617,6 +625,22 @@ const BOSS_EVOLUTION={
     {lv:5,name:'幻影刺客',emoji:'👤',color:'#0a0a3e',accent:'#00ffaa',hpMul:1.5,dmgMul:1.4,extraSkill:'cloneAttack',skillName:'分身'},
     {lv:10,name:'虚空影帝',emoji:'🌀',color:'#000020',accent:'#00ffff',hpMul:2.0,dmgMul:1.8,extraSkill:'cloneAttack',skillName:'虚空分身'},
   ],
+  '毒蝎娘娘':[
+    {lv:5,name:'万毒蝎后',emoji:'🦂',color:'#2a1a00',accent:'#ffaa00',hpMul:1.5,dmgMul:1.4,extraSkill:'poisonSting',skillName:'毒针雨'},
+    {lv:10,name:'天毒圣母',emoji:'🦂',color:'#1a0a00',accent:'#ff6600',hpMul:2.0,dmgMul:1.8,extraSkill:'poisonSting',skillName:'万毒天降'},
+  ],
+  '雷鹰':[
+    {lv:5,name:'迅雷隼',emoji:'🦅',color:'#1a1a4a',accent:'#ffdd00',hpMul:1.5,dmgMul:1.4,extraSkill:'lightning',skillName:'落雷'},
+    {lv:10,name:'九天雷尊',emoji:'⚡',color:'#0a0a2a',accent:'#ffff00',hpMul:2.0,dmgMul:1.8,extraSkill:'lightning',skillName:'天罚'},
+  ],
+  '岩甲巨人':[
+    {lv:5,name:'碎岩巨灵',emoji:'🗿',color:'#3a2a1a',accent:'#cc8844',hpMul:1.5,dmgMul:1.4,extraSkill:'boulderThrow',skillName:'投石'},
+    {lv:10,name:'开天巨神',emoji:'⛰️',color:'#2a1a0a',accent:'#ff8800',hpMul:2.0,dmgMul:1.8,extraSkill:'boulderThrow',skillName:'山崩'},
+  ],
+  '天魔教主':[
+    {lv:5,name:'天魔圣君',emoji:'😤',color:'#2a0a2a',accent:'#ff00ff',hpMul:1.5,dmgMul:1.4,extraSkill:'darkNova',skillName:'天魔噬'},
+    {lv:10,name:'六道魔尊',emoji:'😈',color:'#0a000a',accent:'#ff0066',hpMul:2.0,dmgMul:1.8,extraSkill:'darkNova',skillName:'六道灭'},
+  ],
 };
 // 获取Boss当前进化形态（返回null表示用原始数据）
 function getBossEvo(templateName,level){
@@ -629,13 +653,13 @@ function getBossEvo(templateName,level){
 // ===== 波次 =====
 const WAVES=[
   {name:'山贼头目',type:'boss1',banner:'第一波'},
-  {name:'无名小贼',type:'mobs',count:2,banner:'第二波'},
-  {name:'铁臂熊',type:'boss2',banner:'第三波'},
-  {name:'无名小贼',type:'mobs',count:2,banner:'第四波'},
-  {name:'无名小贼',type:'mobs',count:2,banner:'第五波'},
-  {name:'黑风老祖',type:'boss3',banner:'第六波'},
-  {name:'无名小贼',type:'mobs',count:3,banner:'第七波'},
-  {name:'影刹',type:'boss4',banner:'第八波'},
+  {name:'铁臂熊',type:'boss2',banner:'第二波'},
+  {name:'黑风老祖',type:'boss3',banner:'第三波'},
+  {name:'影刹',type:'boss4',banner:'第四波'},
+  {name:'毒蝎娘娘',type:'boss5',banner:'第五波'},
+  {name:'雷鹰',type:'boss6',banner:'第六波'},
+  {name:'岩甲巨人',type:'boss7',banner:'第七波'},
+  {name:'天魔教主',type:'boss8',banner:'第八波'},
 ];
 
 // ===== 敌人 =====
@@ -645,6 +669,10 @@ const TEMPLATES={
   boss2:{name:'铁臂熊',emoji:'🐻',hp:250,size:34,speed:1.5,color:'#4a2a1a',accent:'#8B4513',damage:22,attackRange:68,attackCD:85,movePattern:'slam',killGold:500},
   boss3:{name:'黑风老祖',emoji:'👹',hp:420,size:48,speed:1.1,color:'#2a0a0a',accent:'#b43228',damage:30,attackRange:88,attackCD:72,movePattern:'complex',killGold:1000},
   boss4:{name:'影刹',emoji:'🥷',hp:350,size:26,speed:3.2,color:'#1a1a2e',accent:'#9333ea',damage:26,attackRange:52,attackCD:48,movePattern:'shadow',killGold:800},
+  boss5:{name:'毒蝎娘娘',emoji:'🦂',hp:300,size:28,speed:2.0,color:'#3a2000',accent:'#cc6600',damage:20,attackRange:200,attackCD:60,movePattern:'ranged',killGold:700},
+  boss6:{name:'雷鹰',emoji:'🦅',hp:280,size:24,speed:3.5,color:'#1a1a4a',accent:'#ffdd00',damage:18,attackRange:56,attackCD:42,movePattern:'dive',killGold:650},
+  boss7:{name:'岩甲巨人',emoji:'🗿',hp:600,size:42,speed:0.8,color:'#3a2a1a',accent:'#cc8844',damage:35,attackRange:78,attackCD:100,movePattern:'slam',killGold:1200},
+  boss8:{name:'天魔教主',emoji:'😤',hp:550,size:40,speed:1.4,color:'#2a0a2a',accent:'#ff00ff',damage:32,attackRange:96,attackCD:65,movePattern:'complex',killGold:2000},
 };
 
 // ===== 武器 =====
@@ -701,6 +729,22 @@ const BOSS3_DEATH_LINES=['不可能……本座怎么会……你不过是……
 // 影刹——冷酷忍者
 const BOSS4_TAUNTS=['你甚至看不见我的影子。','太慢了。','你的剑法全是破绽。','我已经在你的身后了。','影子不会原谅你。','下一刀，就是最后一刀。','你以为你在追我？可笑。','我的刀锋已经舔过你的呼吸。'];
 const BOSS4_DEATH_LINES=['我的影子……竟然被看穿了……','不可能……我明明……已经在身后了……','这一刀……我认了。'];
+
+// 毒蝎娘娘——阴险毒辣
+const BOSS5_TAUNTS=['尝尝我的毒针！','死在我的毒下是你的荣幸！','嘶嘶……你很快就会倒下！','我的毒无药可解！','你的皮肤会变成紫色！','一点点就够了……然后你就死了！','敢靠近我吗？毒虫！','我的蝎尾已经饥渴难耐了！'];
+const BOSS5_DEATH_LINES=['我的毒……竟然被解了……','不可能……没有人能免疫我的毒……','天毒圣母……不会饶了你们的……'];
+
+// 雷鹰——狂傲高傲
+const BOSS6_TAUNTS=['你慢得像蜗牛！','我的翅膀比你的剑更快！','雷霆万钧！你接得住吗？','你以为你能打中天空之王吗？','太慢了！太慢了！','我是风暴的化身！','从天而降的恐惧——你感受到了吗？','你的剑连我的羽毛都碰不到！'];
+const BOSS6_DEATH_LINES=['我的翅膀……折断了……','不可能……我是天空的霸主……','即使坠落……我也要拉你陪葬！'];
+
+// 岩甲巨人——沉默寡言但力量压顶
+const BOSS7_TAUNTS=['……挡路。','……碎。','……弱。','……砸。','……不疼？','……无聊。','……你打不动我。','……跪下。'];
+const BOSS7_DEATH_LINES=['……岩石……碎了……','……终于……有个……对手了……','……大地……在哭泣……'];
+
+// 天魔教主——终极BOSS，狂妄至极
+const BOSS8_TAUNTS=['你走到了尽头。','本教主等这一天很久了。','你以为前面的那些废物就是全部？天真。','跪下，我给你一个痛快的死法。','六道轮回，你逃不掉！','本教主一掌便能碎山裂地！','你的一切挣扎在本教主眼中不过是蝼蚁的努力！','来吧，让我看看你的绝望！'];
+const BOSS8_DEATH_LINES=['六道……轮回……我还会回来的……','本教主……竟然败给了一个小鬼……','天魔不灭……我终将……重生……'];
 
 // ===== 玩家 =====
 const player={
@@ -972,6 +1016,11 @@ const TRANSFORMS={
   boss1:{name:'山贼头目',emoji:'🗡️',duration:180,size:24,speed:4.0,damage:30,attackRange:70,color:'#8B4513',accent:'#d4af37'}, // 3秒
   boss2:{name:'铁臂熊',emoji:'🐻',duration:180,size:36,speed:2.5,damage:45,attackRange:90,color:'#4a2a1a',accent:'#8B4513'},
   boss3:{name:'黑风老祖',emoji:'👹',duration:180,size:50,speed:2.0,damage:60,attackRange:110,color:'#2a0a0a',accent:'#b43228'},
+  boss4:{name:'影刹',emoji:'🥷',duration:180,size:26,speed:5.0,damage:40,attackRange:75,color:'#1a1a2e',accent:'#9333ea'},
+  boss5:{name:'毒蝎娘娘',emoji:'🦂',duration:180,size:28,speed:3.5,damage:42,attackRange:80,color:'#3a2000',accent:'#cc6600'},
+  boss6:{name:'雷鹰',emoji:'🦅',duration:180,size:24,speed:5.5,damage:38,attackRange:72,color:'#1a1a4a',accent:'#ffdd00'},
+  boss7:{name:'岩甲巨人',emoji:'🗿',duration:180,size:44,speed:1.8,damage:65,attackRange:100,color:'#3a2a1a',accent:'#cc8844'},
+  boss8:{name:'天魔教主',emoji:'😤',duration:180,size:42,speed:2.8,damage:70,attackRange:115,color:'#2a0a2a',accent:'#ff00ff'},
 };
 function activateTransform(){
   if(player.transforms.length===0||player.transformActive>0||player.transformCD>0)return;
@@ -1134,7 +1183,7 @@ function startWave(){
   const firstEnemy=enemies[0];
   if(firstEnemy&&firstEnemy.taunts){
     setTimeout(()=>{
-      const intro={boss1:'哈哈哈！又来送死的！',boss2:'想过去？先过我这关。',boss3:'你是来找死的吗？',boss4:'你看不见我的影子。'};
+      const intro={boss1:'哈哈哈！又来送死的！',boss2:'想过去？先过我这关。',boss3:'你是来找死的吗？',boss4:'你看不见我的影子。',boss5:'尝尝我的毒针！',boss6:'我是天空的霸主！',boss7:'……挡路。',boss8:'你走到了尽头。'};
       const introLine=intro[firstEnemy.templateType]||'';
       if(introLine)floatTexts.push({x:firstEnemy.x,y:firstEnemy.y-firstEnemy.size-20,text:introLine,color:firstEnemy.tauntColor||'#ff6622',life:120,vy:-0.3,fontSize:17});
       firstEnemy.speaking=90;
@@ -1175,6 +1224,10 @@ function createEnemy(tmpl,x,y){
   if(tmpl.name==='铁臂熊'){e.tauntCD=rand(100,200);e.tauntTimer=0;e.taunts=BOSS2_TAUNTS;e.deathLines=BOSS2_DEATH_LINES;e.tauntColor='#cc4422';}
   if(tmpl.name==='黑风老祖'){e.tauntCD=rand(120,240);e.tauntTimer=0;e.taunts=BOSS3_TAUNTS;e.deathLines=BOSS3_DEATH_LINES;e.tauntColor='#b43228';}
   if(tmpl.name==='影刹'){e.tauntCD=rand(90,180);e.tauntTimer=0;e.taunts=BOSS4_TAUNTS;e.deathLines=BOSS4_DEATH_LINES;e.tauntColor='#9333ea';}
+  if(tmpl.name==='毒蝎娘娘'){e.tauntCD=rand(90,180);e.tauntTimer=0;e.taunts=BOSS5_TAUNTS;e.deathLines=BOSS5_DEATH_LINES;e.tauntColor='#cc6600';}
+  if(tmpl.name==='雷鹰'){e.tauntCD=rand(80,160);e.tauntTimer=0;e.taunts=BOSS6_TAUNTS;e.deathLines=BOSS6_DEATH_LINES;e.tauntColor='#ffdd00';}
+  if(tmpl.name==='岩甲巨人'){e.tauntCD=rand(120,240);e.tauntTimer=0;e.taunts=BOSS7_TAUNTS;e.deathLines=BOSS7_DEATH_LINES;e.tauntColor='#cc8844';}
+  if(tmpl.name==='天魔教主'){e.tauntCD=rand(100,200);e.tauntTimer=0;e.taunts=BOSS8_TAUNTS;e.deathLines=BOSS8_DEATH_LINES;e.tauntColor='#ff00ff';}
   if(isMob){e.taunts=MOB_TAUNTS;e.deathLines=MOB_DEATH_LINES;e.tauntColor='#ffaa44';}
   return e;
 }
@@ -1314,6 +1367,49 @@ function updateEnemies(){
         if(e.stateTimer>50){e.state='idle';e.stateTimer=0;}
       }
     }
+    // ===== 毒蝎娘娘：远程风筝型 =====
+    else if(e.movePattern==='ranged'){
+      e.phase=Math.floor((1-e.hp/e.maxHp)*3);
+      if(e.state==='idle'){
+        if(d<150){e.state='retreat';e.stateTimer=0;}
+        else if(d>300){e.state='approach';e.stateTimer=0;}
+        else if(e.attackTimer<=0){e.state='sting';e.stateTimer=0;SFX.yaBoss5();}
+        else {e.state='strafe';e.stateTimer=0;}
+      }
+      if(e.state==='retreat'){e.x-=Math.cos(a)*e.speed*1.2;e.y-=Math.sin(a)*e.speed*1.2;if(e.stateTimer>40){e.state='idle';e.stateTimer=0;}}
+      if(e.state==='approach'){e.x+=Math.cos(a)*e.speed;e.y+=Math.sin(a)*e.speed;if(d<250){e.state='idle';e.stateTimer=0;}}
+      if(e.state==='strafe'){const sa=a+Math.PI/2;e.x+=Math.cos(sa)*e.speed*0.8;e.y+=Math.sin(sa)*e.speed*0.8;if(e.stateTimer>60){e.state='idle';e.stateTimer=0;}}
+      if(e.state==='sting'){
+        if(e.stateTimer===15){
+          const numBullets=3+e.phase;
+          for(let i=0;i<numBullets;i++){
+            const sa=a+(i-(numBullets-1)/2)*0.15;
+            e.projectiles.push({x:e.x,y:e.y,vx:Math.cos(sa)*4,vy:Math.sin(sa)*4,r:6,life:140,damage:e.damage*0.5});
+          }
+          SFX.arrow();
+        }
+        if(e.stateTimer>35){e.state='idle';e.stateTimer=0;e.attackTimer=80;}
+      }
+    }
+    // ===== 雷鹰：高速俯冲型 =====
+    else if(e.movePattern==='dive'){
+      e.phase=Math.floor((1-e.hp/e.maxHp)*3);
+      if(e.state==='idle'){
+        const r=Math.random();
+        if(r<0.4){e.state='flyDive';e.stateTimer=0;SFX.yaBoss6();}
+        else if(r<0.7){e.state='circle';e.stateTimer=0;SFX.yaBoss6();}
+        else {e.state='chaseBird';e.stateTimer=0;}
+      }
+      if(e.state==='flyDive'){
+        if(e.stateTimer<25){e.x-=Math.cos(a)*e.speed*1.5;e.y-=Math.sin(a)*e.speed*1.5;}
+        else if(e.stateTimer===25){e.diveAng=ang(e,player);}
+        else if(e.stateTimer>25&&e.stateTimer<48){e.x+=Math.cos(e.diveAng)*e.speed*3.5;e.y+=Math.sin(e.diveAng)*e.speed*3.5;if(dist(e,player)<e.attackRange+8){hitPlayer(e.damage);e.state='idle';e.stateTimer=0;e.attackTimer=60;}}
+        if(e.stateTimer>52){e.state='idle';e.stateTimer=0;e.attackTimer=50;}
+      }
+      if(e.state==='circle'){const orbitR=120;const ca2=ang({x:player.x,y:player.y},e)+0.08;const tx=player.x+Math.cos(ca2)*orbitR;const ty=player.y+Math.sin(ca2)*orbitR;e.x+=(tx-e.x)*0.1;e.y+=(ty-e.y)*0.1;if(e.stateTimer>80){e.state='idle';e.stateTimer=0;}}
+      if(e.state==='chaseBird'){const sp=e.speed*(1+e.phase*0.2);e.x+=Math.cos(a)*sp;e.y+=Math.sin(a)*sp;if(d<e.attackRange&&e.attackTimer<=0){hitPlayer(e.damage*0.8);e.attackTimer=e.attackCD;}if(e.stateTimer>60){e.state='idle';e.stateTimer=0;}}
+    }
+    // ===== 岩甲巨人：复用 slam（已在上面处理） =====
     // 接触伤害
     if(!frozen)if(d<e.size+player.r-4&&(e.state==='chase'||e.state==='attack')){if(player.invuln<=0&&player.buffs.invuln<=0)hitPlayer(e.damage*0.5);}
     } // end if(!frozen)
@@ -1336,11 +1432,10 @@ function updateEnemies(){
         // 冰冻减速效果（给玩家短暂减速感）
         floatTexts.push({x:e.x,y:e.y-e.size-15,text:e.evoSkillName+'！',color:'#00aaff',life:60,vy:-0.8,fontSize:18});
       }
-      // 噜魂：每5秒范围吸取，回血+对玩家伤害
+      // 噬魂：每5秒范围吸取，对玩家伤害（回血已移除）
       if(e.evoSkill==='darkNova'&&e.evoTimer%300===0&&e.hp<e.maxHp*0.6){
         const novaR=150;
         if(dist(e,player)<novaR){hitPlayer(e.damage*0.5);}
-        e.hp=Math.min(e.maxHp,e.hp+e.maxHp*0.03);
         for(let i=0;i<12;i++)particles.push({x:e.x,y:e.y,vx:rand(-4,4),vy:rand(-4,4),life:rand(20,35),size:rand(3,5),color:'#aa00ff'});
         floatTexts.push({x:e.x,y:e.y-e.size-15,text:e.evoSkillName+'！',color:'#aa00ff',life:60,vy:-0.8,fontSize:18});
         screenShake=10;
@@ -1352,6 +1447,34 @@ function updateEnemies(){
           e.projectiles.push({x:e.x,y:e.y,vx:Math.cos(ca)*6,vy:Math.sin(ca)*6,r:10,life:80,damage:e.damage*0.4});
         }
         floatTexts.push({x:e.x,y:e.y-e.size-15,text:e.evoSkillName+'！',color:'#00ffff',life:60,vy:-0.8,fontSize:18});
+      }
+      // 毒针雨：每6秒向玩家散射毒针
+      if(e.evoSkill==='poisonSting'&&e.evoTimer%360===0&&e.hp<e.maxHp*0.7){
+        const numBullets=8;
+        for(let i=0;i<numBullets;i++){
+          const sa=(i/numBullets)*Math.PI*2;
+          e.projectiles.push({x:e.x,y:e.y,vx:Math.cos(sa)*3.5,vy:Math.sin(sa)*3.5,r:6,life:120,damage:e.damage*0.4});
+        }
+        floatTexts.push({x:e.x,y:e.y-e.size-15,text:e.evoSkillName+'！',color:'#ff6600',life:60,vy:-0.8,fontSize:18});
+        screenShake=8;
+      }
+      // 落雷：每5秒在玩家位置召唤闪电
+      if(e.evoSkill==='lightning'&&e.evoTimer%300===0&&e.hp<e.maxHp*0.7){
+        setTimeout(()=>{
+          if(e&&e.hp>0){
+            e.projectiles.push({x:player.x,y:player.y,vx:0,vy:0,r:20,life:20,damage:e.damage*0.6});
+            for(let i=0;i<8;i++)particles.push({x:player.x,y:player.y,vx:rand(-5,5),vy:rand(-8,-2),life:rand(20,30),size:rand(3,5),color:'#ffff00'});
+            screenShake=10;SFX.boom();
+          }
+        },800);
+        floatTexts.push({x:e.x,y:e.y-e.size-15,text:e.evoSkillName+'！',color:'#ffff00',life:60,vy:-0.8,fontSize:18});
+      }
+      // 投石/山崩：每7秒向玩家扦巨石
+      if(e.evoSkill==='boulderThrow'&&e.evoTimer%420===0&&e.hp<e.maxHp*0.7){
+        const ba=ang(e,player);
+        e.projectiles.push({x:e.x,y:e.y,vx:Math.cos(ba)*3,vy:Math.sin(ba)*3,r:14,life:100,damage:e.damage*0.7});
+        floatTexts.push({x:e.x,y:e.y-e.size-15,text:e.evoSkillName+'！',color:'#ff8800',life:60,vy:-0.8,fontSize:18});
+        screenShake=6;
       }
     }
     // 火焰径渲染 + 碰撞
