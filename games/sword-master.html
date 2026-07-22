@@ -581,7 +581,16 @@ function sndVoice(f,d,v,formant){
 }
 // ===== Boss 自定义图片 =====
 const BOSS_IMAGES={};
-function loadBossImage(key,src){const img=new Image();img.src=src;img.onload=()=>{BOSS_IMAGES[key]=img;};}
+const BOSS_IMG_PROMISES=[];
+function loadBossImage(key,src){
+  const p=new Promise(res=>{
+    const img=new Image();
+    img.onload=()=>{BOSS_IMAGES[key]=img;res();};
+    img.onerror=()=>{console.warn('Boss image failed:',src);res();};
+    img.src=src;
+  });
+  BOSS_IMG_PROMISES.push(p);
+}
 loadBossImage('boss2','assets/boss2-bear.png');
 loadBossImage('boss3','assets/boss3-darklord.png');
 loadBossImage('boss4','assets/boss4-shadow.png');
@@ -590,6 +599,7 @@ loadBossImage('boss1-lv5','assets/boss1-lv5.png');
 loadBossImage('boss2-lv5','assets/boss2-lv5.png');
 loadBossImage('boss3-lv5','assets/boss3-lv5.png');
 loadBossImage('boss4-lv5','assets/boss4-lv5.png');
+function ensureBossImages(cb){Promise.all(BOSS_IMG_PROMISES).then(cb);}
 
 const SFX={slash:()=>{snd(800,0.06,'square',0.1);snd(400,0.1,'sawtooth',0.06);},hit:()=>snd(150,0.12,'sawtooth',0.15),bhit:()=>{snd(100,0.12,'sawtooth',0.12);snd(200,0.06,'square',0.06);},coin:()=>{snd(900,0.05,'sine',0.1);snd(1200,0.06,'sine',0.08);},heal:()=>{snd(600,0.1,'sine',0.12);setTimeout(()=>snd(800,0.1,'sine',0.12),50);},dash:()=>{snd(300,0.07,'sine',0.1);snd(500,0.04,'sine',0.06);},hurt:()=>snd(200,0.2,'sawtooth',0.18),win:()=>{[400,500,600,800].forEach((f,i)=>setTimeout(()=>snd(f,0.12,'sine',0.14),i*80));},lose:()=>{[400,300,200,150].forEach((f,i)=>setTimeout(()=>snd(f,0.2,'sawtooth',0.14),i*120));},roar:()=>{snd(80,0.25,'sawtooth',0.15);snd(60,0.3,'square',0.1);},buy:()=>{snd(700,0.06,'sine',0.12);setTimeout(()=>snd(1000,0.08,'sine',0.1),40);},buff:()=>{[400,600,800,1000,1200].forEach((f,i)=>setTimeout(()=>snd(f,0.1,'sine',0.12),i*35));},boom:()=>{snd(60,0.4,'sawtooth',0.25);snd(40,0.5,'square',0.15);snd(200,0.2,'sawtooth',0.1);},arrow:()=>{snd(600,0.05,'sine',0.08);snd(900,0.08,'sine',0.06);},
 // 敌人喊"哈"
@@ -1197,11 +1207,14 @@ function startGame(startLevel){
   const gp=document.getElementById('sm-page-game');gp.classList.add('active');gp.style.display='';
   fitCanvas();
   document.getElementById('screen-title').classList.add('hidden');
-  currentWave=0;currentLevel=startLevel||1;resetPlayer(true);smZhuqueRevives=0;
-  if(currentLevel>1)player.gold=(currentLevel-1)*300;
-  updateGold();updateItems();updatePlayerHP();updateWeaponDisplay();
-  document.getElementById('hud').style.display='flex';document.getElementById('bottom-hud').style.display='flex';document.getElementById('hint').style.display='flex';
-  startWave();
+  // 确保 Boss 图片加载完再开始
+  ensureBossImages(()=>{
+    currentWave=0;currentLevel=startLevel||1;resetPlayer(true);smZhuqueRevives=0;
+    if(currentLevel>1)player.gold=(currentLevel-1)*300;
+    updateGold();updateItems();updatePlayerHP();updateWeaponDisplay();
+    document.getElementById('hud').style.display='flex';document.getElementById('bottom-hud').style.display='flex';document.getElementById('hint').style.display='flex';
+    startWave();
+  });
 }
 function startWave(){
   inBreak=false;gameState='battle';document.getElementById('break-panel').classList.remove('show');closeShop();
