@@ -59,6 +59,9 @@ var cloudSync = (function() {
     // Snake
     var snake = getLocal('snake_save_' + id);
     if (snake) saves.snake = JSON.parse(snake);
+    // Sword Master
+    var sword = getLocal('sword_master_save_' + id);
+    if (sword) saves.sword_master = JSON.parse(sword);
     // Dungeon
     var dungeon = getLocal('thawpaw.dungeon.save.v2_' + id);
     if (dungeon) saves.dungeon = JSON.parse(dungeon);
@@ -83,6 +86,7 @@ var cloudSync = (function() {
     if (!data) return;
     var id = getUnifiedPlayerIdLocal();
     if (data.snake) setLocal('snake_save_' + id, JSON.stringify(data.snake));
+    if (data.sword_master) setLocal('sword_master_save_' + id, JSON.stringify(data.sword_master));
     if (data.dungeon) setLocal('thawpaw.dungeon.save.v2_' + id, JSON.stringify(data.dungeon));
     if (data.moonstone_solo) setLocal('moonstone_save_solo_' + id, JSON.stringify(data.moonstone_solo));
     if (data.moonstone_duo) setLocal('moonstone_save_duo_' + id, JSON.stringify(data.moonstone_duo));
