@@ -269,8 +269,8 @@ body.shape-square .sm-home-content{max-width:100%;}
     </div>
     <div class="sm-currency-bubble">💰 <span id="sm-home-coins">0</span></div>
     <div class="sm-currency-bubble">📜 <span id="sm-home-seals">0</span></div>
+    <span class="sm-settings-btn" onclick="toggleBgMode()" id="sm-bg-btn" title="切换背景风格">🎨</span>
     <span class="sm-settings-btn" onclick="goPortal()" title="返回 Portal" style="font-size:20px;">🏠</span>
-    <span class="sm-settings-btn" onclick="alert('设置建设中 ⚙️')">⚙️</span>
   </div>
   <div class="sm-home-content">
     <!-- 左区：当前武器 -->
@@ -1627,85 +1627,272 @@ function updatePlayer(){
 // ===== 渲染 =====
 // ===== 背景场景：夜晚山林+庙宇 =====
 const TEMPLE={x:W/2,y:120,w:260,h:200}; // 庙宇区域（顶部中央）
-let bgStars=[],bgParticles=[],fireflies=[];
-for(let i=0;i<60;i++)bgStars.push({x:rand(0,W),y:rand(0,H*0.4),r:rand(0.5,2),tw:rand(0,Math.PI*2)});
-for(let i=0;i<8;i++)fireflies.push({x:rand(0,W),y:rand(H*0.3,H*0.8),vx:rand(-0.3,0.3),vy:rand(-0.3,0.3),life:rand(0,200),phase:rand(0,Math.PI*2)});
+// ===== 背景模式系统 =====
+// 'cozy' = 暖温馨鸟窝 | 'cool' = 炫酷紫电鸟窝
+let bgMode=localStorage.getItem('sm_bgMode')||'cozy';
+let bgStars=[],fireflies=[],nestTwigs=[],nestGlow=[],auraWisps=[];
+for(let i=0;i<80;i++)bgStars.push({x:rand(0,W),y:rand(0,H*0.45),r:rand(0.4,2.2),tw:rand(0,Math.PI*2),sp:rand(0.015,0.04)});
+for(let i=0;i<12;i++)fireflies.push({x:rand(0,W),y:rand(H*0.3,H*0.85),vx:rand(-0.3,0.3),vy:rand(-0.3,0.3),life:rand(0,200),phase:rand(0,Math.PI*2)});
+// 鸟窝编织草茎（预生成，保证稳定不抖动）
+for(let i=0;i<28;i++){
+  const ang=(i/28)*Math.PI*2;
+  nestTwigs.push({
+    ang:ang,
+    r1:rand(85,95),r2:rand(100,115),
+    w:rand(3,6),
+    phase:rand(0,Math.PI*2),
+    hue:rand(18,38),
+    dark:rand(0.3,0.6)
+  });
+}
+// 鸟窝内圈细草
+let nestInnerGrass=[];
+for(let i=0;i<20;i++){
+  const ang=(i/20)*Math.PI*2;
+  nestInnerGrass.push({ang:ang,r:rand(60,80),w:rand(1.5,3),phase:rand(0,Math.PI*2),hue:rand(25,42)});
+}
+// 炫酷版能量丝
+for(let i=0;i<6;i++)auraWisps.push({phase:rand(0,Math.PI*2),speed:rand(0.008,0.02),r:rand(120,180),yOff:rand(-20,20)});
+
 let bgFrame=0;
+
 function drawBackground(){
   bgFrame++;
-  // 1. 天空渐变
+  const cool=bgMode==='cool';
+
+  // ===== 1. 天空渐变 =====
   const sky=ctx.createLinearGradient(0,0,0,H);
-  sky.addColorStop(0,'#0a0a1a');
-  sky.addColorStop(0.3,'#0d1020');
-  sky.addColorStop(0.6,'#0d0e12');
-  sky.addColorStop(1,'#0a0806');
+  if(cool){
+    sky.addColorStop(0,'#08081a');sky.addColorStop(0.25,'#0d0d28');sky.addColorStop(0.55,'#100822');sky.addColorStop(1,'#080610');
+  }else{
+    sky.addColorStop(0,'#0a0a1a');sky.addColorStop(0.3,'#0d1020');sky.addColorStop(0.6,'#0d0e12');sky.addColorStop(1,'#0a0806');
+  }
   ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);
-  // 2. 星星
+
+  // ===== 2. 星星（炫酷版更多更亮）=====
+  const starBase=cool?0.5:0.4;
   bgStars.forEach(s=>{
-    s.tw+=0.03;
-    const a=0.4+Math.sin(s.tw)*0.3;
-    ctx.fillStyle=`rgba(255,240,200,${a})`;
+    s.tw+=s.sp;
+    const a=starBase+Math.sin(s.tw)*0.3;
+    ctx.fillStyle=cool?`rgba(200,220,255,${a})`:`rgba(255,240,200,${a})`;
     ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fill();
   });
-  // 3. 月亮
-  const mx=W-100,my=70;
+
+  // ===== 3. 月亮 =====
+  const mx=W-110,my=65;
   ctx.save();
-  ctx.shadowColor='rgba(255,250,220,0.6)';ctx.shadowBlur=30;
-  ctx.fillStyle='#f5f0dc';ctx.beginPath();ctx.arc(mx,my,28,0,Math.PI*2);ctx.fill();
+  if(cool){
+    // 炫酷版：蓝紫光晕大月亮
+    ctx.shadowColor='rgba(150,180,255,0.8)';ctx.shadowBlur=45;
+    ctx.fillStyle='#e0e8ff';ctx.beginPath();ctx.arc(mx,my,35,0,Math.PI*2);ctx.fill();
+    // 月亮光射线
+    ctx.shadowBlur=0;
+    ctx.strokeStyle='rgba(180,200,255,0.08)';ctx.lineWidth=2;
+    for(let r=0;r<8;r++){
+      const ra=r*Math.PI/4+bgFrame*0.002;
+      ctx.beginPath();ctx.moveTo(mx+Math.cos(ra)*40,my+Math.sin(ra)*40);
+      ctx.lineTo(mx+Math.cos(ra)*120,my+Math.sin(ra)*120);ctx.stroke();
+    }
+  }else{
+    ctx.shadowColor='rgba(255,250,220,0.6)';ctx.shadowBlur=30;
+    ctx.fillStyle='#f5f0dc';ctx.beginPath();ctx.arc(mx,my,28,0,Math.PI*2);ctx.fill();
+  }
   ctx.restore();
-  ctx.fillStyle='rgba(200,195,180,0.3)';ctx.beginPath();ctx.arc(mx-8,my-4,8,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(mx+6,my+8,5,0,Math.PI*2);ctx.fill();
-  // 4. 远山剪影
-  ctx.fillStyle='#0c0c14';
+  // 月亮陨石坑
+  const craterCol=cool?'rgba(160,170,200,0.25)':'rgba(200,195,180,0.3)';
+  ctx.fillStyle=craterCol;ctx.beginPath();ctx.arc(mx-8,my-4,8,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(mx+6,my+8,5,0,Math.PI*2);ctx.fill();
+
+  // ===== 4. 炫酷版：极光带 =====
+  if(cool){
+    for(let layer=0;layer<3;layer++){
+      ctx.save();
+      ctx.globalAlpha=0.08-layer*0.02;
+      const auroraCol=['#aa66ff','#66ccff','#ff66aa'][layer];
+      ctx.strokeStyle=auroraCol;ctx.lineWidth=40+layer*20;
+      ctx.beginPath();
+      for(let x=0;x<=W;x+=20){
+        const y=H*0.15+Math.sin(x*0.008+bgFrame*0.01+layer*1.5)*30+layer*15;
+        if(x===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+      }
+      ctx.stroke();ctx.restore();
+    }
+  }
+
+  // ===== 5. 远山剪影 =====
+  ctx.fillStyle=cool?'#0c0c1a':'#0c0c14';
   ctx.beginPath();ctx.moveTo(0,H*0.45);
   const peaks1=[0.1,0.18,0.28,0.38,0.48,0.58,0.68,0.78,0.88,1.0];
   const heights1=[0.42,0.38,0.35,0.40,0.36,0.33,0.38,0.35,0.41,0.44];
   peaks1.forEach((px,i)=>{ctx.lineTo(W*px,H*heights1[i]);});
   ctx.lineTo(W,H);ctx.lineTo(0,H);ctx.closePath();ctx.fill();
-  // 5. 近山剪影
-  ctx.fillStyle='#0a0a10';
+
+  // ===== 6. 近山剪影 =====
+  ctx.fillStyle=cool?'#0a0a14':'#0a0a10';
   ctx.beginPath();ctx.moveTo(0,H*0.55);
   const peaks2=[0.08,0.16,0.25,0.35,0.45,0.55,0.65,0.75,0.85,0.95,1.0];
   const heights2=[0.50,0.46,0.52,0.48,0.54,0.50,0.55,0.49,0.53,0.50,0.56];
   peaks2.forEach((px,i)=>{ctx.lineTo(W*px,H*heights2[i]);});
   ctx.lineTo(W,H);ctx.lineTo(0,H);ctx.closePath();ctx.fill();
-  // 6. 树林剪影（前景两侧）
+
+  // ===== 7. 树林剪影（前景两侧）=====
   ctx.fillStyle='#06060a';
-  // 左侧树林
   for(let i=0;i<12;i++){
     const tx=i*18+(i%2)*6,ty=H-40-i*3;
-    ctx.beginPath();
-    ctx.moveTo(tx,H);ctx.lineTo(tx,ty);
-    ctx.moveTo(tx-10,ty+8);ctx.lineTo(tx,ty);ctx.lineTo(tx+10,ty+8);
-    ctx.fill();
+    ctx.beginPath();ctx.moveTo(tx,H);ctx.lineTo(tx,ty);
+    ctx.moveTo(tx-10,ty+8);ctx.lineTo(tx,ty);ctx.lineTo(tx+10,ty+8);ctx.fill();
   }
-  // 右侧树林
   for(let i=0;i<12;i++){
     const tx=W-i*18-(i%2)*6,ty=H-40-i*3;
-    ctx.beginPath();
-    ctx.moveTo(tx,H);ctx.lineTo(tx,ty);
-    ctx.moveTo(tx-10,ty+8);ctx.lineTo(tx,ty);ctx.lineTo(tx+10,ty+8);
-    ctx.fill();
+    ctx.beginPath();ctx.moveTo(tx,H);ctx.lineTo(tx,ty);
+    ctx.moveTo(tx-10,ty+8);ctx.lineTo(tx,ty);ctx.lineTo(tx+10,ty+8);ctx.fill();
   }
-  // 7. 庙宇（顶部中央）
-  drawTemple();
-  // 8. 萤火虫
+
+  // ===== 8. 鸟窝（中央底部，放在地面上）=====
+  drawNest(cool);
+
+  // ===== 9. 萤火虫 / 能量粒子 =====
   fireflies.forEach(f=>{
     f.x+=f.vx;f.y+=f.vy;f.phase+=0.05;f.life--;
     if(f.life<=0||f.x<0||f.x>W||f.y<H*0.3||f.y>H*0.9){f.x=rand(0,W);f.y=rand(H*0.35,H*0.85);f.vx=rand(-0.4,0.4);f.vy=rand(-0.4,0.4);f.life=rand(100,300);}
     const a=0.4+Math.sin(f.phase)*0.3;
-    ctx.save();ctx.shadowColor='#aaff88';ctx.shadowBlur=6;
-    ctx.fillStyle=`rgba(180,255,120,${a*0.6})`;ctx.beginPath();ctx.arc(f.x,f.y,1.5,0,Math.PI*2);ctx.fill();
+    ctx.save();
+    if(cool){
+      // 炫酷版：紫+青双色粒子
+      ctx.shadowColor=f.phase%2<1?'#aa66ff':'#66ccff';ctx.shadowBlur=8;
+      ctx.fillStyle=`rgba(${f.phase%2<1?170:100},${f.phase%2<1?100:200},${f.phase%2<1?255:255},${a*0.7})`;
+    }else{
+      ctx.shadowColor='#aaff88';ctx.shadowBlur=6;
+      ctx.fillStyle=`rgba(180,255,120,${a*0.6})`;
+    }
+    ctx.beginPath();ctx.arc(f.x,f.y,cool?2:1.5,0,Math.PI*2);ctx.fill();
     ctx.restore();
   });
-  // 9. 地面
-  const ground=ctx.createLinearGradient(0,H*0.7,0,H);
-  ground.addColorStop(0,'rgba(20,16,12,0)');
-  ground.addColorStop(0.4,'rgba(25,18,12,0.8)');
-  ground.addColorStop(1,'rgba(15,10,6,1)');
+
+  // ===== 10. 地面 =====
+  const ground=ctx.createLinearGradient(0,H*0.68,0,H);
+  if(cool){
+    ground.addColorStop(0,'rgba(15,12,20,0)');
+    ground.addColorStop(0.4,'rgba(18,14,24,0.85)');
+    ground.addColorStop(1,'rgba(8,6,14,1)');
+  }else{
+    ground.addColorStop(0,'rgba(20,16,12,0)');
+    ground.addColorStop(0.4,'rgba(25,18,12,0.8)');
+    ground.addColorStop(1,'rgba(15,10,6,1)');
+  }
   ctx.fillStyle=ground;ctx.fillRect(0,H*0.65,W,H*0.35);
-  // 战斗场地圈
-  ctx.strokeStyle='rgba(212,175,55,0.06)';ctx.lineWidth=1;ctx.setLineDash([8,6]);
+
+  // 地面小石子
+  ctx.fillStyle=cool?'rgba(30,28,40,0.6)':'rgba(35,28,20,0.5)';
+  for(let i=0;i<20;i++){
+    const sx=(i*73+37)%W,sy=H*0.72+((i*53)%((H*0.25)|0));
+    ctx.beginPath();ctx.arc(sx,sy,rand(1.5,3.5),0,Math.PI*2);ctx.fill();
+  }
+
+  // ===== 11. 炫酷版：能量丝带环绕鸟窝 =====
+  if(cool){
+    auraWisps.forEach((w,idx)=>{
+      w.phase+=w.speed;
+      const cx=W/2,cy=H*0.72;
+      const col=['#aa66ff','#66ccff','#ff66aa'][idx%3];
+      ctx.save();ctx.globalAlpha=0.12;
+      ctx.strokeStyle=col;ctx.lineWidth=2;
+      ctx.beginPath();
+      for(let a=0;a<=Math.PI*2+0.1;a+=0.1){
+        const r=w.r+Math.sin(a*3+w.phase)*15;
+        const x=cx+Math.cos(a+w.phase*0.3)*r;
+        const y=cy+Math.sin(a+w.phase*0.3)*r*0.35+w.yOff;
+        if(a===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+      }
+      ctx.stroke();ctx.restore();
+    });
+  }
+
+  // ===== 12. 战斗场地圈 =====
+  ctx.strokeStyle=cool?'rgba(150,120,255,0.08)':'rgba(212,175,55,0.06)';ctx.lineWidth=1;ctx.setLineDash([8,6]);
   ctx.beginPath();ctx.arc(W/2,H/2+80,270,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);
+}
+
+// ===== 鸟窝绘制（纯代码，绝不可能有蛋）=====
+function drawNest(cool){
+  const cx=W/2, cy=H*0.74; // 鸟窝中心，坐在地面上
+  const sway=Math.sin(bgFrame*0.015)*2; // 草茎微微摆动
+
+  // 鸟窝底部阴影
+  ctx.save();
+  ctx.fillStyle='rgba(0,0,0,0.4)';
+  ctx.beginPath();ctx.ellipse(cx,cy+25,110,18,0,0,Math.PI*2);ctx.fill();
+  ctx.restore();
+
+  // 鸟窝内部光晕（温馨版暖光 / 炫酷版紫光）
+  ctx.save();
+  const innerGlow=ctx.createRadialGradient(cx,cy-5,10,cx,cy,80);
+  if(cool){
+    innerGlow.addColorStop(0,'rgba(170,102,255,0.2)');
+    innerGlow.addColorStop(0.5,'rgba(102,204,255,0.08)');
+    innerGlow.addColorStop(1,'rgba(102,204,255,0)');
+  }else{
+    innerGlow.addColorStop(0,'rgba(255,160,60,0.18)');
+    innerGlow.addColorStop(0.5,'rgba(212,175,55,0.06)');
+    innerGlow.addColorStop(1,'rgba(212,175,55,0)');
+  }
+  ctx.fillStyle=innerGlow;
+  ctx.beginPath();ctx.ellipse(cx,cy-5,100,50,0,0,Math.PI*2);ctx.fill();
+  ctx.restore();
+
+  // 外圈粗草茎（28根，逆时针编织）
+  nestTwigs.forEach((t,i)=>{
+    const ang=t.ang+sway*0.005;
+    const x1=cx+Math.cos(ang)*t.r1;
+    const y1=cy+Math.sin(ang)*t.r1*0.45;
+    const x2=cx+Math.cos(ang)*t.r2;
+    const y2=cy+Math.sin(ang)*t.r2*0.45;
+    const grad=ctx.createLinearGradient(x1,y1,x2,y2);
+    if(cool){
+      grad.addColorStop(0,`hsla(${t.hue+200},30%,${20+t.dark*15}%,0.9)`);
+      grad.addColorStop(1,`hsla(${t.hue+220},25%,${12+t.dark*10}%,0.7)`);
+    }else{
+      grad.addColorStop(0,`hsla(${t.hue},45%,${22+t.dark*18}%,0.9)`);
+      grad.addColorStop(1,`hsla(${t.hue-5},40%,${14+t.dark*12}%,0.7)`);
+    }
+    ctx.strokeStyle=grad;ctx.lineWidth=t.w;ctx.lineCap='round';
+    ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();
+    // 高光
+    ctx.strokeStyle=cool?`rgba(150,180,255,${0.08})`:`rgba(212,175,55,${0.06})`;ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();
+  });
+
+  // 内圈细草（20根，更密更细）
+  nestInnerGrass.forEach((g,i)=>{
+    const ang=g.ang+sway*0.008;
+    const x1=cx+Math.cos(ang)*g.r;
+    const y1=cy+Math.sin(ang)*g.r*0.45;
+    const x2=cx+Math.cos(ang)*(g.r+18);
+    const y2=cy+Math.sin(ang)*(g.r+18)*0.45;
+    ctx.strokeStyle=cool?`hsla(${g.hue+200},25%,${18+g.phase*3}%,0.6)`:`hsla(${g.hue},40%,${20+g.phase*3}%,0.55)`;
+    ctx.lineWidth=g.w;ctx.lineCap='round';
+    ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();
+  });
+
+  // 窝口边缘高光（rim light）
+  ctx.save();
+  ctx.strokeStyle=cool?'rgba(120,150,255,0.15)':'rgba(255,200,100,0.12)';
+  ctx.lineWidth=2;
+  ctx.beginPath();ctx.ellipse(cx,cy,90,40,0,Math.PI*0.1,Math.PI*0.9);ctx.stroke();
+  ctx.restore();
+
+  // 几根散落的草须（风吹的感觉）
+  for(let i=0;i<5;i++){
+    const a=rand(0,Math.PI*2);
+    const rx=cx+Math.cos(a)*rand(95,115);
+    const ry=cy+Math.sin(a)*rand(35,50);
+    const len=rand(8,16);
+    const a2=a+rand(-0.5,0.5);
+    ctx.strokeStyle=cool?`rgba(100,120,180,0.2)`:`rgba(180,150,80,0.2)`;
+    ctx.lineWidth=1.5;ctx.lineCap='round';
+    ctx.beginPath();ctx.moveTo(rx,ry);
+    ctx.lineTo(rx+Math.cos(a2)*len,ry+Math.sin(a2)*len*0.5);
+    ctx.stroke();
+  }
 }
 function drawTemple(){
   const t=TEMPLE;
@@ -2295,6 +2482,12 @@ function smCloseModal(n){document.getElementById('sm-modal-'+n).classList.remove
 function smDoExchange(){const amt=parseInt(document.getElementById('sm-exchange-input').value)||0;if(amt<=0)return;const cost=amt*SM_RATE;if(smSave.coins<cost)return;smSave.coins-=cost;smSave.seals+=amt;smSaveSave();smOpenBank();smUpdateHome();}
 smShowPage('home');
 function goPortal(){window.location.href='../index.html';}
+function toggleBgMode(){
+  bgMode=bgMode==='cozy'?'cool':'cozy';
+  localStorage.setItem('sm_bgMode',bgMode);
+  const btn=document.getElementById('sm-bg-btn');
+  if(btn)btn.textContent=bgMode==='cozy'?'🎨':'✨';
+}
 </script>
 </body>
 </html>

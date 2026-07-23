@@ -889,7 +889,6 @@ function finishLogin(){
 function onLogout(){
   if(!confirm('🚪 退出登录？\n\n你的 ID 和进度会保留在设备上，下次重新输入 ID 就能恢复。')) return;
   localStorage.removeItem(ACTIVE_KEY);
-  document.getElementById('mailbox-btn').style.display='none';
   showLoginScreen();
 }
 
@@ -971,6 +970,7 @@ if(getActiveId()){
   // 无 ID → 游客模式（默认展示游戏，不挡新访客）
   enterGuestMode();
   refreshPortal();
+  try{refreshMailboxVisibility()}catch(e){console.warn('[init] mailbox (guest) skipped:',e.message)}
 }
 
 // ── Load manifest & build cards ──
@@ -1316,11 +1316,11 @@ function closeMailbox(){
   document.getElementById('mailbox-overlay').classList.remove('active');
 }
 
-// Show mailbox button when logged in, hide for guests
+// Show mailbox button always (logged in or guest)
 function refreshMailboxVisibility(){
   const btn = document.getElementById('mailbox-btn');
   const id = getActiveId();
-  btn.style.display = id ? 'flex' : 'none';
+  btn.style.display = 'flex';
   if(id) loadMail();
 }
 </script>
