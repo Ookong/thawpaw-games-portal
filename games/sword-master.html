@@ -384,8 +384,12 @@ body.shape-square .sm-home-content{max-width:100%;}
     <div style="font-size:13px;color:#a08060;margin-top:4px;">内容即将上线，敬请期待</div>
   </div>
   <div class="sm-enhance-grid">
-    <div class="sm-enhance-slot"><div class="placeholder">🐱</div><div class="hint">我的宠物</div></div>
+    <div class="sm-enhance-slot" onclick="smShowPage('pets')" style="cursor:pointer;"><div class="placeholder">🐱</div><div class="hint">我的宠物</div></div>
   </div>
+</div>
+<!-- ===== PETS PAGE ===== -->
+<div id="sm-page-pets" class="sm-page" style="background:url('assets/paradise-bg.png') center/cover no-repeat;">
+  <a class="sm-back-btn" onclick="smShowPage('park')"><img src="assets/back-arrow.png" alt="返回"></a>
 </div>
 <!-- ===== BANK MODAL ===== -->
 <div class="sm-modal-overlay" id="sm-modal-bank">

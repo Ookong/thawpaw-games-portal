@@ -1458,22 +1458,37 @@ function deleteMail(mid){
       <span style="cursor:pointer;font-size:20px;color:var(--text2)" onclick="closeGiftModal()">✕</span>
     </div>
     <div id="gift-player-info" style="margin-bottom:12px;padding:10px;background:var(--card2);border-radius:8px;font-size:13px"></div>
-    <label style="display:block;font-size:.78rem;color:var(--text2);margin-bottom:4px;font-weight:600">游戏</label>
-    <select id="gift-game" style="width:100%;padding:8px 10px;border:2px solid var(--border);border-radius:8px;margin-bottom:10px;font-size:14px;background:var(--card2);color:var(--text)">
-      <option value="snake">🐍 蛇蛇大作战</option>
-      <option value="moonstone">🔮 猫武士大冒险</option>
-      <option value="dungeon">⚔️ 地下城探险</option>
-    </select>
-    <label style="display:block;font-size:.78rem;color:var(--text2);margin-bottom:4px;font-weight:600">货币类型</label>
-    <select id="gift-currency" style="width:100%;padding:8px 10px;border:2px solid var(--border);border-radius:8px;margin-bottom:10px;font-size:14px;background:var(--card2);color:var(--text)">
-      <option value="gold">💰 金币</option>
-      <option value="apples">🍎 苹果</option>
-      <option value="moonstones">🔮 月亮石</option>
-      <option value="gravel">🪨 碎石</option>
-    </select>
-    <label style="display:block;font-size:.78rem;color:var(--text2);margin-bottom:4px;font-weight:600">数量 (1-99999)</label>
-    <input id="gift-amount" type="number" min="1" max="99999" value="100" style="width:100%;padding:8px 10px;border:2px solid var(--border);border-radius:8px;margin-bottom:16px;font-size:14px;background:var(--card2);color:var(--text);outline:none">
-    <button onclick="confirmGift()" style="width:100%;padding:10px;border:none;border-radius:8px;background:var(--accent);color:#fff;font-size:15px;font-weight:600;cursor:pointer">🎁 确认赠送</button>
+    <div style="display:flex;gap:6px;margin-bottom:12px">
+      <button id="gift-tab-currency" onclick="giftSwitchTab('currency')" style="flex:1;padding:8px;border:2px solid var(--accent);border-radius:8px;background:var(--accent);color:#fff;font-size:13px;font-weight:600;cursor:pointer">💰 货币</button>
+      <button id="gift-tab-item" onclick="giftSwitchTab('item')" style="flex:1;padding:8px;border:2px solid var(--border);border-radius:8px;background:var(--card2);color:var(--text);font-size:13px;font-weight:600;cursor:pointer">🛡️ 装备</button>
+    </div>
+    <div id="gift-currency-section">
+      <label style="display:block;font-size:.78rem;color:var(--text2);margin-bottom:4px;font-weight:600">游戏</label>
+      <select id="gift-game" style="width:100%;padding:8px 10px;border:2px solid var(--border);border-radius:8px;margin-bottom:10px;font-size:14px;background:var(--card2);color:var(--text)">
+        <option value="snake">🐍 蛇蛇大作战</option>
+        <option value="moonstone">🔮 猫武士大冒险</option>
+        <option value="dungeon">⚔️ 地下城探险</option>
+      </select>
+      <label style="display:block;font-size:.78rem;color:var(--text2);margin-bottom:4px;font-weight:600">货币类型</label>
+      <select id="gift-currency" style="width:100%;padding:8px 10px;border:2px solid var(--border);border-radius:8px;margin-bottom:10px;font-size:14px;background:var(--card2);color:var(--text)">
+        <option value="gold">💰 金币</option>
+        <option value="apples">🍎 苹果</option>
+        <option value="moonstones">🔮 月亮石</option>
+        <option value="gravel">🪨 碎石</option>
+      </select>
+      <label style="display:block;font-size:.78rem;color:var(--text2);margin-bottom:4px;font-weight:600">数量 (1-99999)</label>
+      <input id="gift-amount" type="number" min="1" max="99999" value="100" style="width:100%;padding:8px 10px;border:2px solid var(--border);border-radius:8px;margin-bottom:16px;font-size:14px;background:var(--card2);color:var(--text);outline:none">
+    </div>
+    <div id="gift-item-section" style="display:none">
+      <label style="display:block;font-size:.78rem;color:var(--text2);margin-bottom:4px;font-weight:600">游戏</label>
+      <select id="gift-item-game" style="width:100%;padding:8px 10px;border:2px solid var(--border);border-radius:8px;margin-bottom:10px;font-size:14px;background:var(--card2);color:var(--text)" onchange="giftItemUpdateList()">
+        <option value="sword-master">⚔️ 少年剑客闯江湖</option>
+      </select>
+      <label style="display:block;font-size:.78rem;color:var(--text2);margin-bottom:4px;font-weight:600">装备</label>
+      <select id="gift-item-list" style="width:100%;padding:8px 10px;border:2px solid var(--border);border-radius:8px;margin-bottom:16px;font-size:14px;background:var(--card2);color:var(--text)">
+      </select>
+    </div>
+    <button id="gift-confirm-btn" onclick="confirmGift()" style="width:100%;padding:10px;border:none;border-radius:8px;background:var(--accent);color:#fff;font-size:15px;font-weight:600;cursor:pointer">🎁 确认赠送</button>
     <div style="font-size:.75rem;color:var(--dim);margin-top:8px;text-align:center">将同时发一封通知邮件给玩家</div>
   </div>
 </div>
@@ -1585,18 +1600,79 @@ function renderVisitorList(players){
 }
 
 // ── Gift ──
+var giftTarget = null; // { id, nickname }
+var giftMode = 'currency'; // 'currency' | 'item'
+var GIFT_ITEMS = {
+  'sword-master': [
+    { key: 'qinglongjia', name: '🐉 青龙甲', type: 'armor', tier: 2, desc: '随机闪移+藤蔓+挡99%' },
+    { key: 'baihujia', name: '🐅 白虎甲', type: 'armor', tier: 3, desc: '速度+3级，可召5分身' },
+    { key: 'zhuquejia', name: '🔥 朱雀甲', type: 'armor', tier: 1, desc: '复活2次' },
+    { key: 'xuanwujia', name: '🐢 玄武甲', type: 'armor', tier: 5, desc: '基础盔甲' },
+    { key: 'yexingyi', name: '🌌 夜行衣', type: 'armor', tier: 4, desc: '偶数关回血' }
+  ]
+};
+
 function openGiftModal(id, nick){
   giftTarget = { id: id, nickname: nick };
   document.getElementById('gift-player-info').innerHTML = '目标：<strong>' + escapeHtml(nick) + '</strong> (' + id + ')';
   document.getElementById('gift-overlay').style.display = 'flex';
   document.getElementById('gift-amount').value = '100';
+  giftSwitchTab('currency');
 }
 function closeGiftModal(){
   document.getElementById('gift-overlay').style.display = 'none';
   giftTarget = null;
 }
+function giftSwitchTab(mode){
+  giftMode = mode;
+  var tabC = document.getElementById('gift-tab-currency');
+  var tabI = document.getElementById('gift-tab-item');
+  var secC = document.getElementById('gift-currency-section');
+  var secI = document.getElementById('gift-item-section');
+  if(mode === 'currency'){
+    tabC.style.cssText = 'flex:1;padding:8px;border:2px solid var(--accent);border-radius:8px;background:var(--accent);color:#fff;font-size:13px;font-weight:600;cursor:pointer';
+    tabI.style.cssText = 'flex:1;padding:8px;border:2px solid var(--border);border-radius:8px;background:var(--card2);color:var(--text);font-size:13px;font-weight:600;cursor:pointer';
+    secC.style.display = '';
+    secI.style.display = 'none';
+  } else {
+    tabI.style.cssText = 'flex:1;padding:8px;border:2px solid var(--accent);border-radius:8px;background:var(--accent);color:#fff;font-size:13px;font-weight:600;cursor:pointer';
+    tabC.style.cssText = 'flex:1;padding:8px;border:2px solid var(--border);border-radius:8px;background:var(--card2);color:var(--text);font-size:13px;font-weight:600;cursor:pointer';
+    secC.style.display = 'none';
+    secI.style.display = '';
+    giftItemUpdateList();
+  }
+}
+function giftItemUpdateList(){
+  var game = document.getElementById('gift-item-game').value;
+  var items = GIFT_ITEMS[game] || [];
+  var sel = document.getElementById('gift-item-list');
+  sel.innerHTML = items.map(function(it){
+    var stars = '⭐'.repeat(7 - it.tier);
+    return '<option value="' + it.key + '" data-type="' + it.type + '">' + it.name + ' ' + stars + ' — ' + escapeHtml(it.desc) + '</option>';
+  }).join('');
+}
 function confirmGift(){
   if(!giftTarget) return;
+  if(giftMode === 'item'){
+    var game = document.getElementById('gift-item-game').value;
+    var sel = document.getElementById('gift-item-list');
+    var itemKey = sel.value;
+    var itemType = sel.options[sel.selectedIndex].getAttribute('data-type') || 'armor';
+    var itemName = sel.options[sel.selectedIndex].text.split(' — ')[0];
+    apiPost('admin/gift-item', {
+      id: session.id, nickname: session.nickname,
+      targetId: giftTarget.id, targetNickname: giftTarget.nickname,
+      game: game, itemKey: itemKey, itemType: itemType
+    }).then(function(res){
+      if(res.ok){
+        alert('✅ 已赠送 ' + itemName + ' 给 ' + giftTarget.nickname);
+        closeGiftModal();
+      } else {
+        alert('❌ ' + (res.error || '赠送失败'));
+      }
+    }).catch(function(){ alert('❌ 网络错误'); });
+    return;
+  }
   var game = document.getElementById('gift-game').value;
   var currency = document.getElementById('gift-currency').value;
   var amount = parseInt(document.getElementById('gift-amount').value) || 0;
