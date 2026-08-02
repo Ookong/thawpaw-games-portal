@@ -3005,9 +3005,9 @@ function smUpdateHome(){
   document.getElementById('sm-home-coins').textContent=smSave.coins;
   document.getElementById('sm-home-seals').textContent=smSave.seals;
   document.getElementById('sm-home-highest').textContent=smSave.highestLevel;
-  document.getElementById('sm-home-highest-2').textContent=smSave.highestLevel;
-  document.getElementById('sm-home-coins-2').textContent=smSave.coins;
-  document.getElementById('sm-home-seals-2').textContent=smSave.seals;
+  var _h2=document.getElementById('sm-home-highest-2');if(_h2)_h2.textContent=smSave.highestLevel;
+  var _c2=document.getElementById('sm-home-coins-2');if(_c2)_c2.textContent=smSave.coins;
+  var _s2=document.getElementById('sm-home-seals-2');if(_s2)_s2.textContent=smSave.seals;
 }
 function smRenderLevels(){
   const grid=document.getElementById('sm-levels-grid');grid.innerHTML='';
