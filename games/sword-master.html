@@ -178,6 +178,14 @@ canvas{display:block;width:100%;height:100%;box-shadow:0 0 40px rgba(180,50,40,0
 .sm-exchange-btn{padding:6px 16px;font-size:13px;font-weight:700;background:linear-gradient(135deg,#d4af37,#a08020);color:#fff;border:none;border-radius:6px;cursor:pointer;transition:transform .1s;}
 .sm-exchange-btn:hover{transform:scale(1.05);}
 .sm-exchange-btn:disabled{opacity:0.4;cursor:not-allowed;transform:none;}
+/* ===== 森林入口气泡 ===== */
+.sm-forest-bubble{display:flex;align-items:center;justify-content:center;gap:8px;background:linear-gradient(135deg,rgba(34,80,40,0.4),rgba(20,60,30,0.3));border:2px solid rgba(80,200,100,0.4);border-radius:20px;padding:10px 16px;cursor:pointer;transition:transform .15s,box-shadow .15s;width:100%;text-align:center;font-size:14px;font-weight:700;color:#88ee99;letter-spacing:2px;animation:forestPulse 3s ease-in-out infinite;}
+.sm-forest-bubble:hover{transform:scale(1.05);box-shadow:0 0 16px rgba(80,200,100,0.3);border-color:rgba(100,255,120,0.6);}
+.sm-forest-bubble .forest-icon{font-size:24px;}
+@keyframes forestPulse{0%,100%{box-shadow:0 0 6px rgba(80,200,100,0.15);}50%{box-shadow:0 0 16px rgba(80,200,100,0.35);}}
+body.shape-portrait .sm-forest-bubble{padding:8px 10px;font-size:12px;}
+body.shape-portrait .sm-forest-bubble .forest-icon{font-size:20px;}
+
 /* ===== 屏幕形状自适应 ===== */
 /* 竖屏手机：canvas 缩放后 UI 更紧凑 */
 body.shape-portrait #shop-panel{width:200px;right:4px;font-size:12px;}
@@ -424,8 +432,8 @@ body.shape-square .sm-home-content{max-width:100%;}
 (function(){
   // Pet stage: 'egg' or 'baby'
   var petStage = 'egg';
-  var babyMenus = ['商店','背包','喂食','前往乐园','格斗练习'];
-  var eggMenus  = ['商店','背包'];
+  var babyMenus = ['商店','背包','喂食','前往乐园','格斗练习','前往森林'];
+  var eggMenus  = ['商店','背包','前往森林'];
   window.smRenderPetBubbles = function(){
     var box = document.getElementById('pet-bubbles');
     if(!box) return;
@@ -444,11 +452,55 @@ body.shape-square .sm-home-content{max-width:100%;}
       b.style.top  = cy+'px';
       b.style.animationDelay = (i*0.6)+'s';
       b.style.animationDuration = (3.5+Math.random()*2)+'s';
+      (function(menu){
+        b.addEventListener('click',function(){
+          if(menu==='商店')smOpenBag();
+          else if(menu==='背包')smOpenBag();
+          else if(menu==='前往森林')smShowPage('forest');
+        });
+      })(menus[i]);
       box.appendChild(b);
     }
   };
 })();
 </script>
+<!-- ===== FOREST PAGE ===== -->
+<div id="sm-page-forest" class="sm-page" style="background:linear-gradient(to bottom,#0a1a0a,#061205);overflow:hidden;">
+  <a class="sm-back-btn" onclick="smShowPage('pets')"><img src="assets/back-arrow.png" alt="返回"></a>
+  <canvas id="forest-canvas" style="display:block;width:100%;height:100%;"></canvas>
+  <div id="forest-hud" style="position:absolute;top:0;left:0;right:0;display:none;justify-content:space-between;padding:10px 18px;z-index:5;pointer-events:none;">
+    <div class="hp-block"><div class="hp-label" style="color:#6db84f;">林风</div><div class="hp-bg"><div class="hp-fill player" id="f-p-hp" style="width:100%"></div><div class="hp-text" id="f-p-hp-t">150/150</div></div></div>
+    <div class="hp-block" style="align-items:flex-end;"><div class="hp-label" id="f-tiger-label" style="color:#ff6644;">白虎</div><div class="hp-bg"><div class="hp-fill boss" id="f-tiger-hp" style="width:100%"></div><div class="hp-text" id="f-tiger-hp-t">—</div></div></div>
+  </div>
+  <div id="forest-bottom-hud" style="position:absolute;bottom:0;left:0;right:0;display:none;justify-content:space-between;padding:6px 16px;z-index:5;pointer-events:none;">
+    <div class="gold-display">📜 <span id="f-seals">0</span> 宝印</div>
+    <div class="weapon-display" id="f-cave-display">🌲 森林</div>
+  </div>
+  <div id="forest-overlay" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:10;gap:12px;background:linear-gradient(to bottom,rgba(6,18,5,0.85),rgba(4,12,3,0.9));">
+    <div style="font-size:48px;">🌲🐅🌲</div>
+    <div style="font-size:36px;font-weight:700;color:#88ee99;letter-spacing:6px;text-shadow:0 0 30px rgba(80,200,100,0.4);">神秘森林</div>
+    <div style="font-size:14px;color:#66aa77;max-width:360px;text-align:center;line-height:1.8;">
+      🐅 白虎栖居于此，守护着一枚神秘的蛋<br>
+      🥚 偷走蛋会让白虎暴怒，技能增强<br>
+      🚪 活着走到洞口可带蛋逃离<br>
+      💀 死亡将扣除 5 📜 剑客宝印
+    </div>
+    <button class="btn" style="background:linear-gradient(135deg,#2a8a3a,#1a6a2a);border-color:#44cc55;color:#fff;" onclick="enterForest()">🌲 进入森林</button>
+    <button class="btn small" style="background:linear-gradient(135deg,#666,#444);font-size:14px;" onclick="smShowPage('pets')">🔙 返回</button>
+  </div>
+  <div id="forest-victory-overlay" style="position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;z-index:10;gap:12px;background:rgba(4,12,3,0.85);">
+    <div style="font-size:56px;">🥚✨</div>
+    <div style="font-size:28px;font-weight:700;color:#d4af37;letter-spacing:4px;">成功夺蛋！</div>
+    <div style="font-size:14px;color:#a08060;text-align:center;line-height:1.8;" id="f-victory-text">你带着蛋从洞口逃出了森林！</div>
+    <button class="btn" onclick="exitForest()">🎉 返回</button>
+  </div>
+  <div id="forest-defeat-overlay" style="position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;z-index:10;gap:12px;background:rgba(4,12,3,0.85);">
+    <div style="font-size:56px;">💀</div>
+    <div style="font-size:28px;font-weight:700;color:#806040;letter-spacing:4px;">壮烈牺牲</div>
+    <div style="font-size:14px;color:#a08060;text-align:center;" id="f-defeat-text">白虎的爪牙将你击倒……失去了 5 📜 宝印</div>
+    <button class="btn" onclick="exitForest()">😤 返回</button>
+  </div>
+</div>
 <!-- ===== BANK MODAL ===== -->
 <div class="sm-modal-overlay" id="sm-modal-bank">
   <div class="sm-modal">
@@ -2508,6 +2560,8 @@ function smShowPage(name){
   if(name==='enhance')document.getElementById('sm-enhance-seals').textContent=smSave.seals;
   if(name==='shop')smRenderShop();
   if(name==='pets'&&typeof smRenderPetBubbles==='function')smRenderPetBubbles();
+  if(name==='forest'){fitForestCanvas();document.getElementById('forest-touch').style.display='block';if(!fLoopRunning){fLoopRunning=true;requestAnimationFrame(forestLoop);}}
+  else{document.getElementById('forest-touch').style.display='none';}
 }
 function smGoHome(){
   if(gameState==='battle'||gameState==='break'||gameState==='clear'){smSave.coins+=player.gold;if(currentLevel>smSave.highestLevel)smSave.highestLevel=currentLevel;smSaveSave();}
@@ -2551,6 +2605,540 @@ function toggleBgMode(){
   const btn=document.getElementById('sm-bg-btn');
   if(btn)btn.textContent=bgMode==='cozy'?'🎨':'✨';
 }
+
+// ===== FOREST GAME =====
+const FCV=document.getElementById('forest-canvas');
+const FCTX=FCV.getContext('2d');
+const FW=960,FH=640;
+FCV.width=FW;FCV.height=FH;
+function fitForestCanvas(){
+  const sw=innerWidth,sh=innerHeight;
+  const scale=Math.min(sw/FW,sh/FH);
+  const cw=FW*scale,ch=FH*scale;
+  FCV.style.width=cw+'px';FCV.style.height=ch+'px';
+  FCV.style.position='fixed';FCV.style.left=((sw-cw)/2)+'px';FCV.style.top=((sh-ch)/2)+'px';
+}
+
+// Forest state
+let fState='idle'; // idle, battle, victory, defeat
+let fPlayer={x:FW/2,y:FH-100,r:16,hp:150,maxHp:150,speed:3.2,facing:0,attackCD:0,attackTimer:0,dashCD:0,dashing:0,invuln:0,trail:[],hasEgg:false,heldEgg:null};
+let fTiger=null;
+let fClones=[];
+let fParticles=[];
+let fFloats=[];
+let fSlashes=[];
+let fScreenShake=0;
+let fHitStop=0;
+let fCaves=[]; // 5 cave exits
+let fEgg={x:FW/2,y:FH/2+40,r:30,pickedUp:false,taps:0,lastTap:0,longPressStart:0,longPressing:false};
+let fEggImg=new Image();fEggImg.src='assets/tiger-egg.png';
+let fEggImgLoaded=false;fEggImg.onload=()=>{fEggImgLoaded=true;};
+let fKeyset={};
+let fTouchMove={active:false,vec:{x:0,y:0}};
+let fBgFrame=0;
+let fTrees=[];
+for(let i=0;i<20;i++)fTrees.push({x:rand(20,FW-20),y:rand(60,FH-60),h:rand(40,80),w:rand(20,35)});
+let fFireflies=[];
+for(let i=0;i<15;i++)fFireflies.push({x:rand(0,FW),y:rand(60,FH-60),vx:rand(-0.3,0.3),vy:rand(-0.3,0.3),phase:rand(0,6.28),life:rand(0,200)});
+let fStars=[];
+for(let i=0;i<60;i++)fStars.push({x:rand(0,FW),y:rand(0,FH*0.4),r:rand(0.4,2),tw:rand(0,6.28),sp:rand(0.015,0.04)});
+
+function enterForest(){
+  fState='battle';
+  fPlayer.x=FW/2;fPlayer.y=FH-100;fPlayer.hp=fPlayer.maxHp;fPlayer.hasEgg=false;fPlayer.invuln=0;
+  fPlayer.attackCD=0;fPlayer.dashCD=0;fPlayer.dashing=0;fPlayer.trail=[];
+  // Setup 5 caves at top
+  fCaves=[];
+  for(let i=0;i<5;i++)fCaves.push({x:FW*(i+1)/6,y:50,w:70,h:60});
+  // Setup egg in center
+  fEgg.x=FW/2;fEgg.y=FH/2+40;fEgg.pickedUp=false;fEgg.taps=0;fEgg.longPressing=false;
+  // Setup White Tiger
+  fTiger={x:FW/2,y:FH/2-20,r:28,hp:400,maxHp:400,speed:4.5,damage:18,attackRange:60,attackCD:50,attackTimer:0,state:'idle',stateTimer:0,hitFlash:0,enraged:false,cloneTimer:0,movePattern:'chase'};
+  fClones=[];fParticles=[];fFloats=[];fSlashes=[];
+  document.getElementById('forest-overlay').style.display='none';
+  document.getElementById('forest-victory-overlay').style.display='none';
+  document.getElementById('forest-defeat-overlay').style.display='none';
+  document.getElementById('forest-hud').style.display='flex';
+  document.getElementById('forest-bottom-hud').style.display='flex';
+  document.getElementById('f-seals').textContent=smSave.seals;
+  fitForestCanvas();
+  if(!fLoopRunning){fLoopRunning=true;requestAnimationFrame(forestLoop);}
+}
+let fLoopRunning=false;
+
+function exitForest(){
+  fState='idle';
+  document.getElementById('forest-hud').style.display='none';
+  document.getElementById('forest-bottom-hud').style.display='none';
+  document.getElementById('forest-victory-overlay').style.display='none';
+  document.getElementById('forest-defeat-overlay').style.display='none';
+  document.getElementById('forest-overlay').style.display='flex';
+  smUpdateHome();
+}
+
+// Forest input
+document.addEventListener('keydown',e=>{
+  if(fState!=='battle')return;
+  const k=e.key.toLowerCase();fKeyset[k]=true;
+  if(k==='j'||k===' '){e.preventDefault();if(fPlayer.attackCD<=0)fAttack();}
+  if(k==='shift'){if(fPlayer.dashCD<=0)fDash();}
+});
+document.addEventListener('keyup',e=>{fKeyset[e.key.toLowerCase()]=false;});
+
+function fAttack(){
+  fPlayer.attackCD=22;fPlayer.attackTimer=12;SFX.slash();
+  let a=fPlayer.facing;
+  let nearest=null,nd=9999;
+  const targets=[fTiger,...fClones];
+  targets.forEach(t=>{if(!t||t.hp<=0)return;const d=Math.hypot(t.x-fPlayer.x,t.y-fPlayer.y);if(d<nd){nd=d;nearest=t;}});
+  if(nearest){a=Math.atan2(nearest.y-fPlayer.y,nearest.x-fPlayer.x);fPlayer.facing=a;}
+  const range=62,arc=Math.PI*0.65;
+  fSlashes.push({x:fPlayer.x,y:fPlayer.y,angle:a,arc,range,life:12,maxLife:12});
+  targets.forEach(t=>{if(!t||t.hp<=0)return;const d=Math.hypot(t.x-fPlayer.x,t.y-fPlayer.y);if(d<range+t.r){const a2=Math.atan2(t.y-fPlayer.y,t.x-fPlayer.x);let diff=Math.abs(a2-a);if(diff>Math.PI)diff=Math.PI*2-diff;if(diff<arc/2)fHitTiger(t,15);}});
+}
+function fDash(){
+  fPlayer.dashCD=45;fPlayer.dashing=10;fPlayer.invuln=12;SFX.dash();
+  let dx=0,dy=0;
+  if(fKeyset['w']||fKeyset['arrowup'])dy=-1;
+  if(fKeyset['s']||fKeyset['arrowdown'])dy=1;
+  if(fKeyset['a']||fKeyset['arrowleft'])dx=-1;
+  if(fKeyset['d']||fKeyset['arrowright'])dx=1;
+  if(!dx&&!dy){dx=1;}
+  const l=Math.hypot(dx,dy);fPlayer.dashDir={x:dx/l,y:dy/l};
+}
+function fHitTiger(t,dmg){
+  t.hp-=dmg;t.hitFlash=8;
+  SFX.bhit();fScreenShake=Math.max(fScreenShake,4);fHitStop=2;
+  fFloats.push({x:t.x,y:t.y-t.r,text:'-'+dmg,color:'#ff4444',life:30,vy:-1.3});
+  for(let i=0;i<5;i++)fParticles.push({x:t.x,y:t.y,vx:rand(-3,3),vy:rand(-3,3),life:rand(10,20),size:rand(2,4),color:'#ff6644'});
+}
+function fHitPlayer(dmg){
+  if(fPlayer.invuln>0)return;
+  fPlayer.hp-=dmg;fPlayer.invuln=35;fScreenShake=Math.max(fScreenShake,8);fHitStop=4;SFX.hurt();
+  fFloats.push({x:fPlayer.x,y:fPlayer.y-28,text:'-'+dmg,color:'#ff4444',life:30,vy:-1.3});
+  for(let i=0;i<6;i++)fParticles.push({x:fPlayer.x,y:fPlayer.y,vx:rand(-4,4),vy:rand(-4,4),life:rand(10,24),size:rand(2,4),color:'#ff4444'});
+  fUpdatePlayerHP();
+  if(fPlayer.hp<=0){fPlayer.hp=0;fUpdatePlayerHP();fPlayerDie();}
+}
+
+// Egg interaction: 3 taps + long press
+function fTryEggTap(){
+  if(fEgg.pickedUp||!fEggImgLoaded)return;
+  const d=Math.hypot(fEgg.x-fPlayer.x,fEgg.y-fPlayer.y);
+  if(d>fEgg.r+fPlayer.r+10)return; // need to be near egg
+  const now=Date.now();
+  if(now-fEgg.lastTap>1500){fEgg.taps=1;}
+  else{fEgg.taps++;}
+  fEgg.lastTap=now;
+  if(fEgg.taps>=3){
+    fEgg.longPressing=true;
+    fEgg.longPressStart=now;
+    fFloats.push({x:fEgg.x,y:fEgg.y-25,text:'长按拿起！',color:'#d4af37',life:40,vy:-1});
+  }else{
+    fFloats.push({x:fEgg.x,y:fEgg.y-25,text:'点击 '+fEgg.taps+'/3',color:'#88ee99',life:30,vy:-1});
+  }
+}
+function fCheckLongPress(){
+  if(!fEgg.longPressing)return;
+  const now=Date.now();
+  if(now-fEgg.longPressStart>=800){
+    // Egg picked up!
+    fEgg.pickedUp=true;fEgg.longPressing=false;
+    fPlayer.hasEgg=true;
+    SFX.buff();fScreenShake=15;
+    fFloats.push({x:fPlayer.x,y:fPlayer.y-40,text:'🥚 夺蛋成功！快跑！',color:'#d4af37',life:90,vy:-0.8});
+    for(let i=0;i<20;i++)fParticles.push({x:fEgg.x,y:fEgg.y,vx:rand(-6,6),vy:rand(-6,6),life:rand(25,45),size:rand(3,5),color:'#ffaa00'});
+    // Tiger enrages!
+    if(fTiger&&fTiger.hp>0){
+      fTiger.enraged=true;
+      fTiger.damage=Math.round(fTiger.damage*1.6);
+      fTiger.speed=fTiger.speed*1.3;
+      fTiger.cloneTimer=0; // clone faster
+      fFloats.push({x:fTiger.x,y:fTiger.y-fTiger.r-15,text:'💢暴怒！还我蛋来！！',color:'#ff0000',life:100,vy:-0.5,fontSize:18});
+      SFX.roar();fScreenShake=20;
+    }
+  }
+}
+
+// Forest victory: reach a cave while alive (and optionally with egg)
+function fCheckCaveExit(){
+  for(const c of fCaves){
+    if(Math.abs(fPlayer.x-c.x)<c.w/2 && fPlayer.y<c.y+c.h/2){
+      // Escaped!
+      fState='victory';SFX.win();
+      let msg=fPlayer.hasEgg?'你带着🥚蛋从洞口逃出了森林！白虎在身后怒吼……':'你从洞口逃出了森林。';
+      document.getElementById('f-victory-text').textContent=msg;
+      document.getElementById('forest-victory-overlay').style.display='flex';
+      document.getElementById('forest-hud').style.display='none';
+      document.getElementById('forest-bottom-hud').style.display='none';
+      return true;
+    }
+  }
+  return false;
+}
+
+function fPlayerDie(){
+  fState='defeat';SFX.lose();
+  // Penalty: -5 seals
+  const lost=Math.min(5,smSave.seals);
+  smSave.seals-=lost;smSaveSave();
+  document.getElementById('f-defeat-text').textContent='白虎的爪牙将你击倒……失去了 '+lost+' 📜 宝印';
+  document.getElementById('forest-defeat-overlay').style.display='flex';
+  document.getElementById('forest-hud').style.display='none';
+  document.getElementById('forest-bottom-hud').style.display='none';
+}
+
+function fUpdatePlayerHP(){
+  const r=Math.max(0,fPlayer.hp/fPlayer.maxHp);
+  const bar=document.getElementById('f-p-hp');
+  bar.style.width=(r*100)+'%';
+  bar.style.background=r<0.3?'linear-gradient(90deg,#c0392b,#e74c3c)':r<0.6?'linear-gradient(90deg,#e67e22,#f39c12)':'linear-gradient(90deg,#508c3c,#6db84f)';
+  document.getElementById('f-p-hp-t').textContent=Math.max(0,Math.round(fPlayer.hp))+'/'+fPlayer.maxHp;
+}
+function fUpdateTigerHP(){
+  if(!fTiger||fTiger.hp<=0){document.getElementById('f-tiger-hp-t').textContent='—';document.getElementById('f-tiger-hp').style.width='0%';return;}
+  const r=Math.max(0,fTiger.hp/fTiger.maxHp);
+  document.getElementById('f-tiger-hp').style.width=(r*100)+'%';
+  document.getElementById('f-tiger-hp-t').textContent=Math.max(0,Math.round(fTiger.hp))+'/'+fTiger.maxHp;
+  document.getElementById('f-tiger-label').textContent=fTiger.enraged?'💢暴怒白虎':'白虎';
+}
+
+// Spawn clone
+function fSpawnClone(){
+  if(!fTiger||fTiger.hp<=0)return;
+  const ang2=rand(0,Math.PI*2);
+  const clone={
+    x:fTiger.x+Math.cos(ang2)*40,y:fTiger.y+Math.sin(ang2)*40,r:20,
+    hp:1,speed:fTiger.speed*0.9,damage:Math.round(fTiger.damage*0.1),
+    attackRange:50,attackCD:60,attackTimer:0,state:'chase',stateTimer:0,
+    hitFlash:0,life:180,isClone:true // 3 seconds
+  };
+  fClones.push(clone);
+  SFX.yaTeleport&&SFX.yaTeleport();
+  for(let i=0;i<8;i++)fParticles.push({x:clone.x,y:clone.y,vx:rand(-3,3),vy:rand(-3,3),life:rand(15,25),size:rand(2,4),color:'#aaaaff'});
+  fFloats.push({x:clone.x,y:clone.y-25,text:'分身！',color:'#aaaaff',life:40,vy:-1});
+}
+
+// Forest update
+function fUpdate(){
+  if(fState!=='battle')return;
+  if(fHitStop>0){fHitStop--;return;}
+
+  // Player movement
+  let dx=0,dy=0;
+  if(fKeyset['w']||fKeyset['arrowup'])dy-=1;
+  if(fKeyset['s']||fKeyset['arrowdown'])dy+=1;
+  if(fKeyset['a']||fKeyset['arrowleft'])dx-=1;
+  if(fKeyset['d']||fKeyset['arrowright'])dx+=1;
+  // Touch movement
+  if(fTouchMove.active&&(fTouchMove.vec.x||fTouchMove.vec.y)){dx=fTouchMove.vec.x;dy=fTouchMove.vec.y;}
+
+  if(fPlayer.dashing>0){
+    fPlayer.x+=fPlayer.dashDir.x*8;fPlayer.y+=fPlayer.dashDir.y*8;fPlayer.dashing--;
+    fPlayer.trail.push({x:fPlayer.x,y:fPlayer.y,life:12});
+  }else if(dx||dy){
+    const l=Math.hypot(dx,dy);dx/=l;dy/=l;
+    fPlayer.x+=dx*fPlayer.speed;fPlayer.y+=dy*fPlayer.speed;
+    fPlayer.facing=Math.atan2(dy,dx);
+  }
+  fPlayer.x=clamp(fPlayer.x,fPlayer.r,FW-fPlayer.r);
+  fPlayer.y=clamp(fPlayer.y,fPlayer.r,FH-fPlayer.r);
+  if(fPlayer.attackCD>0)fPlayer.attackCD--;
+  if(fPlayer.attackTimer>0)fPlayer.attackTimer--;
+  if(fPlayer.dashCD>0)fPlayer.dashCD--;
+  if(fPlayer.invuln>0)fPlayer.invuln--;
+  fPlayer.trail=fPlayer.trail.filter(t=>{t.life--;return t.life>0;});
+
+  // Egg follows player if held
+  if(fEgg.pickedUp&&fPlayer.hasEgg){
+    fEgg.x=fPlayer.x+Math.cos(Date.now()/300)*16;
+    fEgg.y=fPlayer.y-fPlayer.r-8+Math.sin(Date.now()/300)*4;
+  }
+
+  // Check long press for egg
+  fCheckLongPress();
+
+  // Check cave exit
+  fCheckCaveExit();
+
+  // Tiger AI
+  if(fTiger&&fTiger.hp>0){
+    if(fTiger.hitFlash>0)fTiger.hitFlash--;
+    fTiger.stateTimer++;fTiger.attackTimer--;
+    const td=Math.hypot(fTiger.x-fPlayer.x,fTiger.y-fPlayer.y);
+    const ta=Math.atan2(fPlayer.y-fTiger.y,fPlayer.x-fPlayer.x);
+    // Chase
+    fTiger.x+=Math.cos(ta)*fTiger.speed;
+    fTiger.y+=Math.sin(ta)*fTiger.speed;
+    fTiger.x=clamp(fTiger.x,fTiger.r,FW-fTiger.r);
+    fTiger.y=clamp(fTiger.y,fTiger.r,FH-fTiger.r);
+    // Attack
+    if(td<fTiger.attackRange+fTiger.r&&fTiger.attackTimer<=0){
+      fTiger.attackTimer=fTiger.attackCD;
+      SFX.slash();
+      fSlashes.push({x:fTiger.x,y:fTiger.y,angle:ta,arc:Math.PI*0.4,range:fTiger.attackRange,life:10,maxLife:10,color:'#ff6644'});
+      if(td<fTiger.attackRange+fPlayer.r)fHitPlayer(fTiger.damage);
+    }
+    // Clone spawning: every 4s normal, every 2s enraged
+    fTiger.cloneTimer++;
+    const cloneInterval=fTiger.enraged?120:240;
+    if(fTiger.cloneTimer>=cloneInterval&&fClones.length<(fTiger.enraged?5:3)){
+      fTiger.cloneTimer=0;
+      fSpawnClone();
+    }
+  }
+
+  // Clones AI
+  fClones=fClones.filter(c=>{
+    c.life--;if(c.life<=0){
+      fParticles.push({x:c.x,y:c.y,vx:0,vy:0,life:15,size:20,color:'rgba(170,170,255,0.3)'});
+      return false;
+    }
+    if(c.hitFlash>0)c.hitFlash--;
+    c.stateTimer++;c.attackTimer--;
+    const cd=Math.hypot(c.x-fPlayer.x,c.y-fPlayer.y);
+    const ca=Math.atan2(fPlayer.y-c.y,fPlayer.x-c.x);
+    c.x+=Math.cos(ca)*c.speed;c.y+=Math.sin(ca)*c.speed;
+    c.x=clamp(c.x,c.r,FW-c.r);c.y=clamp(c.y,c.r,FH-c.r);
+    if(cd<c.attackRange+c.r&&c.attackTimer<=0){
+      c.attackTimer=c.attackCD;
+      if(cd<c.attackRange+fPlayer.r)fHitPlayer(c.damage);
+    }
+    return true;
+  });
+
+  // Particles
+  fParticles=fParticles.filter(p=>{p.x+=p.vx;p.y+=p.vy;p.vx*=0.95;p.vy*=0.95;p.life--;return p.life>0;});
+  // Floats
+  fFloats=fFloats.filter(f=>{f.y+=f.vy;f.life--;return f.life>0;});
+  // Slashes
+  fSlashes=fSlashes.filter(s=>{s.life--;return s.life>0;});
+  if(fScreenShake>0)fScreenShake*=0.9;
+
+  fUpdateTigerHP();
+}
+
+// Forest render
+function fRender(){
+  fBgFrame++;
+  FCTX.save();
+  if(fScreenShake>0.5)FCTX.translate(rand(-fScreenShake,fScreenShake),rand(-fScreenShake,fScreenShake));
+
+  // Sky
+  const sky=FCTX.createLinearGradient(0,0,0,FH);
+  sky.addColorStop(0,'#04120a');sky.addColorStop(0.4,'#061a0e');sky.addColorStop(1,'#020806');
+  FCTX.fillStyle=sky;FCTX.fillRect(0,0,FW,FH);
+
+  // Stars
+  fStars.forEach(s=>{s.tw+=s.sp;const a=0.4+Math.sin(s.tw)*0.3;FCTX.fillStyle=`rgba(200,255,200,${a})`;FCTX.beginPath();FCTX.arc(s.x,s.y,s.r,0,6.28);FCTX.fill();});
+
+  // Trees silhouette
+  FCTX.fillStyle='rgba(4,12,6,0.8)';
+  fTrees.forEach(t=>{
+    FCTX.fillRect(t.x-t.w/4,t.y-t.h,t.w/2,t.h);
+    FCTX.beginPath();FCTX.moveTo(t.x-t.w/2,t.y-t.h*0.6);FCTX.lineTo(t.x,t.y-t.h);FCTX.lineTo(t.x+t.w/2,t.y-t.h*0.6);FCTX.fill();
+  });
+
+  // Caves at top
+  fCaves.forEach((c,i)=>{
+    FCTX.fillStyle='rgba(2,6,4,0.9)';
+    FCTX.beginPath();FCTX.ellipse(c.x,c.y+c.h/2,c.w/2,c.h/2,0,0,Math.PI);FCTX.fill();
+    // Cave glow if player near (exit indicator)
+    const near=Math.abs(fPlayer.x-c.x)<c.w;
+    if(near){
+      FCTX.fillStyle='rgba(80,255,120,0.15)';
+      FCTX.beginPath();FCTX.ellipse(c.x,c.y+c.h/2,c.w/2,c.h/2,0,0,Math.PI);FCTX.fill();
+      FCTX.font='12px sans-serif';FCTX.textAlign='center';FCTX.fillStyle='rgba(100,255,120,0.6)';
+      FCTX.fillText('🚪出口'+(i+1),c.x,c.y-5);
+    }else{
+      FCTX.font='10px sans-serif';FCTX.textAlign='center';FCTX.fillStyle='rgba(80,120,80,0.4)';
+      FCTX.fillText('洞口'+(i+1),c.x,c.y-5);
+    }
+  });
+
+  // Fireflies
+  fFireflies.forEach(f=>{
+    f.x+=f.vx;f.y+=f.vy;f.phase+=0.05;f.life--;
+    if(f.life<=0||f.x<0||f.x>FW||f.y<0||f.y>FH){f.x=rand(0,FW);f.y=rand(60,FH-60);f.vx=rand(-0.3,0.3);f.vy=rand(-0.3,0.3);f.life=rand(100,300);}
+    const a=0.4+Math.sin(f.phase)*0.3;
+    FCTX.save();FCTX.shadowColor='#aaff88';FCTX.shadowBlur=6;
+    FCTX.fillStyle=`rgba(180,255,120,${a*0.6})`;
+    FCTX.beginPath();FCTX.arc(f.x,f.y,1.5,0,6.28);FCTX.fill();FCTX.restore();
+  });
+
+  // Ground
+  const ground=FCTX.createLinearGradient(0,FH*0.65,0,FH);
+  ground.addColorStop(0,'rgba(10,20,8,0)');ground.addColorStop(0.5,'rgba(12,24,10,0.8)');ground.addColorStop(1,'rgba(4,10,4,1)');
+  FCTX.fillStyle=ground;FCTX.fillRect(0,FH*0.6,FW,FH*0.4);
+
+  // Slashes
+  fSlashes.forEach(s=>{
+    const a=s.life/s.maxLife;
+    FCTX.save();FCTX.translate(s.x,s.y);FCTX.rotate(s.angle);
+    FCTX.strokeStyle=s.color||`rgba(255,230,150,${a*0.85})`;FCTX.lineWidth=4+a*5;FCTX.lineCap='round';
+    FCTX.beginPath();FCTX.arc(0,0,s.range,-s.arc/2,s.arc/2);FCTX.stroke();FCTX.restore();
+  });
+
+  // Particles
+  fParticles.forEach(p=>{
+    FCTX.globalAlpha=Math.min(1,p.life/25);FCTX.fillStyle=p.color;
+    FCTX.beginPath();FCTX.arc(p.x,p.y,p.size,0,6.28);FCTX.fill();
+  });FCTX.globalAlpha=1;
+
+  // Egg (if not picked up, or floating with player)
+  if(fEggImgLoaded){
+    const es=60;
+    FCTX.save();
+    FCTX.shadowColor='rgba(255,200,100,0.4)';FCTX.shadowBlur=15;
+    FCTX.drawImage(fEggImg,fEgg.x-es/2,fEgg.y-es/2,es,es);
+    // Tap hint when not picked up
+    if(!fEgg.pickedUp){
+      const d=Math.hypot(fEgg.x-fPlayer.x,fEgg.y-fPlayer.y);
+      if(d<80){
+        FCTX.font='12px sans-serif';FCTX.textAlign='center';
+        FCTX.fillStyle=fEgg.taps>0?'#d4af37':'rgba(150,255,150,0.7)';
+        FCTX.fillText(fEgg.taps>0?'点击 '+fEgg.taps+'/3':'连点三下+长按',fEgg.x,fEgg.y+es/2+14);
+      }
+    }
+    FCTX.restore();
+  }
+
+  // Tiger
+  if(fTiger&&fTiger.hp>0){
+    const flash=fTiger.hitFlash>0;
+    FCTX.save();FCTX.translate(fTiger.x,fTiger.y);
+    FCTX.shadowColor=fTiger.enraged?'#ff0000':'#ff8844';FCTX.shadowBlur=fTiger.enraged?25:15;
+    FCTX.fillStyle=flash?'#fff':(fTiger.enraged?'#5a0a00':'#8B4513');
+    FCTX.beginPath();FCTX.arc(0,0,fTiger.r,0,6.28);FCTX.fill();
+    FCTX.shadowBlur=0;
+    FCTX.strokeStyle=fTiger.enraged?'#ff0000':'#ff8844';FCTX.lineWidth=3;FCTX.stroke();
+    FCTX.font=(fTiger.r*1.3)+'px sans-serif';FCTX.textAlign='center';FCTX.textBaseline='middle';
+    FCTX.fillText('🐅',0,2);
+    // Enraged aura
+    if(fTiger.enraged){
+      FCTX.strokeStyle=`rgba(255,0,0,${0.3+Math.sin(fBgFrame*0.1)*0.2})`;FCTX.lineWidth=3;
+      FCTX.beginPath();FCTX.arc(0,0,fTiger.r+8+Math.sin(fBgFrame*0.15)*4,0,6.28);FCTX.stroke();
+    }
+    FCTX.restore();
+    FCTX.font='bold 10px sans-serif';FCTX.fillStyle=fTiger.enraged?'#ff0000':'#ff6644';FCTX.textAlign='center';
+    FCTX.fillText(fTiger.enraged?'💢暴怒白虎':'白虎',fTiger.x,fTiger.y-fTiger.r-5);
+  }
+
+  // Clones
+  fClones.forEach(c=>{
+    const flash=c.hitFlash>0;
+    FCTX.save();FCTX.translate(c.x,c.y);
+    FCTX.globalAlpha=0.4+0.2*Math.sin(c.life*0.3);
+    FCTX.fillStyle=flash?'#fff':'rgba(170,170,255,0.6)';
+    FCTX.beginPath();FCTX.arc(0,0,c.r,0,6.28);FCTX.fill();
+    FCTX.globalAlpha=1;
+    FCTX.strokeStyle='rgba(150,150,255,0.6)';FCTX.lineWidth=2;FCTX.stroke();
+    FCTX.font=(c.r*1.2)+'px sans-serif';FCTX.textAlign='center';FCTX.textBaseline='middle';
+    FCTX.globalAlpha=0.6;
+    FCTX.fillText('🐅',0,2);
+    FCTX.globalAlpha=1;
+    FCTX.restore();
+    // Life timer bar
+    FCTX.fillStyle='rgba(170,170,255,0.5)';FCTX.fillRect(c.x-c.r,c.y-c.r-6,c.r*2*(c.life/180),2);
+  });
+
+  // Player
+  fPlayer.trail.forEach(t=>{FCTX.globalAlpha=t.life/12*0.25;
+    FCTX.fillStyle='#6db84f';FCTX.beginPath();FCTX.arc(t.x,t.y,fPlayer.r,0,6.28);FCTX.fill();FCTX.globalAlpha=1;});
+  if(!(fPlayer.invuln>0&&Math.floor(fPlayer.invuln/3)%2===0)){
+    FCTX.fillStyle='#5a8c3c';FCTX.beginPath();FCTX.arc(fPlayer.x,fPlayer.y,fPlayer.r,0,6.28);FCTX.fill();
+    FCTX.strokeStyle='#2d231c';FCTX.lineWidth=2;FCTX.stroke();
+    // Weapon indicator
+    FCTX.save();FCTX.translate(fPlayer.x,fPlayer.y);FCTX.rotate(fPlayer.facing);
+    FCTX.strokeStyle='#ccc';FCTX.lineWidth=3;FCTX.lineCap='round';
+    FCTX.beginPath();FCTX.moveTo(0,0);FCTX.lineTo(fPlayer.r+12,0);FCTX.stroke();FCTX.restore();
+    // Egg above player if held
+    if(fPlayer.hasEgg&&fEggImgLoaded){
+      const es=28;
+      FCTX.drawImage(fEggImg,fEgg.x-es/2,fEgg.y-es/2,es,es);
+    }
+  }
+  FCTX.font='bold 10px sans-serif';FCTX.fillStyle='#6db84f';FCTX.textAlign='center';
+    FCTX.fillText('林风',fPlayer.x,fPlayer.y-fPlayer.r-5);
+
+  // Floats
+  fFloats.forEach(f=>{
+    FCTX.font='bold '+(f.fontSize||16)+'px sans-serif';FCTX.fillStyle=f.color;FCTX.globalAlpha=Math.min(1,f.life/18);
+    FCTX.textAlign='center';FCTX.fillText(f.text,f.x,f.y);FCTX.globalAlpha=1;
+  });
+
+  FCTX.restore();
+}
+
+function forestLoop(){
+  if(fState==='battle'){fUpdate();fRender();}
+  else if(fState==='idle'){fRender();} // keep rendering background
+  requestAnimationFrame(forestLoop);
+}
+
+// Click on canvas for egg tap + attack
+FCV.addEventListener('click',e=>{
+  if(fState!=='battle')return;
+  // Check egg tap first
+  const rect=FCV.getBoundingClientRect();
+  const sx=FW/rect.width,sy=FH/rect.height;
+  const cx=(e.clientX-rect.left)*sx,cy=(e.clientY-rect.top)*sy;
+  const dEgg=Math.hypot(fEgg.x-cx,fEgg.y-cy);
+  if(!fEgg.pickedUp&&dEgg<fEgg.r+30){fTryEggTap();return;}
+  // Otherwise attack
+  if(fPlayer.attackCD<=0)fAttack();
+});
+
+// Long press for egg (mouse)
+FCV.addEventListener('mousedown',e=>{
+  if(fState!=='battle')return;
+  if(!fEgg.longPressing)return;
+  fEgg.longPressStart=Date.now(); // reset timer for hold
+});
+
+// Touch joystick for forest (reuse main game joystick pattern)
+// Add touch support for forest
+(function(){
+  if(!('ontouchstart'in window)&&!navigator.maxTouchPoints)return;
+  // We'll reuse the main game's touch-controls but hidden; instead, overlay our own
+  const ft=document.getElementById('forest-touch');
+  // Create joystick
+  const joy=document.createElement('div');
+  joy.style.cssText='position:absolute;bottom:20px;left:20px;width:120px;height:120px;border-radius:50%;background:rgba(20,30,15,0.4);border:2px solid rgba(80,200,100,0.3);pointer-events:auto;touch-action:none;';
+  joy.id='f-joystick';
+  const knob=document.createElement('div');
+  knob.style.cssText='position:absolute;top:50%;left:50%;width:50px;height:50px;border-radius:50%;background:rgba(80,200,100,0.35);border:2px solid rgba(80,200,100,0.6);transform:translate(-50%,-50%);pointer-events:none;';
+  knob.innerHTML='<div style="text-align:center;line-height:50px;font-size:24px;">▾</div>';
+  joy.appendChild(knob);ft.appendChild(joy);
+  // Attack button
+  const atkBtn=document.createElement('div');
+  atkBtn.style.cssText='position:absolute;bottom:100px;right:20px;width:56px;height:56px;border-radius:50%;background:rgba(180,50,40,0.5);border:2px solid #b43228;color:#ff6644;display:flex;align-items:center;justify-content:center;font-size:22px;pointer-events:auto;touch-action:none;';
+  atkBtn.textContent='⚔️';
+  ft.appendChild(atkBtn);
+  // Dash button
+  const dashBtn=document.createElement('div');
+  dashBtn.style.cssText='position:absolute;bottom:160px;right:30px;width:56px;height:56px;border-radius:50%;background:rgba(60,120,200,0.4);border:2px solid #3c78c8;color:#66aaff;display:flex;align-items:center;justify-content:center;font-size:22px;pointer-events:auto;touch-action:none;';
+  dashBtn.textContent='💨';
+  ft.appendChild(dashBtn);
+
+  // Joystick handlers
+  let jStart={x:0,y:0},jActive=false;
+  function jStartFn(e){e.preventDefault();jActive=true;const r=joy.getBoundingClientRect();jStart={x:r.left+r.width/2,y:r.top+r.height/2};joy.classList.add('active');jMoveFn(e);}
+  function jMoveFn(e){if(!jActive)return;e.preventDefault();const t=e.touches?e.touches[0]:e;let dx=t.clientX-jStart.x,dy=t.clientY-jStart.y;const d=Math.hypot(dx,dy);if(d>12){fTouchMove.vec={x:dx/d,y:dy/d};const angle=Math.atan2(dy,dx)*180/Math.PI+90;knob.style.transform=`translate(-50%,-50%) rotate(${angle}deg)`;}else{fTouchMove.vec={x:0,y:0};knob.style.transform='translate(-50%,-50%)';}}
+  function jEndFn(){jActive=false;fTouchMove.vec={x:0,y:0};knob.style.transform='translate(-50%,-50%)';}
+  joy.addEventListener('touchstart',jStartFn,{passive:false});
+  joy.addEventListener('touchmove',jMoveFn,{passive:false});
+  joy.addEventListener('touchend',jEndFn);
+  joy.addEventListener('mousedown',jStartFn);
+  document.addEventListener('mousemove',e=>{if(jActive)jMoveFn(e);});
+  document.addEventListener('mouseup',e=>{if(jActive)jEndFn();});
+
+  // Action buttons
+  atkBtn.addEventListener('touchstart',e=>{e.preventDefault();e.stopPropagation();if(fPlayer.attackCD<=0)fAttack();},{passive:false});
+  atkBtn.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();if(fPlayer.attackCD<=0)fAttack();});
+  dashBtn.addEventListener('touchstart',e=>{e.preventDefault();e.stopPropagation();if(fPlayer.dashCD<=0)fDash();},{passive:false});
+  dashBtn.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();if(fPlayer.dashCD<=0)fDash();});
+})();
 </script>
 </body>
 </html>
