@@ -473,9 +473,16 @@ body.shape-square .sm-home-content{max-width:100%;}
 #pet-bag-cats .pet-cat{color:#779955;border-bottom-color:rgba(100,180,80,0.1);}
 #pet-bag-cats .pet-cat:hover{background:rgba(100,180,80,0.08);}
 #pet-bag-cats .pet-cat.active{background:rgba(100,180,80,0.18);color:#88cc66;}
-/* 货架空槽 */
-.pet-slot{aspect-ratio:1;border-radius:10px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:24px;color:#554433;}
-.pet-slot .slot-name{font-size:10px;margin-top:4px;color:#554433;}
+/* 货架 — 仿真实木质货架 */
+.pet-shelf{background:linear-gradient(to bottom,rgba(60,40,15,0.25),rgba(40,28,10,0.35));border-radius:8px;padding:8px 8px 0;display:flex;flex-direction:column;gap:0;}
+.pet-shelf-row{display:flex;gap:8px;justify-content:center;position:relative;padding-bottom:8px;}
+.pet-shelf-row::after{content:'';position:absolute;left:-8px;right:-8px;bottom:0;height:4px;background:linear-gradient(to bottom,rgba(140,100,50,0.5),rgba(80,55,25,0.7));border-radius:0 0 4px 4px;box-shadow:0 2px 4px rgba(0,0,0,0.3);}
+.pet-shelf-slot{width:60px;height:60px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:28px;color:#665544;background:rgba(255,255,255,0.02);border-radius:6px;border:1px dashed rgba(180,140,60,0.12);position:relative;z-index:1;}
+.pet-shelf-slot .slot-name{font-size:9px;margin-top:2px;color:#554433;}
+/* 背包货架（绿色调）*/
+#pet-bag-main .pet-shelf{background:linear-gradient(to bottom,rgba(30,45,20,0.25),rgba(20,30,14,0.35));}
+#pet-bag-main .pet-shelf-row::after{background:linear-gradient(to bottom,rgba(80,130,60,0.5),rgba(40,70,30,0.7));}
+#pet-bag-main .pet-shelf-slot{color:#556644;border-color:rgba(100,180,80,0.12);}
 </style>
 <script>
 // 宠物商店分类（先空着，只有分类名）
@@ -507,13 +514,20 @@ function smRenderPetShopMain(){
   var box = document.getElementById('pet-shop-main');
   if(!box) return;
   box.innerHTML = '';
-  // 空货架
-  for(var i=0;i<6;i++){
-    var slot = document.createElement('div');
-    slot.className = 'pet-slot';
-    slot.innerHTML = '—<span class="slot-name">空</span>';
-    box.appendChild(slot);
+  var shelf = document.createElement('div');
+  shelf.className = 'pet-shelf';
+  for(var r=0;r<2;r++){
+    var row = document.createElement('div');
+    row.className = 'pet-shelf-row';
+    for(var c=0;c<3;c++){
+      var slot = document.createElement('div');
+      slot.className = 'pet-shelf-slot';
+      slot.innerHTML = '—<span class="slot-name">空</span>';
+      row.appendChild(slot);
+    }
+    shelf.appendChild(row);
   }
+  box.appendChild(shelf);
 }
 
 // 宠物背包分类
@@ -545,12 +559,20 @@ function smRenderPetBagMain(){
   var box = document.getElementById('pet-bag-main');
   if(!box) return;
   box.innerHTML = '';
-  for(var i=0;i<6;i++){
-    var slot = document.createElement('div');
-    slot.className = 'pet-slot';
-    slot.innerHTML = '—<span class="slot-name">空</span>';
-    box.appendChild(slot);
+  var shelf = document.createElement('div');
+  shelf.className = 'pet-shelf';
+  for(var r=0;r<2;r++){
+    var row = document.createElement('div');
+    row.className = 'pet-shelf-row';
+    for(var c=0;c<3;c++){
+      var slot = document.createElement('div');
+      slot.className = 'pet-shelf-slot';
+      slot.innerHTML = '—<span class="slot-name">空</span>';
+      row.appendChild(slot);
+    }
+    shelf.appendChild(row);
   }
+  box.appendChild(shelf);
 }
 </script>
 <!-- ===== PET SHOP PAGE ===== -->
