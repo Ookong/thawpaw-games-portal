@@ -3030,7 +3030,7 @@ function smRenderPetNests(){
       var elapsed=now-n.placedAt;
       var pct=Math.min(100,Math.round(elapsed/PET_HATCH_TIME*100));
       var egg=smSave.petEggs&&smSave.petEggs[n.eggIdx];
-      var eggIcon=egg?'<img src="'+egg.img+'" style="width:52px;height:52px;object-fit:contain;">':'\u{1F95A}';
+      var eggIcon=egg?'<img src="'+egg.img+'" style="width:90px;height:90px;object-fit:contain;">':'\u{1F95A}';
       el.innerHTML=eggIcon;
       el.style.fontSize='';
       el.style.opacity='1';
