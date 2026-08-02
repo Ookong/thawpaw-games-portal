@@ -1164,8 +1164,7 @@ const justPressed={};
 document.addEventListener('keydown',e=>{
   const k=e.key.toLowerCase();
   if(fState==='battle'){
-    // Forest battle keyboard - handle first
-    fKeyset[k]=true;
+    fKeyset[k]=true;keys[k]=true;
     if(k==='j'||k===' '){e.preventDefault();if(fPlayer.attackCD<=0)fAttack();}
     if(k==='shift'){if(fPlayer.dashCD<=0)fDash();}
     return;
@@ -3113,6 +3112,22 @@ function enterForest(){
   document.getElementById('f-seals').textContent=smSave.seals;
   fitForestCanvas();
   fLoopRunning=true;requestAnimationFrame(forestLoop); // always restart loop
+  // Mouse-to-move: hold mouse button on canvas to walk
+  if(!FCV._mouseMoveAttached){
+    FCV._mouseMoveAttached=true;
+    FCV.addEventListener('mousedown',e=>{
+      if(fState!=='battle')return;
+      const rect=FCV.getBoundingClientRect();
+      fMouseTarget={x:(e.clientX-rect.left)*(FW/rect.width),y:(e.clientY-rect.top)*(FH/rect.height)};
+    });
+    FCV.addEventListener('mousemove',e=>{
+      if(fState!=='battle'||e.buttons!==1)return;
+      const rect=FCV.getBoundingClientRect();
+      fMouseTarget={x:(e.clientX-rect.left)*(FW/rect.width),y:(e.clientY-rect.top)*(FH/rect.height)};
+    });
+    FCV.addEventListener('mouseup',()=>{fMouseTarget=null;});
+    FCV.addEventListener('mouseleave',()=>{fMouseTarget=null;});
+  }
 }
 
 function exitForest(){
@@ -3280,9 +3295,10 @@ function fSpawnClone(){
 }
 
 // Forest update
+var fMouseTarget=null; // {x,y} in game coords, set by mouse on canvas
+
 function fUpdate(){
   if(fState!=='battle')return;
-  // fHitStop removed from update — was causing input freeze on Safari
 
   // Player movement
   let dx=0,dy=0;
@@ -3290,8 +3306,14 @@ function fUpdate(){
   if(fKeyset['s']||fKeyset['arrowdown'])dy+=1;
   if(fKeyset['a']||fKeyset['arrowleft'])dx-=1;
   if(fKeyset['d']||fKeyset['arrowright'])dx+=1;
-  // Touch movement
+  // Touch / mouse-drag movement
   if(fTouchMove.active&&(fTouchMove.vec.x||fTouchMove.vec.y)){dx=fTouchMove.vec.x;dy=fTouchMove.vec.y;}
+  // Mouse target movement (desktop: hold mouse on canvas to walk there)
+  if(fMouseTarget){
+    let mdx=fMouseTarget.x-fPlayer.x,mdy=fMouseTarget.y-fPlayer.y;
+    let md=Math.hypot(mdx,mdy);
+    if(md>8){dx=mdx/md;dy=mdy/md;}else{fMouseTarget=null;}
+  }
 
   if(fPlayer.dashing>0){
     fPlayer.x+=fPlayer.dashDir.x*8;fPlayer.y+=fPlayer.dashDir.y*8;fPlayer.dashing--;
