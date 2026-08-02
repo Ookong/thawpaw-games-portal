@@ -594,6 +594,42 @@ function smRenderPetBagMain(){
   var box = document.getElementById('pet-bag-main');
   if(!box) return;
   box.innerHTML = '';
+  
+  // Egg category: show actual eggs from save
+  if(smPetBagActive==='egg'){
+    var eggs = (smSave.petEggs||[]);
+    if(eggs.length===0){
+      var empty=document.createElement('div');
+      empty.style.cssText='text-align:center;color:#556644;font-size:13px;padding:50px 0;';
+      empty.textContent='还没有获得任何蛋…去森林探险吧！';
+      box.appendChild(empty);
+    }else{
+      var shelf=document.createElement('div');
+      shelf.className='pet-shelf';
+      var row=document.createElement('div');
+      row.className='pet-shelf-row';
+      for(var i=0;i<eggs.length;i++){
+        (function(egg,idx){
+          var slot=document.createElement('div');
+          slot.className='pet-shelf-slot';
+          slot.style.cursor='pointer';
+          slot.innerHTML='<span style="font-size:36px;">'+egg.icon+'</span><span class="slot-name">'+egg.name+'</span>';
+          slot.addEventListener('click',function(){
+            alert('🥚 '+egg.name+'\n获得日期：'+(egg.got||'未知'));
+          });
+          row.appendChild(slot);
+        })(eggs[i],i);
+      }
+      // Fill remaining slots
+      var remain=Math.max(0,4-(eggs.length%4));
+      if(eggs.length%4!==0){for(var j=0;j<remain;j++){var s=document.createElement('div');s.className='pet-shelf-slot';s.innerHTML='—<span class="slot-name">空</span>';row.appendChild(s);}}
+      shelf.appendChild(row);
+      box.appendChild(shelf);
+    }
+    return;
+  }
+  
+  // Other categories: placeholder
   var shelf = document.createElement('div');
   shelf.className = 'pet-shelf';
   for(var r=0;r<5;r++){
@@ -3231,7 +3267,13 @@ function fCheckCaveExit(){
     if(Math.abs(fPlayer.x-c.x)<c.w/2 && fPlayer.y<c.y+c.h/2){
       // Escaped!
       fState='victory';SFX.win();
-      let msg=fPlayer.hasEgg?'你带着🥚蛋从洞口逃出了森林！白虎在身后怒吼……':'你从洞口逃出了森林。';
+      if(fPlayer.hasEgg){
+        // Save tiger egg to pet bag!
+        if(!smSave.petEggs)smSave.petEggs=[];
+        smSave.petEggs.push({type:'tiger',name:'白虎蛋',icon:'🥚',got:new Date().toLocaleDateString()});
+        smSaveSave();
+      }
+      let msg=fPlayer.hasEgg?'你带着🥚蛋从洞口逃出了森林！白虎蛋已存入宠物背包！':'你从洞口逃出了森林。';
       document.getElementById('f-victory-text').textContent=msg;
       document.getElementById('forest-victory-overlay').style.display='flex';
       document.getElementById('forest-hud').style.display='none';
