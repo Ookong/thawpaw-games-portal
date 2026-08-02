@@ -59,6 +59,10 @@ body{
   cursor:pointer;transition:background .2s,transform .1s;
 }
 .login-btn:hover{background:#3b5bdb}
+
+/* Refresh button spin animation */
+@keyframes spin360{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+.refresh-btn.spinning{animation:spin360 .8s ease-out}
 .login-btn:active{transform:scale(.98)}
 .login-btn:disabled{background:var(--dim);cursor:not-allowed}
 .login-error{
@@ -365,7 +369,7 @@ tr:hover td{background:var(--card2)}
       <div class="table-card">
         <div class="table-header" style="display:flex;justify-content:space-between;align-items:center">
           <h3>📢 游戏动态</h3>
-          <button class="export-btn" onclick="loadActivity()" style="background:var(--accent)">🔄 刷新</button>
+          <button onclick="loadActivity()" id="activity-refresh-btn" class="refresh-btn" style="background:var(--accent);transition:transform .3s">🔄 刷新</button>
         </div>
         <div id="activity-list" style="padding:1rem;max-height:600px;overflow-y:auto">
           <div class="empty-state"><div class="empty-icon">📭</div>加载中...</div>
@@ -454,7 +458,7 @@ tr:hover td{background:var(--card2)}
               <option value="all-only">仅 @all</option>
               <option value="dm">仅私聊</option>
             </select>
-            <button onclick="loadChatHistory(chatHistoryPage)" style="padding:4px 12px;border:1px solid var(--border);border-radius:6px;background:var(--card);color:var(--text);cursor:pointer">🔄</button>
+            <button id="chat-refresh-btn" onclick="loadChatHistory(chatHistoryPage)" class="refresh-btn" title="刷新" style="padding:4px 12px;border:1px solid var(--border);border-radius:6px;background:var(--card);color:var(--text);cursor:pointer;transition:transform .3s">🔄</button>
           </div>
         </div>
         <div id="chat-history-list" style="padding:.5rem 1rem;max-height:500px;overflow-y:auto">
@@ -507,7 +511,7 @@ function getBackendBase(){
   if(saved){
     try{
       session = JSON.parse(saved); isSuperAdmin = (session.role === "super");
-      showDashboard();
+      try{ showDashboard(); }catch(e){ console.error('showDashboard error on restore:', e); }
     }catch(e){ localStorage.removeItem('tpgHqSession'); }
   }
 
@@ -783,6 +787,7 @@ function loadStats(){
 
 // ── Activity Feed ──
 function loadActivity(){
+  spinRefresh(document.getElementById('activity-refresh-btn'));
   const el = document.getElementById('activity-list');
   if(!el) return;
   el.innerHTML = '<div class="empty-state"><div class="empty-icon">⏳</div>加载中...</div>';
@@ -1012,8 +1017,15 @@ function transferSuperAdmin(){
 var chatHistoryPage = 1;
 var CHAT_PAGE_SIZE = 20;
 
+function spinRefresh(btn){
+  if(!btn) return;
+  btn.classList.add('spinning');
+  setTimeout(function(){ btn.classList.remove('spinning'); }, 800);
+}
+
 function loadChatHistory(page){
   if(!session) return;
+  spinRefresh(document.getElementById('chat-refresh-btn'));
   page = page || 1;
   if(page < 1) page = 1;
   chatHistoryPage = page;
