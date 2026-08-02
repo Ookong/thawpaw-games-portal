@@ -2732,23 +2732,23 @@ function smShowPage(name){
   else{var _ft2=document.getElementById('forest-touch');if(_ft2)_ft2.style.display='none';}
 }
 // ===== FOREST GAME (global vars, OUTSIDE smShowPage) =====
-let FCV=null,FCTX=null;
-const FW=960,FH=640;
-let fState='idle';
-let fPlayer={x:FW/2,y:FH-100,r:16,hp:150,maxHp:150,speed:3.2,facing:0,attackCD:0,attackTimer:0,dashCD:0,dashing:0,invuln:0,trail:[],hasEgg:false,heldEgg:null};
-let fTiger=null;
-let fClones=[];
-let fParticles=[];
-let fFloats=[];
-let fSlashes=[];
-let fCaves=[];
-let fEgg={x:FW/2,y:FH/2+40,r:30,pickedUp:false,taps:0,lastTap:0,longPressStart:0,longPressing:false};
-let fEggImg=new Image();fEggImg.src='assets/tiger-egg.png';
-let fEggImgLoaded=false;fEggImg.onload=()=>{fEggImgLoaded=true;};
-let fKeyset={};
-let fLoopRunning=false;
-let fBgFrame=0;
-let fFireflies=[];
+var FCV=null,FCTX=null;
+var FW=960,FH=640;
+var fState='idle';
+var fPlayer={x:FW/2,y:FH-100,r:16,hp:150,maxHp:150,speed:3.2,facing:0,attackCD:0,attackTimer:0,dashCD:0,dashing:0,invuln:0,trail:[],hasEgg:false,heldEgg:null};
+var fTiger=null;
+var fClones=[];
+var fParticles=[];
+var fFloats=[];
+var fSlashes=[];
+var fCaves=[];
+var fEgg={x:FW/2,y:FH/2+40,r:30,pickedUp:false,taps:0,lastTap:0,longPressStart:0,longPressing:false};
+var fEggImg=new Image();fEggImg.src='assets/tiger-egg.png';
+var fEggImgLoaded=false;fEggImg.onload=()=>{fEggImgLoaded=true;};
+var fKeyset={};
+var fLoopRunning=false;
+var fBgFrame=0;
+var fFireflies=[];
 function initForestCanvas(){
   FCV=document.getElementById('forest-canvas');
   if(!FCV){return false;}
@@ -2822,13 +2822,13 @@ function smShowForestLocations(){
 }
 
 // ===== FOREST GAME (extra vars) =====
-let fScreenShake=0;
-let fHitStop=0;
-let fTouchMove={active:false,vec:{x:0,y:0}};
-let fTrees=[];
+var fScreenShake=0;
+var fHitStop=0;
+var fTouchMove={active:false,vec:{x:0,y:0}};
+var fTrees=[];
 for(let i=0;i<20;i++)fTrees.push({x:rand(20,FW-20),y:rand(60,FH-60),h:rand(40,80),w:rand(20,35)});
 for(let i=0;i<15;i++)fFireflies.push({x:rand(0,FW),y:rand(60,FH-60),vx:rand(-0.3,0.3),vy:rand(-0.3,0.3),phase:rand(0,6.28),life:rand(0,200)});
-let fStars=[];
+var fStars=[];
 for(let i=0;i<60;i++)fStars.push({x:rand(0,FW),y:rand(0,FH*0.4),r:rand(0.4,2),tw:rand(0,6.28),sp:rand(0.015,0.04)});
 
 function enterForestDebug(){
@@ -2892,7 +2892,7 @@ function enterForest(){
   document.getElementById('forest-bottom-hud').style.display='flex';
   document.getElementById('f-seals').textContent=smSave.seals;
   fitForestCanvas();
-  if(!fLoopRunning){fLoopRunning=true;requestAnimationFrame(forestLoop);}
+  fLoopRunning=true;requestAnimationFrame(forestLoop); // always restart loop
 }
 
 function exitForest(){
