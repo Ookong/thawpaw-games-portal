@@ -816,8 +816,13 @@ function loadStats(){
 }
 
 // ── Activity Feed ──
+var _activityLoading = false;
 function loadActivity(){
-  spinRefresh(document.getElementById('activity-refresh-btn'));
+  if(_activityLoading) return;
+  _activityLoading = true;
+  var actBtn = document.getElementById('activity-refresh-btn');
+  if(actBtn) actBtn.disabled = true;
+  spinRefresh(actBtn);
   const el = document.getElementById('activity-list');
   if(!el) return;
   showSkeleton(el, 3);
@@ -843,6 +848,10 @@ function loadActivity(){
     }).join('');
   }).catch(err => {
     showErrorRetry(el, '网络错误', function(){ loadActivity(); });
+  }).finally(function(){
+    _activityLoading = false;
+    var actBtn = document.getElementById('activity-refresh-btn');
+    if(actBtn) actBtn.disabled = false;
   });
 }
 
@@ -1098,9 +1107,12 @@ function showErrorRetry(el, msg, retryFn){
   });
 }
 
+var _chatHistoryLoading = false;
 function loadChatHistory(page){
-  if(!session) return;
+  if(!session || _chatHistoryLoading) return;
+  _chatHistoryLoading = true;
   var refreshBtn = document.getElementById('chat-refresh-btn');
+  if(refreshBtn) refreshBtn.disabled = true;
   spinRefresh(refreshBtn);
   page = page || 1;
   if(page < 1) page = 1;
@@ -1148,6 +1160,9 @@ function loadChatHistory(page){
   }).catch(function(err){
     showErrorRetry(document.getElementById('chat-history-list'), '网络错误', function(){ loadChatHistory(page); });
     document.getElementById('chat-page-info').textContent = '加载失败';
+  }).finally(function(){
+    _chatHistoryLoading = false;
+    if(refreshBtn) refreshBtn.disabled = false;
   });
 }
 
