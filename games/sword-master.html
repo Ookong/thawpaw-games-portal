@@ -2831,19 +2831,42 @@ let fStars=[];
 for(let i=0;i<60;i++)fStars.push({x:rand(0,FW),y:rand(0,FH*0.4),r:rand(0.4,2),tw:rand(0,6.28),sp:rand(0.015,0.04)});
 
 function enterForestDebug(){
-  var log=[];
-  try{log.push('1');if(!FCV){log.push('1a');initForestCanvas();}log.push('2');
-  var pg=document.getElementById('sm-page-forest');
-  if(pg){pg.style.display='flex';pg.classList.add('active');}log.push('3');
-  fState='battle';log.push('4');
-  fPlayer.x=FW/2;fPlayer.y=FH-100;fPlayer.hp=fPlayer.maxHp;log.push('5');
-  document.querySelectorAll('[id^="forest-stage-"]').forEach(function(el){el.style.display='none';});log.push('6');
-  document.getElementById('forest-overlay').style.display='none';log.push('7');
-  document.getElementById('forest-hud').style.display='flex';log.push('8');
-  document.getElementById('forest-bottom-hud').style.display='flex';log.push('9');
-  if(!fLoopRunning){fLoopRunning=true;requestAnimationFrame(forestLoop);}log.push('10');
-  alert('OK:'+log.join(','));
-  }catch(e){alert('FAIL at '+log.join(',')+' error:'+e.message);}
+  var steps=[];
+  try{
+    steps.push('start');
+    if(!FCV||!FCTX){steps.push('init-canvas');initForestCanvas();}
+    if(!FCV){alert('FCV is null after init!');return;}
+    steps.push('canvas-ok:'+FCV.tagName);
+    var pg=document.getElementById('sm-page-forest');
+    steps.push('page:'+(pg?'found':'MISSING'));
+    if(pg){pg.style.display='flex';pg.classList.add('active');}
+    fState='battle';
+    steps.push('state=battle');
+    fPlayer.x=FW/2;fPlayer.y=FH-100;fPlayer.hp=fPlayer.maxHp;
+    steps.push('player-set');
+    fCaves=[];
+    for(var i=0;i<5;i++)fCaves.push({x:FW*(i+1)/6,y:50,w:70,h:60});
+    fEgg.x=FW/2;fEgg.y=FH/2+40;fEgg.pickedUp=false;fEgg.taps=0;
+    fTiger={x:FW/2,y:FH/2-20,r:28,hp:400,maxHp:400,speed:4.5,damage:18,attackRange:60,attackCD:50,attackTimer:0,state:'idle',stateTimer:0,hitFlash:0,enraged:false,cloneTimer:0};
+    fClones=[];fParticles=[];fFloats=[];fSlashes=[];
+    steps.push('entities-set');
+    document.querySelectorAll('[id^="forest-stage-"]').forEach(function(el){el.style.display='none';});
+    document.getElementById('forest-overlay').style.display='none';
+    document.getElementById('forest-victory-overlay').style.display='none';
+    document.getElementById('forest-defeat-overlay').style.display='none';
+    document.getElementById('forest-hud').style.display='flex';
+    document.getElementById('forest-bottom-hud').style.display='flex';
+    steps.push('overlays-hidden');
+    if(typeof smSave!=='undefined')document.getElementById('f-seals').textContent=smSave.seals;
+    fitForestCanvas();
+    steps.push('canvas-fitted');
+    if(!fLoopRunning){fLoopRunning=true;requestAnimationFrame(forestLoop);}
+    steps.push('loop-started');
+    document.body.style.background='';
+    alert('✅ 成功! '+steps.join('→'));
+  }catch(e){
+    alert('❌ 崩溃 at: '+steps.join('→')+'\n错误: '+e.message);
+  }
 }
 function enterForest(){
   var pg=document.getElementById('sm-page-forest');
