@@ -3307,7 +3307,7 @@ function forestLoop(){
     else if(fState==='idle'&&FCTX){fRender();}
   }catch(e){
     // Draw error indicator
-    if(FCTX){FCTX.fillStyle='#000';FCTX.fillRect(0,0,FW,FH);FCTX.fillStyle='#f00';FCTX.font='16px sans-serif';FCTX.fillText('ERR:'+e.message,20,30);}
+    if(FCTX){FCTX.fillStyle='#000';FCTX.fillRect(0,0,FW,FH);FCTX.fillStyle='#ff0';FCTX.font='28px sans-serif';FCTX.textAlign='center';FCTX.fillText('ERR:',FW/2,FH/2-20);var msg=e.message.length>60?e.message.substring(0,60):e.message;FCTX.fillText(msg,FW/2,FH/2+20);FCTX.textAlign='left';}
   }
   requestAnimationFrame(forestLoop);
 }
