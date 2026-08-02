@@ -651,7 +651,7 @@ function smRenderPetBagMain(){
       🚪 活着走到洞口可带蛋逃离<br>
       💀 死亡将扣除 5 📜 剑客宝印
     </div>
-    <button class="btn" style="background:linear-gradient(135deg,#8a5a2a,#6a3a1a);border-color:#cc8844;color:#fff;" onclick="enterForestDebug()">⚔️ 挑战白虎</button>
+    <button class="btn" style="background:linear-gradient(135deg,#8a5a2a,#6a3a1a);border-color:#cc8844;color:#fff;" onclick="enterForest()">⚔️ 挑战白虎</button>
     <button class="btn small" style="background:linear-gradient(135deg,#666,#444);font-size:14px;" onclick="smShowForestLocations()">🔙 返回地点</button>
   </div>
   <div id="forest-victory-overlay" style="position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;z-index:300;gap:12px;background:rgba(4,12,3,0.85);">
@@ -2728,7 +2728,10 @@ function smShowPage(name){
   if(name==='pets'&&typeof smRenderPetBubbles==='function')smRenderPetBubbles();
   if(name==='pet-shop'){smRenderPetShopCats();smRenderPetShopMain();document.getElementById('sm-pet-shop-coins').textContent=smSave.coins;}
   if(name==='pet-bag'){smRenderPetBagCats();smRenderPetBagMain();}
-  // ===== FOREST GAME (vars declared early to avoid TDZ) =====
+  if(name==='forest'){if(typeof fitForestCanvas==='function')fitForestCanvas();var _ft=document.getElementById('forest-touch');if(_ft)_ft.style.display='block';if(typeof fLoopRunning!=='undefined'&&!fLoopRunning&&typeof forestLoop==='function'){fLoopRunning=true;requestAnimationFrame(forestLoop);}}
+  else{var _ft2=document.getElementById('forest-touch');if(_ft2)_ft2.style.display='none';}
+}
+// ===== FOREST GAME (global vars, OUTSIDE smShowPage) =====
 let FCV=null,FCTX=null;
 const FW=960,FH=640;
 let fState='idle';
@@ -2748,7 +2751,7 @@ let fBgFrame=0;
 let fFireflies=[];
 function initForestCanvas(){
   FCV=document.getElementById('forest-canvas');
-  if(!FCV){console.error('forest-canvas not found!');return false;}
+  if(!FCV){return false;}
   FCV.width=FW;FCV.height=FH;
   FCTX=FCV.getContext('2d');
   return true;
@@ -2756,13 +2759,9 @@ function initForestCanvas(){
 initForestCanvas();
 function fitForestCanvas(){
   if(!FCV)return;
-  const page=document.getElementById('sm-page-forest');
+  var page=document.getElementById('sm-page-forest');
   if(page){page.style.display='flex';}
   FCV.style.width='100%';FCV.style.height='100%';
-}
-
-if(name==='forest'){fitForestCanvas();document.getElementById('forest-touch').style.display='block';if(!fLoopRunning){fLoopRunning=true;requestAnimationFrame(forestLoop);}}
-  else{document.getElementById('forest-touch').style.display='none';}
 }
 function smGoHome(){
   if(gameState==='battle'||gameState==='break'||gameState==='clear'){smSave.coins+=player.gold;if(currentLevel>smSave.highestLevel)smSave.highestLevel=currentLevel;smSaveSave();}
@@ -2819,13 +2818,12 @@ function smShowForestLocations(){
   document.getElementById('forest-overlay').style.display='flex';
 }
 
-// ===== FOREST GAME (functions only, vars declared above) =====
+// ===== FOREST GAME (extra vars) =====
 let fScreenShake=0;
 let fHitStop=0;
 let fTouchMove={active:false,vec:{x:0,y:0}};
 let fTrees=[];
 for(let i=0;i<20;i++)fTrees.push({x:rand(20,FW-20),y:rand(60,FH-60),h:rand(40,80),w:rand(20,35)});
-let fFireflies=[];
 for(let i=0;i<15;i++)fFireflies.push({x:rand(0,FW),y:rand(60,FH-60),vx:rand(-0.3,0.3),vy:rand(-0.3,0.3),phase:rand(0,6.28),life:rand(0,200)});
 let fStars=[];
 for(let i=0;i<60;i++)fStars.push({x:rand(0,FW),y:rand(0,FH*0.4),r:rand(0.4,2),tw:rand(0,6.28),sp:rand(0.015,0.04)});
