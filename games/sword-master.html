@@ -186,6 +186,9 @@ canvas{display:block;width:100%;height:100%;box-shadow:0 0 40px rgba(180,50,40,0
 body.shape-portrait .sm-forest-bubble{padding:8px 10px;font-size:12px;}
 body.shape-portrait .sm-forest-bubble .forest-icon{font-size:20px;}
 
+/* ===== 森林入口气泡 ===== */
+@keyframes forestPulse{0%,100%{box-shadow:0 0 6px rgba(80,200,100,0.15);}50%{box-shadow:0 0 16px rgba(80,200,100,0.35);}}
+
 /* ===== 屏幕形状自适应 ===== */
 /* 竖屏手机：canvas 缩放后 UI 更紧凑 */
 body.shape-portrait #shop-panel{width:200px;right:4px;font-size:12px;}
@@ -317,6 +320,10 @@ body.shape-square .sm-home-content{max-width:100%;}
         <div class="mini-card" onclick="smShowPage('activities')"><span class="icon">🎯</span>活动</div>
         <div class="mini-card" onclick="smShowPage('welfare')"><span class="icon">🎁</span>福利</div>
         <div class="mini-card" onclick="smShowPage('park')"><span class="icon">🎡</span>我的乐园</div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:center;gap:8px;background:linear-gradient(135deg,rgba(34,80,40,0.4),rgba(20,60,30,0.3));border:2px solid rgba(80,200,100,0.4);border-radius:12px;padding:12px;cursor:pointer;transition:transform .15s,box-shadow .15s;animation:forestPulse 3s ease-in-out infinite;" onclick="smShowPage('forest')">
+        <span style="font-size:24px;">🌲</span>
+        <span style="font-size:14px;font-weight:700;color:#88ee99;letter-spacing:2px;">前往森林</span>
       </div>
     </div>
   </div>
