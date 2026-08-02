@@ -186,9 +186,6 @@ canvas{display:block;width:100%;height:100%;box-shadow:0 0 40px rgba(180,50,40,0
 body.shape-portrait .sm-forest-bubble{padding:8px 10px;font-size:12px;}
 body.shape-portrait .sm-forest-bubble .forest-icon{font-size:20px;}
 
-/* ===== 森林入口气泡 ===== */
-@keyframes forestPulse{0%,100%{box-shadow:0 0 6px rgba(80,200,100,0.15);}50%{box-shadow:0 0 16px rgba(80,200,100,0.35);}}
-
 /* ===== 屏幕形状自适应 ===== */
 /* 竖屏手机：canvas 缩放后 UI 更紧凑 */
 body.shape-portrait #shop-panel{width:200px;right:4px;font-size:12px;}
@@ -320,10 +317,6 @@ body.shape-square .sm-home-content{max-width:100%;}
         <div class="mini-card" onclick="smShowPage('activities')"><span class="icon">🎯</span>活动</div>
         <div class="mini-card" onclick="smShowPage('welfare')"><span class="icon">🎁</span>福利</div>
         <div class="mini-card" onclick="smShowPage('park')"><span class="icon">🎡</span>我的乐园</div>
-      </div>
-      <div style="display:flex;align-items:center;justify-content:center;gap:8px;background:linear-gradient(135deg,rgba(34,80,40,0.4),rgba(20,60,30,0.3));border:2px solid rgba(80,200,100,0.4);border-radius:12px;padding:12px;cursor:pointer;transition:transform .15s,box-shadow .15s;animation:forestPulse 3s ease-in-out infinite;" onclick="smShowPage('forest')">
-        <span style="font-size:24px;">🌲</span>
-        <span style="font-size:14px;font-weight:700;color:#88ee99;letter-spacing:2px;">前往森林</span>
       </div>
     </div>
   </div>
@@ -472,9 +465,9 @@ body.shape-square .sm-home-content{max-width:100%;}
 })();
 </script>
 <!-- ===== FOREST PAGE ===== -->
-<div id="sm-page-forest" class="sm-page" style="background:linear-gradient(to bottom,#0a1a0a,#061205);overflow:hidden;position:relative;">
+<div id="sm-page-forest" class="sm-page" style="background:linear-gradient(to bottom,#0a1a0a,#061205);overflow:hidden;">
   <a class="sm-back-btn" onclick="smShowPage('pets')"><img src="assets/back-arrow.png" alt="返回"></a>
-  <canvas id="forest-canvas" style="display:block;position:absolute;top:0;left:0;width:100%;height:100%;"></canvas>
+  <canvas id="forest-canvas" style="display:block;width:100%;height:100%;"></canvas>
   <div id="forest-hud" style="position:absolute;top:0;left:0;right:0;display:none;justify-content:space-between;padding:10px 18px;z-index:5;pointer-events:none;">
     <div class="hp-block"><div class="hp-label" style="color:#6db84f;">林风</div><div class="hp-bg"><div class="hp-fill player" id="f-p-hp" style="width:100%"></div><div class="hp-text" id="f-p-hp-t">150/150</div></div></div>
     <div class="hp-block" style="align-items:flex-end;"><div class="hp-label" id="f-tiger-label" style="color:#ff6644;">白虎</div><div class="hp-bg"><div class="hp-fill boss" id="f-tiger-hp" style="width:100%"></div><div class="hp-text" id="f-tiger-hp-t">—</div></div></div>
@@ -483,7 +476,7 @@ body.shape-square .sm-home-content{max-width:100%;}
     <div class="gold-display">📜 <span id="f-seals">0</span> 宝印</div>
     <div class="weapon-display" id="f-cave-display">🌲 森林</div>
   </div>
-  <div id="forest-overlay" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:10;gap:12px;background:linear-gradient(to bottom,rgba(6,18,5,0.85),rgba(4,12,3,0.9));">
+  <div id="forest-overlay" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:300;gap:12px;background:linear-gradient(to bottom,rgba(6,18,5,0.85),rgba(4,12,3,0.9));">
     <div style="font-size:48px;">🌲🐅🌲</div>
     <div style="font-size:36px;font-weight:700;color:#88ee99;letter-spacing:6px;text-shadow:0 0 30px rgba(80,200,100,0.4);">神秘森林</div>
     <div style="font-size:14px;color:#66aa77;max-width:360px;text-align:center;line-height:1.8;">
@@ -495,13 +488,13 @@ body.shape-square .sm-home-content{max-width:100%;}
     <button class="btn" style="background:linear-gradient(135deg,#2a8a3a,#1a6a2a);border-color:#44cc55;color:#fff;" onclick="enterForest()">🌲 进入森林</button>
     <button class="btn small" style="background:linear-gradient(135deg,#666,#444);font-size:14px;" onclick="smShowPage('pets')">🔙 返回</button>
   </div>
-  <div id="forest-victory-overlay" style="position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;z-index:10;gap:12px;background:rgba(4,12,3,0.85);">
+  <div id="forest-victory-overlay" style="position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;z-index:300;gap:12px;background:rgba(4,12,3,0.85);">
     <div style="font-size:56px;">🥚✨</div>
     <div style="font-size:28px;font-weight:700;color:#d4af37;letter-spacing:4px;">成功夺蛋！</div>
     <div style="font-size:14px;color:#a08060;text-align:center;line-height:1.8;" id="f-victory-text">你带着蛋从洞口逃出了森林！</div>
     <button class="btn" onclick="exitForest()">🎉 返回</button>
   </div>
-  <div id="forest-defeat-overlay" style="position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;z-index:10;gap:12px;background:rgba(4,12,3,0.85);">
+  <div id="forest-defeat-overlay" style="position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;z-index:300;gap:12px;background:rgba(4,12,3,0.85);">
     <div style="font-size:56px;">💀</div>
     <div style="font-size:28px;font-weight:700;color:#806040;letter-spacing:4px;">壮烈牺牲</div>
     <div style="font-size:14px;color:#a08060;text-align:center;" id="f-defeat-text">白虎的爪牙将你击倒……失去了 5 📜 宝印</div>
@@ -2622,10 +2615,8 @@ function fitForestCanvas(){
   const sw=innerWidth,sh=innerHeight;
   const scale=Math.min(sw/FW,sh/FH);
   const cw=FW*scale,ch=FH*scale;
-  const page=document.getElementById('sm-page-forest');
-  if(page){page.style.display='flex';}
-  FCV.style.width='100%';FCV.style.height='100%';
-  FCV.style.position='absolute';FCV.style.left='0';FCV.style.top='0';
+  FCV.style.width=cw+'px';FCV.style.height=ch+'px';
+  FCV.style.position='fixed';FCV.style.left=((sw-cw)/2)+'px';FCV.style.top=((sh-ch)/2)+'px';
 }
 
 // Forest state
