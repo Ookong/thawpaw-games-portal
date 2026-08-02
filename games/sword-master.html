@@ -3114,6 +3114,8 @@ function enterForest(){
   document.getElementById('forest-bottom-hud').style.display='flex';
   var _ftel=document.getElementById('forest-touch');if(_ftel)_ftel.style.display='block';
   document.getElementById('f-seals').textContent=smSave.seals;
+  fUpdatePlayerHP();
+  if(fTiger)fUpdateTigerHP();
   fitForestCanvas();
   fLoopRunning=true;requestAnimationFrame(forestLoop); // always restart loop
 }
