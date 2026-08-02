@@ -63,9 +63,24 @@ body{
 }
 .login-btn:hover{background:#3b5bdb}
 
-/* Refresh button spin animation */
+/* Loading & UX */
 @keyframes spin360{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+.refresh-btn{transition:transform .3s}
 .refresh-btn.spinning{animation:spin360 .8s ease-out}
+.refresh-btn:disabled{opacity:.5;cursor:not-allowed}
+.skeleton{background:linear-gradient(90deg,var(--card2) 25%,var(--card) 50%,var(--card2) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:6px}
+.skeleton-row{display:flex;align-items:center;gap:.75rem;padding:.6rem 1rem;border-bottom:1px solid var(--border)}
+.skeleton-avatar{width:36px;height:36px;border-radius:50%;flex-shrink:0}
+.skeleton-lines{flex:1;display:flex;flex-direction:column;gap:.3rem}
+.skeleton-line{height:.8rem;border-radius:4px}
+.skeleton-line.w60{width:60%}.skeleton-line.w40{width:40%}.skeleton-line.w80{width:80%}
+.retry-btn{display:inline-flex;align-items:center;gap:.4rem;padding:6px 16px;border:1px solid var(--accent);border-radius:6px;background:var(--accent-light);color:var(--accent);cursor:pointer;font-size:.85rem;transition:transform .3s}
+.retry-btn:hover{background:var(--accent);color:#fff}
+.retry-btn.spinning{animation:spin360 .8s ease-out}
+.loading-dots{display:inline-block;text-align:center;padding:2rem 0;color:var(--dim);font-size:.9rem}
+.loading-dots::after{content:'';display:inline-block;width:1.2em;animation:dots 1.5s steps(4) infinite}
+@keyframes dots{0%{content:''}25%{content:'·'}50%{content:'··'}75%{content:'···'}100%{content:''}}
 .login-btn:active{transform:scale(.98)}
 .login-btn:disabled{background:var(--dim);cursor:not-allowed}
 .login-error{
@@ -752,6 +767,15 @@ function switchTab(name){
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   document.querySelector('.tab[data-tab="'+name+'"]').classList.add('active');
   document.getElementById('panel-' + name).classList.add('active');
+  // Auto-load when switching to chatroom tab
+  if(name === 'chatroom' && session){
+    if(!document.getElementById('chatroom-members').innerHTML.trim() || document.getElementById('chatroom-members').querySelector('.skeleton')){
+      loadChatroomMembers();
+    }
+    if(!document.getElementById('chat-history-list').innerHTML.trim() || document.getElementById('chat-history-list').querySelector('.skeleton')){
+      loadChatHistory(1);
+    }
+  }
 }
 
 // ── Stats ──
@@ -796,9 +820,9 @@ function loadActivity(){
   spinRefresh(document.getElementById('activity-refresh-btn'));
   const el = document.getElementById('activity-list');
   if(!el) return;
-  el.innerHTML = '<div class="empty-state"><div class="empty-icon">⏳</div>加载中...</div>';
+  showSkeleton(el, 3);
   apiGet('activity', { id: session.id, nickname: session.nickname, limit: 50 }).then(res => {
-    if(!res.ok || !res.activities || res.activities.length === 0){
+    if(!res || !res.ok || !res.activities || res.activities.length === 0){
       el.innerHTML = '<div class="empty-state"><div class="empty-icon">📢</div>暂无动态</div>';
       return;
     }
@@ -818,7 +842,7 @@ function loadActivity(){
       '</div>';
     }).join('');
   }).catch(err => {
-    el.innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div>加载失败</div>';
+    showErrorRetry(el, '网络错误', function(){ loadActivity(); });
   });
 }
 
@@ -849,14 +873,15 @@ function renderFeedbackList(list){
 }
 
 function loadFeedback(){
+  var el = document.getElementById('feedback-list');
+  if(el) showSkeleton(el, 3);
   apiGet('exportFeedback').then(res => {
-    if(!res.ok) return;
+    if(!res || !res.ok){ if(el) showErrorRetry(el, '加载失败', function(){ loadFeedback(); }); return; }
     renderFeedbackList(res.feedback || []);
-    // Show/hide clear-all button
     var clearBtn = document.getElementById('btn-clear-feedback');
     if(clearBtn) clearBtn.style.display = (isSuperAdmin && res.feedback && res.feedback.length > 0) ? '' : 'none';
   }).catch(err => {
-    document.getElementById('feedback-list').innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div>加载失败</div>';
+    if(el) showErrorRetry(el, '网络错误', function(){ loadFeedback(); });
   });
 }
 
@@ -1023,25 +1048,76 @@ function transferSuperAdmin(){
 var chatHistoryPage = 1;
 var CHAT_PAGE_SIZE = 20;
 
+// ── UX Helpers ──
 function spinRefresh(btn){
   if(!btn) return;
   btn.classList.add('spinning');
   setTimeout(function(){ btn.classList.remove('spinning'); }, 800);
 }
 
+// Disable a button during async operation to prevent double-clicks
+function withLoading(btn, promise){
+  if(!btn) return promise;
+  btn.disabled = true;
+  btn.dataset._origText = btn.textContent;
+  btn.textContent = '⏳';
+  return promise.finally(function(){
+    btn.disabled = false;
+    if(btn.dataset._origText) btn.textContent = btn.dataset._origText;
+    delete btn.dataset._origText;
+  });
+}
+
+// Show skeleton loading state in a container
+function showSkeleton(el, rows){
+  if(!el) return;
+  rows = rows || 3;
+  var html = '';
+  for(var i = 0; i < rows; i++){
+    html += '<div class="skeleton-row"><div class="skeleton skeleton-avatar"></div><div class="skeleton-lines">' +
+      '<div class="skeleton skeleton-line w60"></div>' +
+      '<div class="skeleton skeleton-line w40"></div>' +
+    '</div></div>';
+  }
+  el.innerHTML = html;
+}
+
+// Show error with retry button
+function showErrorRetry(el, msg, retryFn){
+  if(!el) return;
+  var retryId = 'retry_' + Math.random().toString(36).substr(2, 6);
+  el.innerHTML = '<div class="empty-state">' +
+    '<div class="empty-icon">⚠️</div>' +
+    '<div style="margin-bottom:.75rem">' + escapeHtml(msg) + '</div>' +
+    '<button class="retry-btn" id="' + retryId + '">🔄 重试</button>' +
+  '</div>';
+  var btn = document.getElementById(retryId);
+  if(btn) btn.addEventListener('click', function(){
+    spinRefresh(btn);
+    setTimeout(retryFn, 200);
+  });
+}
+
 function loadChatHistory(page){
   if(!session) return;
-  spinRefresh(document.getElementById('chat-refresh-btn'));
+  var refreshBtn = document.getElementById('chat-refresh-btn');
+  spinRefresh(refreshBtn);
   page = page || 1;
   if(page < 1) page = 1;
   chatHistoryPage = page;
+  // Loading state
+  showSkeleton(document.getElementById('chat-history-list'), 5);
+  // Disable pager during load
+  document.getElementById('chat-prev-btn').disabled = true;
+  document.getElementById('chat-next-btn').disabled = true;
+  document.getElementById('chat-page-info').textContent = '加载中...';
   var channelFilter = document.getElementById('chat-history-channel') ? document.getElementById('chat-history-channel').value : 'all';
   var offset = (page - 1) * CHAT_PAGE_SIZE;
   var url = 'chatroom/history?id=' + encodeURIComponent(session.id) + '&nickname=' + encodeURIComponent(session.nickname) + '&limit=' + CHAT_PAGE_SIZE + '&offset=' + offset + '&filter=' + channelFilter;
   apiGet(url).then(function(res){
     var el = document.getElementById('chat-history-list');
     if(!res || !res.ok){
-      el.innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div>加载失败: ' + (res && res.error ? res.error : '未知错误') + '</div>';
+      showErrorRetry(el, '加载失败: ' + (res && res.error ? res.error : '未知错误'), function(){ loadChatHistory(page); });
       return;
     }
     var messages = res.messages || [];
@@ -1070,14 +1146,16 @@ function loadChatHistory(page){
     document.getElementById('chat-prev-btn').disabled = page <= 1;
     document.getElementById('chat-next-btn').disabled = page >= totalPages;
   }).catch(function(err){
-    document.getElementById('chat-history-list').innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div>网络错误</div>';
+    showErrorRetry(document.getElementById('chat-history-list'), '网络错误', function(){ loadChatHistory(page); });
+    document.getElementById('chat-page-info').textContent = '加载失败';
   });
 }
 
 // ── Chatroom member management ──
 function loadChatroomMembers(){
+  showSkeleton(document.getElementById('chatroom-members'), 4);
   apiGet('chatroom/listMembers', { id: session.id, nickname: session.nickname }).then(res => {
-    if(!res.ok) return;
+    if(!res || !res.ok){ showErrorRetry(document.getElementById('chatroom-members'), '加载失败', function(){ loadChatroomMembers(); }); return; }
     const members = res.members || [];
     const el = document.getElementById('chatroom-members');
     if(members.length === 0){
@@ -1106,7 +1184,7 @@ function loadChatroomMembers(){
       '</div>';
     }).join('');
   }).catch(err => {
-    document.getElementById('chatroom-members').innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div>加载失败</div>';
+    showErrorRetry(document.getElementById('chatroom-members'), '网络错误', function(){ loadChatroomMembers(); });
   });
 }
 
