@@ -3302,8 +3302,13 @@ function fRender(){
 }
 
 function forestLoop(){
-  if(fState==='battle'&&FCTX){fUpdate();fRender();}
-  else if(fState==='idle'){fRender();} // keep rendering background
+  try{
+    if(fState==='battle'&&FCTX){fUpdate();fRender();}
+    else if(fState==='idle'&&FCTX){fRender();}
+  }catch(e){
+    // Draw error indicator
+    if(FCTX){FCTX.fillStyle='#000';FCTX.fillRect(0,0,FW,FH);FCTX.fillStyle='#f00';FCTX.font='16px sans-serif';FCTX.fillText('ERR:'+e.message,20,30);}
+  }
   requestAnimationFrame(forestLoop);
 }
 
