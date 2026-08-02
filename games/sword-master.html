@@ -3109,6 +3109,7 @@ function enterForest(){
   document.getElementById('forest-defeat-overlay').style.display='none';
   document.getElementById('forest-hud').style.display='flex';
   document.getElementById('forest-bottom-hud').style.display='flex';
+  var _ftel=document.getElementById('forest-touch');if(_ftel)_ftel.style.display='block';
   document.getElementById('f-seals').textContent=smSave.seals;
   fitForestCanvas();
   fLoopRunning=true;requestAnimationFrame(forestLoop); // always restart loop
@@ -3118,6 +3119,7 @@ function exitForest(){
   fState='idle';
   document.getElementById('forest-hud').style.display='none';
   document.getElementById('forest-bottom-hud').style.display='none';
+  var _ftel=document.getElementById('forest-touch');if(_ftel)_ftel.style.display='none';
   document.getElementById('forest-victory-overlay').style.display='none';
   document.getElementById('forest-defeat-overlay').style.display='none';
   document.querySelectorAll('[id^="forest-stage-"]').forEach(el=>el.style.display='none');
@@ -3129,6 +3131,9 @@ function exitForest(){
 // Forest keyboard handled in main keydown above
 
 document.addEventListener('keyup',e=>{fKeyset[e.key.toLowerCase()]=false;});
+// Safety: clear all keys when window loses focus
+window.addEventListener('blur',()=>{fKeyset={};});
+document.addEventListener('visibilitychange',()=>{if(document.hidden)fKeyset={};});
 
 function fAttack(){
   fPlayer.attackCD=22;fPlayer.attackTimer=12;SFX.slash();
@@ -3277,7 +3282,7 @@ function fSpawnClone(){
 // Forest update
 function fUpdate(){
   if(fState!=='battle')return;
-  if(fHitStop>0){fHitStop--;return;}
+  // fHitStop removed from update — was causing input freeze on Safari
 
   // Player movement
   let dx=0,dy=0;
@@ -3564,12 +3569,10 @@ if(FCV)FCV.addEventListener('mousedown',e=>{
   fEgg.longPressStart=Date.now(); // reset timer for hold
 });
 
-// Touch joystick for forest (reuse main game joystick pattern)
-// Add touch support for forest
+// Touch joystick for forest — always build, show/hide via forest-touch display
 (function(){
-  if(!('ontouchstart'in window)&&!navigator.maxTouchPoints)return;
-  // We'll reuse the main game's touch-controls but hidden; instead, overlay our own
   const ft=document.getElementById('forest-touch');
+  if(!ft)return;
   // Create joystick
   const joy=document.createElement('div');
   joy.style.cssText='position:absolute;bottom:20px;left:20px;width:120px;height:120px;border-radius:50%;background:rgba(20,30,15,0.4);border:2px solid rgba(80,200,100,0.3);pointer-events:auto;touch-action:none;';
