@@ -464,24 +464,125 @@ body.shape-square .sm-home-content{max-width:100%;}
   };
 })();
 </script>
+<style>
+/* 宠物商店/背包分类栏 */
+.pet-cat{padding:10px 4px;text-align:center;cursor:pointer;font-size:11px;color:#aa9560;border-bottom:1px solid rgba(180,140,60,0.1);transition:background .2s,color .2s;}
+.pet-cat:hover{background:rgba(180,140,60,0.08);}
+.pet-cat.active{background:rgba(180,140,60,0.18);color:#d4af37;font-weight:700;}
+.pet-cat .pet-cat-icon{font-size:20px;display:block;margin-bottom:2px;}
+#pet-bag-cats .pet-cat{color:#779955;border-bottom-color:rgba(100,180,80,0.1);}
+#pet-bag-cats .pet-cat:hover{background:rgba(100,180,80,0.08);}
+#pet-bag-cats .pet-cat.active{background:rgba(100,180,80,0.18);color:#88cc66;}
+/* 货架空槽 */
+.pet-slot{aspect-ratio:1;border-radius:10px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:24px;color:#554433;}
+.pet-slot .slot-name{font-size:10px;margin-top:4px;color:#554433;}
+</style>
+<script>
+// 宠物商店分类（先空着，只有分类名）
+var smPetShopCats = [
+  {id:'food',  icon:'🍖', name:'食物'},
+  {id:'toy',   icon:'🎾', name:'玩具'},
+  {id:'care',  icon:'🧴', name:'护理'},
+  {id:'egg',   icon:'🥚', name:'蛋类'},
+];
+var smPetShopActive = 'food';
+
+function smRenderPetShopCats(){
+  var box = document.getElementById('pet-shop-cats');
+  if(!box) return;
+  box.innerHTML = '';
+  smPetShopCats.forEach(function(c){
+    var el = document.createElement('div');
+    el.className = 'pet-cat' + (c.id===smPetShopActive ? ' active' : '');
+    el.innerHTML = '<span class="pet-cat-icon">'+c.icon+'</span>'+c.name;
+    el.addEventListener('click', function(){
+      smPetShopActive = c.id;
+      smRenderPetShopCats();
+      smRenderPetShopMain();
+    });
+    box.appendChild(el);
+  });
+}
+function smRenderPetShopMain(){
+  var box = document.getElementById('pet-shop-main');
+  if(!box) return;
+  box.innerHTML = '';
+  // 空货架
+  for(var i=0;i<6;i++){
+    var slot = document.createElement('div');
+    slot.className = 'pet-slot';
+    slot.innerHTML = '—<span class="slot-name">空</span>';
+    box.appendChild(slot);
+  }
+}
+
+// 宠物背包分类
+var smPetBagCats = [
+  {id:'food',  icon:'🍖', name:'食物'},
+  {id:'toy',   icon:'🎾', name:'玩具'},
+  {id:'care',  icon:'🧴', name:'护理'},
+  {id:'egg',   icon:'🥚', name:'蛋类'},
+];
+var smPetBagActive = 'food';
+
+function smRenderPetBagCats(){
+  var box = document.getElementById('pet-bag-cats');
+  if(!box) return;
+  box.innerHTML = '';
+  smPetBagCats.forEach(function(c){
+    var el = document.createElement('div');
+    el.className = 'pet-cat' + (c.id===smPetBagActive ? ' active' : '');
+    el.innerHTML = '<span class="pet-cat-icon">'+c.icon+'</span>'+c.name;
+    el.addEventListener('click', function(){
+      smPetBagActive = c.id;
+      smRenderPetBagCats();
+      smRenderPetBagMain();
+    });
+    box.appendChild(el);
+  });
+}
+function smRenderPetBagMain(){
+  var box = document.getElementById('pet-bag-main');
+  if(!box) return;
+  box.innerHTML = '';
+  for(var i=0;i<6;i++){
+    var slot = document.createElement('div');
+    slot.className = 'pet-slot';
+    slot.innerHTML = '—<span class="slot-name">空</span>';
+    box.appendChild(slot);
+  }
+}
+</script>
 <!-- ===== PET SHOP PAGE ===== -->
-<div id="sm-page-pet-shop" class="sm-page" style="display:none;flex-direction:column;align-items:center;justify-content:flex-start;padding:16px;overflow-y:auto;background:linear-gradient(to bottom,rgba(30,20,8,0.95),rgba(20,12,4,0.98));">
+<div id="sm-page-pet-shop" class="sm-page" style="display:none;flex-direction:column;padding:0;overflow:hidden;background:linear-gradient(to bottom,rgba(30,20,8,0.95),rgba(20,12,4,0.98));">
   <a class="sm-back-btn" onclick="smShowPage('pets')"><img src="assets/back-arrow.png" alt="返回"></a>
-  <div style="font-size:28px;margin-top:20px;">🏪</div>
-  <div style="font-size:20px;font-weight:700;color:#d4af37;letter-spacing:4px;margin:8px 0 4px;">宠物商店</div>
-  <div style="font-size:12px;color:#887755;margin-bottom:20px;">购买宠物用品</div>
-  <div id="pet-shop-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;width:100%;max-width:480px;padding:0 8px;">
-    <div style="grid-column:1/-1;text-align:center;color:#554433;font-size:13px;padding:60px 0;">货架上还没东西……</div>
+  <div style="text-align:center;padding:14px 0 6px;">
+    <div style="font-size:24px;font-weight:700;color:#d4af37;letter-spacing:4px;">🏪 宠物商店</div>
+    <div style="font-size:12px;color:#887755;margin-top:3px;">💰 金币：<span id="sm-pet-shop-coins">0</span></div>
+  </div>
+  <div style="flex:1;display:flex;overflow:hidden;">
+    <!-- 左边分类栏 -->
+    <div id="pet-shop-cats" style="width:80px;overflow-y:auto;background:rgba(20,14,6,0.6);border-right:1px solid rgba(180,140,60,0.15);"></div>
+    <!-- 右边货架 -->
+    <div id="pet-shop-main" style="flex:1;overflow-y:auto;padding:10px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;align-content:start;">
+      <div style="grid-column:1/-1;text-align:center;color:#554433;font-size:13px;padding:50px 0;">货架上还没东西……</div>
+    </div>
   </div>
 </div>
 <!-- ===== PET BAG PAGE ===== -->
-<div id="sm-page-pet-bag" class="sm-page" style="display:none;flex-direction:column;align-items:center;justify-content:flex-start;padding:16px;overflow-y:auto;background:linear-gradient(to bottom,rgba(20,25,15,0.95),rgba(12,15,8,0.98));">
+<div id="sm-page-pet-bag" class="sm-page" style="display:none;flex-direction:column;padding:0;overflow:hidden;background:linear-gradient(to bottom,rgba(20,25,15,0.95),rgba(12,15,8,0.98));">
   <a class="sm-back-btn" onclick="smShowPage('pets')"><img src="assets/back-arrow.png" alt="返回"></a>
-  <div style="font-size:28px;margin-top:20px;">🎒</div>
-  <div style="font-size:20px;font-weight:700;color:#88cc66;letter-spacing:4px;margin:8px 0 4px;">宠物背包</div>
-  <div style="font-size:12px;color:#667755;margin-bottom:20px;">查看宠物物品</div>
-  <div id="pet-bag-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;width:100%;max-width:480px;padding:0 8px;">
-    <div style="grid-column:1/-1;text-align:center;color:#445533;font-size:13px;padding:60px 0;">背包还是空的……</div>
+  <div style="text-align:center;padding:14px 0 6px;">
+    <div style="font-size:24px;font-weight:700;color:#88cc66;letter-spacing:4px;">🎒 宠物背包</div>
+    <div style="font-size:12px;color:#667755;margin-top:3px;">查看宠物物品</div>
+  </div>
+  <div style="flex:1;display:flex;overflow:hidden;">
+    <!-- 左边分类栏 -->
+    <div id="pet-bag-cats" style="width:80px;overflow-y:auto;background:rgba(15,20,10,0.6);border-right:1px solid rgba(100,180,80,0.15);"></div>
+    <!-- 右边货架 -->
+    <div id="pet-bag-main" style="flex:1;overflow-y:auto;padding:10px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;align-content:start;">
+      <div style="grid-column:1/-1;text-align:center;color:#445533;font-size:13px;padding:50px 0;">背包还是空的……</div>
+    </div>
   </div>
 </div>
 <!-- ===== FOREST PAGE ===== -->
@@ -528,7 +629,7 @@ body.shape-square .sm-home-content{max-width:100%;}
       🚪 活着走到洞口可带蛋逃离<br>
       💀 死亡将扣除 5 📜 剑客宝印
     </div>
-    <button class="btn" style="background:linear-gradient(135deg,#8a5a2a,#6a3a1a);border-color:#cc8844;color:#fff;" onclick="alert('1');enterForest();alert('2')">⚔️ 挑战白虎</button>
+    <button class="btn" style="background:linear-gradient(135deg,#8a5a2a,#6a3a1a);border-color:#cc8844;color:#fff;" onclick="try{enterForest()}catch(e){alert('错误:'+e.message+'\n行:'+e.lineNumber)}">⚔️ 挑战白虎</button>
     <button class="btn small" style="background:linear-gradient(135deg,#666,#444);font-size:14px;" onclick="smShowForestLocations()">🔙 返回地点</button>
   </div>
   <div id="forest-victory-overlay" style="position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;z-index:300;gap:12px;background:rgba(4,12,3,0.85);">
