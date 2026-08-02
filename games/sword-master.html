@@ -473,12 +473,12 @@ body.shape-square .sm-home-content{max-width:100%;}
 #pet-bag-cats .pet-cat{color:#779955;border-bottom-color:rgba(100,180,80,0.1);}
 #pet-bag-cats .pet-cat:hover{background:rgba(100,180,80,0.08);}
 #pet-bag-cats .pet-cat.active{background:rgba(100,180,80,0.18);color:#88cc66;}
-/* 货架 — 仿真实木质货架 */
-.pet-shelf{background:linear-gradient(to bottom,rgba(60,40,15,0.25),rgba(40,28,10,0.35));border-radius:8px;padding:8px 8px 0;display:flex;flex-direction:column;gap:0;}
-.pet-shelf-row{display:flex;gap:6px;justify-content:center;position:relative;padding-bottom:6px;}
+/* 货架 — 仿真实木质货架，自适应填满 */
+.pet-shelf{flex:1;display:flex;flex-direction:column;justify-content:space-between;background:linear-gradient(to bottom,rgba(60,40,15,0.25),rgba(40,28,10,0.35));border-radius:8px;padding:8px;gap:4px;min-height:0;}
+.pet-shelf-row{display:flex;gap:6px;flex:1;position:relative;padding-bottom:4px;}
 .pet-shelf-row::after{content:'';position:absolute;left:-8px;right:-8px;bottom:0;height:4px;background:linear-gradient(to bottom,rgba(140,100,50,0.5),rgba(80,55,25,0.7));border-radius:0 0 4px 4px;box-shadow:0 2px 4px rgba(0,0,0,0.3);}
-.pet-shelf-slot{width:52px;height:52px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:24px;color:#665544;background:rgba(255,255,255,0.02);border-radius:6px;border:1px dashed rgba(180,140,60,0.12);position:relative;z-index:1;}
-.pet-shelf-slot .slot-name{font-size:8px;margin-top:1px;color:#554433;}
+.pet-shelf-slot{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:28px;color:#665544;background:rgba(255,255,255,0.02);border-radius:6px;border:1px dashed rgba(180,140,60,0.12);position:relative;z-index:1;}
+.pet-shelf-slot .slot-name{font-size:9px;margin-top:2px;color:#554433;}
 /* 背包货架（绿色调）*/
 #pet-bag-main .pet-shelf{background:linear-gradient(to bottom,rgba(30,45,20,0.25),rgba(20,30,14,0.35));}
 #pet-bag-main .pet-shelf-row::after{background:linear-gradient(to bottom,rgba(80,130,60,0.5),rgba(40,70,30,0.7));}
@@ -586,8 +586,8 @@ function smRenderPetBagMain(){
     <!-- 左边分类栏 -->
     <div id="pet-shop-cats" style="width:80px;overflow-y:auto;background:rgba(20,14,6,0.6);border-right:1px solid rgba(180,140,60,0.15);"></div>
     <!-- 右边货架 -->
-    <div id="pet-shop-main" style="flex:1;overflow-y:auto;padding:10px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;align-content:start;">
-      <div style="grid-column:1/-1;text-align:center;color:#554433;font-size:13px;padding:50px 0;">货架上还没东西……</div>
+    <div id="pet-shop-main" style="flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;">
+      <div style="text-align:center;color:#554433;font-size:13px;padding:50px 0;">货架上还没东西……</div>
     </div>
   </div>
 </div>
@@ -602,8 +602,8 @@ function smRenderPetBagMain(){
     <!-- 左边分类栏 -->
     <div id="pet-bag-cats" style="width:80px;overflow-y:auto;background:rgba(15,20,10,0.6);border-right:1px solid rgba(100,180,80,0.15);"></div>
     <!-- 右边货架 -->
-    <div id="pet-bag-main" style="flex:1;overflow-y:auto;padding:10px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;align-content:start;">
-      <div style="grid-column:1/-1;text-align:center;color:#445533;font-size:13px;padding:50px 0;">背包还是空的……</div>
+    <div id="pet-bag-main" style="flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;">
+      <div style="text-align:center;color:#445533;font-size:13px;padding:50px 0;">背包还是空的……</div>
     </div>
   </div>
 </div>
