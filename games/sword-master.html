@@ -352,14 +352,23 @@ body.shape-square .sm-home-content{max-width:100%;}
   <a class="sm-back-btn" onclick="smShowPage('home')"><img src="assets/back-arrow.png" alt="返回"></a>
   <div style="text-align:center;padding:20px 0 8px;">
     <div style="font-size:28px;color:#d4af37;font-weight:700;letter-spacing:4px;">⚔️ 强化</div>
-    <div style="font-size:13px;color:#a08060;margin-top:4px;">消耗📜剑客宝印强化装备（建设中）</div>
-    <div style="font-size:14px;color:#d4af37;margin-top:6px;">📜 宝印：<span id="sm-enhance-seals">0</span></div>
+    <div style="font-size:13px;color:#a08060;margin-top:4px;">消耗📜 剑客宝印强化属性</div>
+    <div style="font-size:14px;color:#d4af37;margin-top:6px;">📜 宝印：<span id="sm-enhance-seals>0</span></div>
   </div>
-  <div class="sm-enhance-grid" id="sm-enhance-grid">
-    <div class="sm-enhance-slot"><div class="placeholder">🔓 待添加</div><div class="hint">ThawPaw 来添加强化项</div></div>
-    <div class="sm-enhance-slot"><div class="placeholder">🔓 待添加</div><div class="hint">ThawPaw 来添加强化项</div></div>
-    <div class="sm-enhance-slot"><div class="placeholder">🔓 待添加</div><div class="hint">ThawPaw 来添加强化项</div></div>
-    <div class="sm-enhance-slot"><div class="placeholder">🔓 待添加</div><div class="hint">ThawPaw 来添加强化项</div></div>
+  <!-- 速度强化 -->
+  <div style="margin:16px auto;max-width:420px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:16px;">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+      <span style="font-size:28px;">⚡</span>
+      <div>
+        <div style="font-size:16px;font-weight:700;color:#88ccff;">移动速度</div>
+        <div style="font-size:12px;color:#668899;">提升角色在战斗中的移动速度</div>
+      </div>
+      <div style="margin-left:auto;font-size:14px;color:#d4af37;font-weight:700;" id="sm-speed-level-text">Lv.0</div>
+    </div>
+    <!-- 等级条 -->
+    <div id="sm-speed-bars" style="display:flex;gap:4px;margin-bottom:14px;"></div>
+    <!-- 升级按钮 -->
+    <button id="sm-speed-btn" class="btn" style="width:100%;" onclick="smUpgradeSpeed()">升级</button>
   </div>
 </div>
 <!-- ===== ACTIVITIES PAGE ===== -->
@@ -1106,6 +1115,7 @@ function resetPlayer(full){
   player.x=W/2;player.y=H/2+120;
   if(full){
     player.hp=player.maxHp;player.gold=0;player.defense=0;player.defLevel=0;
+    player.speed=typeof smGetPlayerSpeed==='function'?smGetPlayerSpeed():3.2;
     player.weapon='fists';player.ownedWeapons=new Set(['fists']);
     player.items={potion:1,ginseng:0,bomb:0,mine:0,circle:0};player.ginsengSips=0;
     player.transforms=[];player.transformActive=0;player.transformType=null;player.transformCD=0;
@@ -2714,8 +2724,63 @@ function smEquipArmor(key){
   smSave.equippedArmor=key;smSaveSave();smRenderShop();smUpdateHome();
 }
 function smGetKey(){const id=localStorage.getItem('thawpawActiveId')||'default';return 'sword_master_save_'+id;}
-function smLoadSave(){try{const d=JSON.parse(localStorage.getItem(smGetKey()));if(!d)d={};return{coins:d.coins||0,seals:d.seals||0,highestLevel:d.highestLevel||1,ownedArmors:d.ownedArmors||{},equippedArmor:d.equippedArmor||null};}catch(e){return{coins:0,seals:0,highestLevel:1,ownedArmors:{},equippedArmor:null};}}
+function smLoadSave(){try{const d=JSON.parse(localStorage.getItem(smGetKey()));if(!d)d={};return{coins:d.coins||0,seals:d.seals||0,highestLevel:d.highestLevel||1,ownedArmors:d.ownedArmors||{},equippedArmor:d.equippedArmor||null,speedLevel:d.speedLevel||0};}catch(e){return{coins:0,seals:0,highestLevel:1,ownedArmors:{},equippedArmor:null,speedLevel:0};}}
 function smSaveSave(){localStorage.setItem(smGetKey(),JSON.stringify(smSave));}
+
+// ===== 速度强化 =====
+var SM_SPEED_COSTS=[3,5,10,15,23]; // Lv1~5 花费的宝印
+var SM_SPEED_BONUS=0.4; // 每级加速 +0.4
+function smGetPlayerSpeed(){return 3.2+smSave.speedLevel*SM_SPEED_BONUS;}
+function smRenderSpeedEnhance(){
+  var lv=smSave.speedLevel;
+  document.getElementById('sm-speed-level-text').textContent='Lv.'+lv+(lv>=5?' MAX':'');
+  // 等级条
+  var bars=document.getElementById('sm-speed-bars');
+  bars.innerHTML='';
+  for(var i=0;i<5;i++){
+    var b=document.createElement('div');
+    b.style.cssText='flex:1;height:12px;border-radius:3px;';
+    if(i<lv){
+      b.style.background='linear-gradient(to top,#3a7aff,#5a9aff)';
+      b.style.boxShadow='0 0 6px rgba(90,154,255,0.4)';
+    }else{
+      b.style.background='rgba(255,255,255,0.06)';
+      b.style.border='1px solid rgba(255,255,255,0.04)';
+    }
+    bars.appendChild(b);
+  }
+  // 按钮
+  var btn=document.getElementById('sm-speed-btn');
+  if(lv>=5){
+    btn.textContent='⚡ 已满级';
+    btn.disabled=true;
+    btn.style.opacity=0.5;
+    btn.style.cursor='default';
+    btn.style.background='linear-gradient(135deg,#444,#333)';
+  }else{
+    var cost=SM_SPEED_COSTS[lv];
+    var can=smSave.seals>=cost;
+    btn.textContent=(can?'⬆️ ':'🔒 ')+('升到 Lv.'+(lv+1)+'（'+cost+' 📜）');
+    btn.disabled=!can;
+    btn.style.opacity=can?1:0.6;
+    btn.style.cursor=can?'pointer':'default';
+    btn.style.background=can?'linear-gradient(135deg,#2a6a3a,#1a5a2a)':'linear-gradient(135deg,#555,#444)';
+    btn.style.border='1px solid '+(can?'#44cc55':'#666');
+    btn.style.color='#fff';
+  }
+}
+function smUpgradeSpeed(){
+  var lv=smSave.speedLevel;
+  if(lv>=5)return;
+  var cost=SM_SPEED_COSTS[lv];
+  if(smSave.seals<cost)return;
+  smSave.seals-=cost;
+  smSave.speedLevel++;
+  smSaveSave();
+  document.getElementById('sm-enhance-seals').textContent=smSave.seals;
+  smRenderSpeedEnhance();
+  smUpdateHome();
+}
 let smSave=smLoadSave();
 function smGetNick(){try{const id=localStorage.getItem('thawpawActiveId');if(id){const ps=JSON.parse(localStorage.getItem('thawpawPlayers')||'{}');if(ps[id]&&ps[id].nickname)return ps[id].nickname;}}catch(e){}return'少年剑客';}
 function smShowPage(name){
@@ -2723,7 +2788,7 @@ function smShowPage(name){
   const pg=document.getElementById('sm-page-'+name);if(pg){pg.classList.add('active');pg.style.display='';}
   if(name==='home')smUpdateHome();
   if(name==='levels')smRenderLevels();
-  if(name==='enhance')document.getElementById('sm-enhance-seals').textContent=smSave.seals;
+  if(name==='enhance'){document.getElementById('sm-enhance-seals').textContent=smSave.seals;smRenderSpeedEnhance();}
   if(name==='shop')smRenderShop();
   if(name==='pets'&&typeof smRenderPetBubbles==='function')smRenderPetBubbles();
   if(name==='pet-shop'){smRenderPetShopCats();smRenderPetShopMain();document.getElementById('sm-pet-shop-coins').textContent=smSave.coins;}
