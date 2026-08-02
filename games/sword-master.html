@@ -465,9 +465,9 @@ body.shape-square .sm-home-content{max-width:100%;}
 })();
 </script>
 <!-- ===== FOREST PAGE ===== -->
-<div id="sm-page-forest" class="sm-page" style="background:linear-gradient(to bottom,#0a1a0a,#061205);overflow:hidden;">
+<div id="sm-page-forest" class="sm-page" style="background:linear-gradient(to bottom,#0a1a0a,#061205);overflow:hidden;position:relative;">
   <a class="sm-back-btn" onclick="smShowPage('pets')"><img src="assets/back-arrow.png" alt="返回"></a>
-  <canvas id="forest-canvas" style="display:block;width:100%;height:100%;"></canvas>
+  <canvas id="forest-canvas" style="display:block;position:absolute;top:0;left:0;width:100%;height:100%;"></canvas>
   <div id="forest-hud" style="position:absolute;top:0;left:0;right:0;display:none;justify-content:space-between;padding:10px 18px;z-index:5;pointer-events:none;">
     <div class="hp-block"><div class="hp-label" style="color:#6db84f;">林风</div><div class="hp-bg"><div class="hp-fill player" id="f-p-hp" style="width:100%"></div><div class="hp-text" id="f-p-hp-t">150/150</div></div></div>
     <div class="hp-block" style="align-items:flex-end;"><div class="hp-label" id="f-tiger-label" style="color:#ff6644;">白虎</div><div class="hp-bg"><div class="hp-fill boss" id="f-tiger-hp" style="width:100%"></div><div class="hp-text" id="f-tiger-hp-t">—</div></div></div>
@@ -2615,8 +2615,10 @@ function fitForestCanvas(){
   const sw=innerWidth,sh=innerHeight;
   const scale=Math.min(sw/FW,sh/FH);
   const cw=FW*scale,ch=FH*scale;
-  FCV.style.width=cw+'px';FCV.style.height=ch+'px';
-  FCV.style.position='fixed';FCV.style.left=((sw-cw)/2)+'px';FCV.style.top=((sh-ch)/2)+'px';
+  const page=document.getElementById('sm-page-forest');
+  if(page){page.style.display='flex';}
+  FCV.style.width='100%';FCV.style.height='100%';
+  FCV.style.position='absolute';FCV.style.left='0';FCV.style.top='0';
 }
 
 // Forest state
