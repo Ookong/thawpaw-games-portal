@@ -1323,6 +1323,9 @@ function refreshMailboxVisibility(){
   btn.style.display = 'flex';
   if(id) loadMail();
 }
+
+// ── Init mailbox visibility (must run in this script block — function defined here!) ──
+try{refreshMailboxVisibility()}catch(e){console.warn('[init-late] mailbox skipped:',e.message)}
 </script>
 
 <!-- 🐾 Thawpaw Games 浏览追踪 (GAS not configured = silent no-op) -->
