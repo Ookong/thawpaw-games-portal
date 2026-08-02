@@ -2823,6 +2823,8 @@ function enterForest(){
   // Setup White Tiger
   fTiger={x:FW/2,y:FH/2-20,r:28,hp:400,maxHp:400,speed:4.5,damage:18,attackRange:60,attackCD:50,attackTimer:0,state:'idle',stateTimer:0,hitFlash:0,enraged:false,cloneTimer:0,movePattern:'chase'};
   fClones=[];fParticles=[];fFloats=[];fSlashes=[];
+  // Hide ALL overlays including stage cards
+  document.querySelectorAll('[id^="forest-stage-"]').forEach(el=>el.style.display='none');
   document.getElementById('forest-overlay').style.display='none';
   document.getElementById('forest-victory-overlay').style.display='none';
   document.getElementById('forest-defeat-overlay').style.display='none';
