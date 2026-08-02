@@ -2728,7 +2728,7 @@ function smShowPage(name){
   if(name==='pets'&&typeof smRenderPetBubbles==='function')smRenderPetBubbles();
   if(name==='pet-shop'){smRenderPetShopCats();smRenderPetShopMain();document.getElementById('sm-pet-shop-coins').textContent=smSave.coins;}
   if(name==='pet-bag'){smRenderPetBagCats();smRenderPetBagMain();}
-  if(name==='forest'){if(typeof fitForestCanvas==='function')fitForestCanvas();var _ft=document.getElementById('forest-touch');if(_ft)_ft.style.display='block';if(typeof fLoopRunning!=='undefined'&&!fLoopRunning&&typeof forestLoop==='function'){fLoopRunning=true;requestAnimationFrame(forestLoop);}}
+  if(name==='forest'){if(typeof fitForestCanvas==='function')fitForestCanvas();var _ft=document.getElementById('forest-touch');if(_ft)_ft.style.display='block';}
   else{var _ft2=document.getElementById('forest-touch');if(_ft2)_ft2.style.display='none';}
 }
 // ===== FOREST GAME (global vars, OUTSIDE smShowPage) =====
