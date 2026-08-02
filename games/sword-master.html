@@ -2704,6 +2704,8 @@ function smShowPage(name){
   if(name==='enhance')document.getElementById('sm-enhance-seals').textContent=smSave.seals;
   if(name==='shop')smRenderShop();
   if(name==='pets'&&typeof smRenderPetBubbles==='function')smRenderPetBubbles();
+  if(name==='pet-shop'){smRenderPetShopCats();smRenderPetShopMain();document.getElementById('sm-pet-shop-coins').textContent=smSave.coins;}
+  if(name==='pet-bag'){smRenderPetBagCats();smRenderPetBagMain();}
   if(name==='forest'){fitForestCanvas();document.getElementById('forest-touch').style.display='block';if(!fLoopRunning){fLoopRunning=true;requestAnimationFrame(forestLoop);}}
   else{document.getElementById('forest-touch').style.display='none';}
 }
