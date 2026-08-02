@@ -912,9 +912,12 @@ loadBossImage('boss3','assets/boss3-darklord.png');
 loadBossImage('boss4','assets/boss4-shadow.png');
 // 进化形态图片 (Lv5+)
 loadBossImage('boss1-lv5','assets/boss1-lv5.png');
+loadBossImage('boss1-lv15','assets/boss1-lv15.png');
 loadBossImage('boss2-lv5','assets/boss2-lv5.png');
+loadBossImage('boss2-lv10','assets/boss2-lv10.png');
 loadBossImage('boss3-lv5','assets/boss3-lv5.png');
 loadBossImage('boss4-lv5','assets/boss4-lv5.png');
+loadBossImage('boss4-lv10','assets/boss4-lv10.png');
 function ensureBossImages(cb){Promise.all(BOSS_IMG_PROMISES).then(cb);}
 
 const SFX={slash:()=>{snd(800,0.06,'square',0.1);snd(400,0.1,'sawtooth',0.06);},hit:()=>snd(150,0.12,'sawtooth',0.15),bhit:()=>{snd(100,0.12,'sawtooth',0.12);snd(200,0.06,'square',0.06);},coin:()=>{snd(900,0.05,'sine',0.1);snd(1200,0.06,'sine',0.08);},heal:()=>{snd(600,0.1,'sine',0.12);setTimeout(()=>snd(800,0.1,'sine',0.12),50);},dash:()=>{snd(300,0.07,'sine',0.1);snd(500,0.04,'sine',0.06);},hurt:()=>snd(200,0.2,'sawtooth',0.18),win:()=>{[400,500,600,800].forEach((f,i)=>setTimeout(()=>snd(f,0.12,'sine',0.14),i*80));},lose:()=>{[400,300,200,150].forEach((f,i)=>setTimeout(()=>snd(f,0.2,'sawtooth',0.14),i*120));},roar:()=>{snd(80,0.25,'sawtooth',0.15);snd(60,0.3,'square',0.1);},buy:()=>{snd(700,0.06,'sine',0.12);setTimeout(()=>snd(1000,0.08,'sine',0.1),40);},buff:()=>{[400,600,800,1000,1200].forEach((f,i)=>setTimeout(()=>snd(f,0.1,'sine',0.12),i*35));},boom:()=>{snd(60,0.4,'sawtooth',0.25);snd(40,0.5,'square',0.15);snd(200,0.2,'sawtooth',0.1);},arrow:()=>{snd(600,0.05,'sine',0.08);snd(900,0.08,'sine',0.06);},
@@ -1590,13 +1593,17 @@ function createEnemy(tmpl,x,y){
     x,y,vx:0,vy:0,state:'idle',stateTimer:0,attackTimer:tmpl.attackCD,hitFlash:0,projectiles:[],shockwaves:[],phase:0,templateType:tmpl.name};
   // 应用进化外观
   if(evo){e.emoji=evo.emoji;e.color=evo.color;e.accent=evo.accent;e.evoSkill=evo.extraSkill;e.evoSkillName=evo.skillName;}
-  // 图片 key：有进化用进化图，否则用基础图
+  // 图片 key：根据进化等级选对应图片
   const bossNum=tmpl.name==='山贼头目'?'boss1':tmpl.name==='铁臂熊'?'boss2':tmpl.name==='黑风老祖'?'boss3':tmpl.name==='影刹'?'boss4':tmpl.name==='毒蝎娘娘'?'boss5':tmpl.name==='雷鹰'?'boss6':tmpl.name==='岩甲巨人'?'boss7':tmpl.name==='天魔教主'?'boss8':'';
   if(evo){
-    // Lv5+ 进化形态用专用图片（目前只有 boss1~4 的 Lv5 图）
-    const lv5Key=bossNum+'-lv5';
-    if(BOSS_IMAGES[lv5Key]) e.imgKey=lv5Key;
-    else if(BOSS_IMAGES[bossNum]) e.imgKey=bossNum;
+    // 根据进化等级选图片：Lv15+用lv15图，Lv10+用lv10图，Lv5+用lv5图
+    var evoLevel=evo.lv||5;
+    var imgKey=null;
+    if(evoLevel>=15&&BOSS_IMAGES[bossNum+'-lv15'])imgKey=bossNum+'-lv15';
+    else if(evoLevel>=10&&BOSS_IMAGES[bossNum+'-lv10'])imgKey=bossNum+'-lv10';
+    else if(BOSS_IMAGES[bossNum+'-lv5'])imgKey=bossNum+'-lv5';
+    else if(BOSS_IMAGES[bossNum])imgKey=bossNum;
+    if(imgKey)e.imgKey=imgKey;
   }else{
     if(BOSS_IMAGES[bossNum]) e.imgKey=bossNum;
   }
