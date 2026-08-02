@@ -3112,22 +3112,6 @@ function enterForest(){
   document.getElementById('f-seals').textContent=smSave.seals;
   fitForestCanvas();
   fLoopRunning=true;requestAnimationFrame(forestLoop); // always restart loop
-  // Mouse-to-move: hold mouse button on canvas to walk
-  if(!FCV._mouseMoveAttached){
-    FCV._mouseMoveAttached=true;
-    FCV.addEventListener('mousedown',e=>{
-      if(fState!=='battle')return;
-      const rect=FCV.getBoundingClientRect();
-      fMouseTarget={x:(e.clientX-rect.left)*(FW/rect.width),y:(e.clientY-rect.top)*(FH/rect.height)};
-    });
-    FCV.addEventListener('mousemove',e=>{
-      if(fState!=='battle'||e.buttons!==1)return;
-      const rect=FCV.getBoundingClientRect();
-      fMouseTarget={x:(e.clientX-rect.left)*(FW/rect.width),y:(e.clientY-rect.top)*(FH/rect.height)};
-    });
-    FCV.addEventListener('mouseup',()=>{fMouseTarget=null;});
-    FCV.addEventListener('mouseleave',()=>{fMouseTarget=null;});
-  }
 }
 
 function exitForest(){
@@ -3558,6 +3542,13 @@ function fRender(){
   });
 
   FCTX.restore();
+  // Mouse target indicator
+  if(fMouseTarget){
+    FCTX.save();
+    FCTX.strokeStyle='rgba(100,255,100,0.6)';FCTX.lineWidth=2;
+    FCTX.beginPath();FCTX.arc(fMouseTarget.x,fMouseTarget.y,12+Math.sin(Date.now()/100)*3,0,6.28);FCTX.stroke();
+    FCTX.restore();
+  }
 }
 
 function forestLoop(){
@@ -3571,25 +3562,33 @@ function forestLoop(){
   requestAnimationFrame(forestLoop);
 }
 
-// Click on canvas for egg tap + attack
-if(FCV)FCV.addEventListener('click',e=>{
+// Canvas mouse: click-to-move, click enemy = attack
+if(FCV)FCV.addEventListener('mousedown',e=>{
   if(fState!=='battle')return;
-  // Check egg tap first
   const rect=FCV.getBoundingClientRect();
   const sx=FW/rect.width,sy=FH/rect.height;
   const cx=(e.clientX-rect.left)*sx,cy=(e.clientY-rect.top)*sy;
+  // Check egg tap
   const dEgg=Math.hypot(fEgg.x-cx,fEgg.y-cy);
   if(!fEgg.pickedUp&&dEgg<fEgg.r+30){fTryEggTap();return;}
-  // Otherwise attack
-  if(fPlayer.attackCD<=0)fAttack();
+  // Check if clicking tiger (attack)
+  if(fTiger&&fTiger.hp>0){
+    const dT=Math.hypot(fTiger.x-cx,fTiger.y-cy);
+    if(dT<fTiger.r+20&&fPlayer.attackCD<=0){fAttack();return;}
+  }
+  // Otherwise: walk to clicked point
+  fMouseTarget={x:cx,y:cy};
 });
-
-// Long press for egg (mouse)
-if(FCV)FCV.addEventListener('mousedown',e=>{
+if(FCV)FCV.addEventListener('mousemove',e=>{
   if(fState!=='battle')return;
-  if(!fEgg.longPressing)return;
-  fEgg.longPressStart=Date.now(); // reset timer for hold
+  if(e.buttons===1){
+    const rect=FCV.getBoundingClientRect();
+    const sx=FW/rect.width,sy=FH/rect.height;
+    fMouseTarget={x:(e.clientX-rect.left)*sx,y:(e.clientY-rect.top)*sy};
+  }
 });
+if(FCV)FCV.addEventListener('mouseup',()=>{fMouseTarget=null;});
+if(FCV)FCV.addEventListener('mouseleave',()=>{fMouseTarget=null;});
 
 // Touch joystick for forest — always build, show/hide via forest-touch display
 (function(){
