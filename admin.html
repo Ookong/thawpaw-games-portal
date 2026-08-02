@@ -444,6 +444,29 @@ tr:hover td{background:var(--card2)}
         </div>
       </div>
 
+      <!-- Chat history -->
+      <div class="table-card" style="margin-bottom:1.5rem">
+        <div class="table-header" style="display:flex;justify-content:space-between;align-items:center">
+          <h3>📜 聊天记录</h3>
+          <div style="display:flex;gap:.5rem;align-items:center">
+            <select id="chat-history-channel" onchange="loadChatHistory(1)" style="padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--card);color:var(--text)">
+              <option value="all">全部频道</option>
+              <option value="all-only">仅 @all</option>
+              <option value="dm">仅私聊</option>
+            </select>
+            <button onclick="loadChatHistory(chatHistoryPage)" style="padding:4px 12px;border:1px solid var(--border);border-radius:6px;background:var(--card);color:var(--text);cursor:pointer">🔄</button>
+          </div>
+        </div>
+        <div id="chat-history-list" style="padding:.5rem 1rem;max-height:500px;overflow-y:auto">
+          <div class="empty-state"><div class="empty-icon">📜</div>点击刷新加载</div>
+        </div>
+        <div id="chat-history-pager" style="display:flex;justify-content:center;gap:1rem;align-items:center;padding:.5rem 1rem;border-top:1px solid var(--border)">
+          <button id="chat-prev-btn" onclick="loadChatHistory(chatHistoryPage-1)" style="padding:4px 16px;border:1px solid var(--border);border-radius:6px;background:var(--card);color:var(--text);cursor:pointer" disabled>← 上一页</button>
+          <span id="chat-page-info" style="font-size:.85rem;color:var(--dim)">-</span>
+          <button id="chat-next-btn" onclick="loadChatHistory(chatHistoryPage+1)" style="padding:4px 16px;border:1px solid var(--border);border-radius:6px;background:var(--card);color:var(--text);cursor:pointer" disabled>下一页 →</button>
+        </div>
+      </div>
+
       <!-- Add member (admin only) -->
       <div class="add-admin-section" id="add-member-section">
         <h3>➕ 添加聊天室成员</h3>
@@ -696,7 +719,7 @@ function showDashboard(){
   loadStats();
   loadActivity();
   loadFeedback();
-  if(isAdmin) { loadAdmins(); loadMail(); loadChatroomMembers(); }
+  if(isAdmin) { loadAdmins(); loadMail(); loadChatroomMembers(); loadChatHistory(1); }
 
   // 🔔 启动反馈监控（自动弹通知）
   startFeedbackWatcher();
@@ -983,6 +1006,53 @@ function transferSuperAdmin(){
       alert('❌ ' + (res.error || '转移失败'));
     }
   }).catch(err => alert('❌ 网络错误'));
+}
+
+// ── Chatroom history (admin view) ──
+var chatHistoryPage = 1;
+var CHAT_PAGE_SIZE = 20;
+
+function loadChatHistory(page){
+  page = page || 1;
+  if(page < 1) page = 1;
+  chatHistoryPage = page;
+  var channelFilter = document.getElementById('chat-history-channel') ? document.getElementById('chat-history-channel').value : 'all';
+  var offset = (page - 1) * CHAT_PAGE_SIZE;
+  var url = 'chatroom/history?id=' + encodeURIComponent(session.id) + '&nickname=' + encodeURIComponent(session.nickname) + '&limit=' + CHAT_PAGE_SIZE + '&offset=' + offset + '&filter=' + channelFilter;
+  apiGet(url).then(function(res){
+    var el = document.getElementById('chat-history-list');
+    if(!res || !res.ok){
+      el.innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div>加载失败: ' + (res && res.error ? res.error : '未知错误') + '</div>';
+      return;
+    }
+    var messages = res.messages || [];
+    if(messages.length === 0){
+      el.innerHTML = '<div class="empty-state"><div class="empty-icon">📜</div>' + (page > 1 ? '没有更多消息了' : '暂无聊天记录') + '</div>';
+    } else {
+      el.innerHTML = messages.map(function(m){
+        var time = new Date(m.timestamp).toLocaleString('zh-CN', {hour12:false});
+        var channelTag = m.channel === 'all' ? '<span style="background:var(--accent)20;color:var(--accent);padding:1px 6px;border-radius:4px;font-size:.7rem">@all</span>' : '<span style="background:var(--green)20;color:var(--green);padding:1px 6px;border-radius:4px;font-size:.7rem">私信</span>';
+        var mentionBadge = (m.mentions && m.mentions.length) ? ' <span style="color:var(--accent);font-size:.7rem">@' + m.mentions.map(escapeHtml).join(' @') + '</span>' : '';
+        var content = escapeHtml(m.content).replace(/\n/g, '<br>');
+        return '<div style="padding:.6rem 0;border-bottom:1px solid var(--border)">' +
+          '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.25rem">' +
+            '<span style="font-weight:600">' + escapeHtml(m.sender_name || m.sender) + '</span>' +
+            '<span style="font-size:.72rem;color:var(--dim)">' + time + '</span>' +
+          '</div>' +
+          '<div style="font-size:.85rem;line-height:1.5;color:var(--text);margin-bottom:.2rem">' + channelTag + mentionBadge + '</div>' +
+          '<div style="font-size:.88rem;line-height:1.6">' + content + '</div>' +
+        '</div>';
+      }).join('');
+    }
+    // Pager
+    var total = res.total || 0;
+    var totalPages = Math.ceil(total / CHAT_PAGE_SIZE) || 1;
+    document.getElementById('chat-page-info').textContent = '第 ' + page + '/' + totalPages + ' 页 · 共 ' + total + ' 条';
+    document.getElementById('chat-prev-btn').disabled = page <= 1;
+    document.getElementById('chat-next-btn').disabled = page >= totalPages;
+  }).catch(function(err){
+    document.getElementById('chat-history-list').innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div>网络错误</div>';
+  });
 }
 
 // ── Chatroom member management ──
