@@ -508,28 +508,20 @@ function getBackendBase(){
 }
 
 // ── Init ──
-(function init(){
-  // Restore session
+// Wait for DOM to be fully parsed before restoring session
+document.addEventListener('DOMContentLoaded', function(){
   const saved = localStorage.getItem('tpgHqSession');
-  console.log('[init] saved session:', saved);
   if(saved){
     try{
-      session = JSON.parse(saved); 
+      session = JSON.parse(saved);
       isSuperAdmin = (session.role === "super");
-      console.log('[init] session restored:', session.id, session.nickname, session.role);
-      try{ 
-        showDashboard(); 
-        console.log('[init] showDashboard OK');
-      }catch(e){ 
-        console.error('[init] showDashboard error:', e.message, e.stack); 
-      }
-    }catch(e){ 
-      console.error('[init] JSON parse failed:', e);
-      localStorage.removeItem('tpgHqSession'); 
+      showDashboard();
+    }catch(e){
+      console.error('Session restore failed:', e);
+      localStorage.removeItem('tpgHqSession');
     }
   }
 
-  // Login input: digits only
   const idInput = document.getElementById('login-id-input');
   idInput.addEventListener('input', e => {
     e.target.value = e.target.value.replace(/\D/g,'').slice(0,8);
@@ -540,7 +532,7 @@ function getBackendBase(){
   document.getElementById('nick-input').addEventListener('keydown', e => {
     if(e.key === 'Enter') confirmNick();
   });
-})();
+});
 
 // ── Backend URL config ──
 function openProjectSettings(){
@@ -764,10 +756,8 @@ function switchTab(name){
 
 // ── Stats ──
 function loadStats(){
-  console.log('[loadStats] called, session:', session ? session.id : 'null');
   apiGet('stats').then(res => {
-    console.log('[loadStats] response:', res ? res.ok : 'null');
-    if(!res || !res.ok){ console.error('[loadStats] failed', res); return; }
+    if(!res || !res.ok) return;
     const s = res;
     document.getElementById('ov-pv').textContent = s.total.pv || 0;
     document.getElementById('ov-uv').textContent = s.total.uv || 0;
@@ -803,13 +793,11 @@ function loadStats(){
 
 // ── Activity Feed ──
 function loadActivity(){
-  console.log('[loadActivity] called, session:', session ? session.id : 'null');
   spinRefresh(document.getElementById('activity-refresh-btn'));
   const el = document.getElementById('activity-list');
   if(!el) return;
   el.innerHTML = '<div class="empty-state"><div class="empty-icon">⏳</div>加载中...</div>';
   apiGet('activity', { id: session.id, nickname: session.nickname, limit: 50 }).then(res => {
-    console.log('[loadActivity] response:', res ? res.ok : 'null', res ? (res.activities||[]).length : 0, 'items');
     if(!res.ok || !res.activities || res.activities.length === 0){
       el.innerHTML = '<div class="empty-state"><div class="empty-icon">📢</div>暂无动态</div>';
       return;
