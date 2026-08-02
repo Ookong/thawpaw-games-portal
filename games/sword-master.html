@@ -433,9 +433,21 @@ body.shape-square .sm-home-content{max-width:100%;}
 <!-- ===== PETS PAGE ===== -->
 <div id="sm-page-pets" class="sm-page" style="background:url('assets/paradise-bg.png') center/cover no-repeat;position:relative;">
   <a class="sm-back-btn" onclick="smShowPage('park')"><img src="assets/back-arrow.png" alt="返回"></a>
-  <div id="pet-bubbles" style="position:absolute;top:0;left:0;width:100%;height:60%;pointer-events:none;"></div>
-  <div id="pet-area" style="position:absolute;bottom:0;left:0;width:100%;height:40%;display:flex;align-items:center;justify-content:center;">
-    <div id="pet-sprite" style="font-size:80px;filter:drop-shadow(0 4px 8px rgba(0,0,0,0.4));">🥚</div>
+  <div id="pet-bubbles" style="position:absolute;top:0;left:0;width:100%;height:55%;pointer-events:none;"></div>
+  <!-- 三窝区域 -->
+  <div id="pet-nests" style="position:absolute;bottom:0;left:0;width:100%;height:45%;display:flex;align-items:flex-end;justify-content:space-around;padding:0 5% 8%;pointer-events:none;">
+    <!-- 窝1 -->
+    <div class="pet-nest" data-nest="0" style="position:relative;width:25%;max-width:120px;aspect-ratio:1;display:flex;align-items:center;justify-content:center;pointer-events:auto;cursor:pointer;" onclick="smPetNestClick(0)">
+      <div class="pet-nest-content" id="pet-nest-0" style="font-size:48px;filter:drop-shadow(0 4px 8px rgba(0,0,0,0.3));">➕</div>
+    </div>
+    <!-- 窝2 -->
+    <div class="pet-nest" data-nest="1" style="position:relative;width:25%;max-width:120px;aspect-ratio:1;display:flex;align-items:center;justify-content:center;pointer-events:auto;cursor:pointer;" onclick="smPetNestClick(1)">
+      <div class="pet-nest-content" id="pet-nest-1" style="font-size:48px;filter:drop-shadow(0 4px 8px rgba(0,0,0,0.3));">➕</div>
+    </div>
+    <!-- 窝3 -->
+    <div class="pet-nest" data-nest="2" style="position:relative;width:25%;max-width:120px;aspect-ratio:1;display:flex;align-items:center;justify-content:center;pointer-events:auto;cursor:pointer;" onclick="smPetNestClick(2)">
+      <div class="pet-nest-content" id="pet-nest-2" style="font-size:48px;filter:drop-shadow(0 4px 8px rgba(0,0,0,0.3));">➕</div>
+    </div>
   </div>
 </div>
 <style>
@@ -597,6 +609,7 @@ function smRenderPetBagMain(){
   
   // Egg category: show actual eggs from save
   if(smPetBagActive==='egg'){
+    if(smPetNestPending>=0){var hint=document.createElement('div');hint.style.cssText='text-align:center;color:#d4af37;font-size:14px;padding:8px 0 4px;';hint.textContent='选择一枚蛋放入窝中';box.appendChild(hint);}
     var eggs = (smSave.petEggs||[]);
     if(eggs.length===0){
       var empty=document.createElement('div');
@@ -614,13 +627,19 @@ function smRenderPetBagMain(){
           var slot=document.createElement('div');
           slot.className='pet-shelf-slot';
           if(eggIdx<eggs.length){
-            (function(egg){
+            (function(egg,egIdx){
               slot.style.cursor='pointer';
               slot.innerHTML='<img src="'+egg.img+'" style="width:48px;height:48px;object-fit:contain;"><span class="slot-name">'+egg.name+'</span>';
               slot.addEventListener('click',function(){
-                alert('🥚 '+egg.name+'\n获得日期：'+(egg.got||'未知'));
+                if(smPetNestPending>=0){
+                  smPetPlaceEgg(smPetNestPending,egIdx);
+                  smPetNestPending=-1;
+                  smShowPage('pets');
+                }else{
+                  alert('🥚 '+egg.name+'\n获得日期：'+(egg.got||'未知'));
+                }
               });
-            })(eggs[eggIdx]);
+            })(eggs[eggIdx],eggIdx);
             eggIdx++;
           }else{
             slot.innerHTML='—<span class="slot-name">空</span>';
@@ -2810,7 +2829,7 @@ function smEquipArmor(key){
   smSave.equippedArmor=key;smSaveSave();smRenderShop();smUpdateHome();
 }
 function smGetKey(){const id=localStorage.getItem('thawpawActiveId')||'default';return 'sword_master_save_'+id;}
-function smLoadSave(){try{const d=JSON.parse(localStorage.getItem(smGetKey()));if(!d)d={};return{coins:d.coins||0,seals:d.seals||0,highestLevel:d.highestLevel||1,ownedArmors:d.ownedArmors||{},equippedArmor:d.equippedArmor||null,speedLevel:d.speedLevel||0,atkLevel:d.atkLevel||0,hpLevel:d.hpLevel||0};}catch(e){return{coins:0,seals:0,highestLevel:1,ownedArmors:{},equippedArmor:null,speedLevel:0,atkLevel:0,hpLevel:0};}}
+function smLoadSave(){try{const d=JSON.parse(localStorage.getItem(smGetKey()));if(!d)d={};return{coins:d.coins||0,seals:d.seals||0,highestLevel:d.highestLevel||1,ownedArmors:d.ownedArmors||{},equippedArmor:d.equippedArmor||null,speedLevel:d.speedLevel||0,atkLevel:d.atkLevel||0,hpLevel:d.hpLevel||0,petNests:d.petNests||[null,null,null],petBag:d.petBag||{food:[],toy:[],care:[],egg:[]}};}catch(e){return{coins:0,seals:0,highestLevel:1,ownedArmors:{},equippedArmor:null,speedLevel:0,atkLevel:0,hpLevel:0,petNests:[null,null,null],petBag:{food:[],toy:[],care:[],egg:[]}};}}
 function smSaveSave(){localStorage.setItem(smGetKey(),JSON.stringify(smSave));}
 
 // ===== 速度强化 =====
@@ -2986,6 +3005,98 @@ function smUpgradeHp(){
   smUpdateHome();
 }
 let smSave=smLoadSave();
+// ===== 宠物窝系统 =====
+var smPetNestPending=-1; // 正在等待选蛋的窝索引
+var PET_HATCH_TIME=3*24*60*60*1000; // 3天孵化（毫秒）
+function smRenderPetNests(){
+  var nests=smSave.petNests||[null,null,null];
+  for(var i=0;i<3;i++){
+    var el=document.getElementById('pet-nest-'+i);
+    if(!el)continue;
+    var n=nests[i];
+    if(!n){
+      // 空窝：显示加号
+      el.textContent='\u2795';
+      el.style.fontSize='40px';
+      el.style.opacity='0.6';
+    }else if(n.hatched){
+      // 已孵化：显示宠物图标
+      el.innerHTML='<img src="'+(n.petImg||'')+'" style="width:60px;height:60px;object-fit:contain;">';
+      el.style.fontSize='';
+      el.style.opacity='1';
+    }else{
+      // 蛋在孵化中：显示蛋图标+进度
+      var now=Date.now();
+      var elapsed=now-n.placedAt;
+      var pct=Math.min(100,Math.round(elapsed/PET_HATCH_TIME*100));
+      var egg=smSave.petEggs&&smSave.petEggs[n.eggIdx];
+      var eggIcon=egg?'<img src="'+egg.img+'" style="width:52px;height:52px;object-fit:contain;">':'\u{1F95A}';
+      el.innerHTML=eggIcon;
+      el.style.fontSize='';
+      el.style.opacity='1';
+      // 在蛋下面加进度条
+      var bar=document.createElement('div');
+      bar.style.cssText='position:absolute;bottom:-18px;left:50%;transform:translateX(-50%);width:60px;height:5px;background:rgba(0,0,0,0.4);border-radius:3px;overflow:hidden;';
+      var fill=document.createElement('div');
+      fill.style.cssText='width:'+pct+'%;height:100%;background:linear-gradient(90deg,#4caf50,#8bc34a);border-radius:3px;transition:width 0.3s;';
+      bar.appendChild(fill);
+      // 先清掉旧的 bar
+      var parent=el.parentElement;
+      var oldBar=parent.querySelector('.nest-progress');
+      if(oldBar)oldBar.remove();
+      bar.className='nest-progress';
+      parent.appendChild(bar);
+    }
+  }
+}
+function smPetNestClick(idx){
+  var n=smSave.petNests[idx];
+  if(!n){
+    // 空窝：打开背包蛋类页面
+    smPetNestPending=idx;
+    smPetBagActive='egg';
+    smShowPage('pet-bag');
+    smRenderPetBag&&smRenderPetBag();
+  }else if(!n.hatched){
+    // 孵化中：显示进度
+    var now=Date.now();var elapsed=now-n.placedAt;var remain=PET_HATCH_TIME-elapsed;
+    if(remain<=0){
+      // 孵化完成！
+      smPetHatch(idx);
+    }else{
+      var days=Math.floor(remain/86400000);var hours=Math.floor(remain%86400000/3600000);
+      alert('\u{1F95A} 孵化中...\n剩余时间：'+days+'天'+hours+'小时');
+    }
+  }
+}
+function smPetPlaceEgg(nestIdx,eggIdx){
+  var eggs=smSave.petEggs||[];
+  if(eggIdx<0||eggIdx>=eggs.length)return;
+  // 从背包删除蛋，放入窝
+  var egg=eggs.splice(eggIdx,1)[0];
+  smSave.petEggs=eggs;
+  smSave.petNests[nestIdx]={egg:egg,eggIdx:-1,placedAt:Date.now(),hatched:false};
+  smSaveSave();
+  smRenderPetNests();
+}
+function smPetHatch(idx){
+  var n=smSave.petNests[idx];
+  if(!n||n.hatched)return;
+  n.hatched=true;
+  n.hatchedAt=Date.now();
+  // 蛋图标转为宠物图标（暂时用同一个图）
+  n.petImg=n.egg?n.egg.img:'';
+  n.petName=n.egg?n.egg.name+'宝宝':'神秘宠物';
+  smSaveSave();
+  smRenderPetNests();
+  alert('\u{1F431} 恭喜！'+n.petName+' 孵化了！');
+}
+function smGetHatchingProgress(nestIdx){
+  var n=smSave.petNests[nestIdx];
+  if(!n||n.hatched)return null;
+  var elapsed=Date.now()-n.placedAt;
+  return Math.min(100,Math.round(elapsed/PET_HATCH_TIME*100));
+}
 function smGetNick(){try{const id=localStorage.getItem('thawpawActiveId');if(id){const ps=JSON.parse(localStorage.getItem('thawpawPlayers')||'{}');if(ps[id]&&ps[id].nickname)return ps[id].nickname;}}catch(e){}return'少年剑客';}
 function smShowPage(name){
   document.querySelectorAll('.sm-page').forEach(p=>{p.classList.remove('active');p.style.display='none';});
@@ -2995,6 +3106,7 @@ function smShowPage(name){
   if(name==='enhance'){document.getElementById('sm-enhance-seals').textContent=smSave.seals;smRenderSpeedEnhance();smRenderAtkEnhance();smRenderHpEnhance();}
   if(name==='shop')smRenderShop();
   if(name==='pets'&&typeof smRenderPetBubbles==='function')smRenderPetBubbles();
+  if(name==='pets'&&typeof smRenderPetNests==='function')smRenderPetNests();
   if(name==='pet-shop'){smRenderPetShopCats();smRenderPetShopMain();document.getElementById('sm-pet-shop-coins').textContent=smSave.coins;}
   if(name==='pet-bag'){smRenderPetBagCats();smRenderPetBagMain();}
   if(name==='forest'){if(typeof fitForestCanvas==='function')fitForestCanvas();var _ft=document.getElementById('forest-touch');if(_ft)_ft.style.display='block';}
