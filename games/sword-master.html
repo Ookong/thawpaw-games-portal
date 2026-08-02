@@ -651,7 +651,7 @@ function smRenderPetBagMain(){
       🚪 活着走到洞口可带蛋逃离<br>
       💀 死亡将扣除 5 📜 剑客宝印
     </div>
-    <button class="btn" style="background:linear-gradient(135deg,#8a5a2a,#6a3a1a);border-color:#cc8844;color:#fff;" onclick="document.body.style.background='red'">⚔️ 挑战白虎</button>
+    <button class="btn" style="background:linear-gradient(135deg,#8a5a2a,#6a3a1a);border-color:#cc8844;color:#fff;" onclick="enterForestDebug()">⚔️ 挑战白虎</button>
     <button class="btn small" style="background:linear-gradient(135deg,#666,#444);font-size:14px;" onclick="smShowForestLocations()">🔙 返回地点</button>
   </div>
   <div id="forest-victory-overlay" style="position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;z-index:300;gap:12px;background:rgba(4,12,3,0.85);">
@@ -2830,9 +2830,22 @@ for(let i=0;i<15;i++)fFireflies.push({x:rand(0,FW),y:rand(60,FH-60),vx:rand(-0.3
 let fStars=[];
 for(let i=0;i<60;i++)fStars.push({x:rand(0,FW),y:rand(0,FH*0.4),r:rand(0.4,2),tw:rand(0,6.28),sp:rand(0.015,0.04)});
 
+function enterForestDebug(){
+  var log=[];
+  try{log.push('1');if(!FCV){log.push('1a');initForestCanvas();}log.push('2');
+  var pg=document.getElementById('sm-page-forest');
+  if(pg){pg.style.display='flex';pg.classList.add('active');}log.push('3');
+  fState='battle';log.push('4');
+  fPlayer.x=FW/2;fPlayer.y=FH-100;fPlayer.hp=fPlayer.maxHp;log.push('5');
+  document.querySelectorAll('[id^="forest-stage-"]').forEach(function(el){el.style.display='none';});log.push('6');
+  document.getElementById('forest-overlay').style.display='none';log.push('7');
+  document.getElementById('forest-hud').style.display='flex';log.push('8');
+  document.getElementById('forest-bottom-hud').style.display='flex';log.push('9');
+  if(!fLoopRunning){fLoopRunning=true;requestAnimationFrame(forestLoop);}log.push('10');
+  alert('OK:'+log.join(','));
+  }catch(e){alert('FAIL at '+log.join(',')+' error:'+e.message);}
+}
 function enterForest(){
-  document.body.style.background='#ff0000'; // DEBUG: red flash to confirm function runs
-  if(!FCV){if(!initForestCanvas()){alert('森林加载失败');return;}}
   var pg=document.getElementById('sm-page-forest');
   if(pg){pg.style.display='flex';pg.classList.add('active');}
   fState='battle';
