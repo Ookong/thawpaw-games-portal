@@ -3119,7 +3119,7 @@ function enterForest(){
   document.getElementById('forest-defeat-overlay').style.display='none';
   document.getElementById('forest-hud').style.display='flex';
   document.getElementById('forest-bottom-hud').style.display='flex';
-  var _ftel=document.getElementById('forest-touch');if(_ftel)_ftel.style.display='block';
+  var _ftel=document.getElementById('forest-touch');if(_ftel){_ftel.style.display='block';buildForestTouchControls();}
   document.getElementById('f-seals').textContent=smSave.seals;
   fUpdatePlayerHP();
   if(fTiger)fUpdateTigerHP();
@@ -3603,47 +3603,72 @@ if(FCV)FCV.addEventListener('mousemove',e=>{
 if(FCV)FCV.addEventListener('mouseup',()=>{fMouseTarget=null;});
 if(FCV)FCV.addEventListener('mouseleave',()=>{fMouseTarget=null;});
 
-// Touch joystick for forest — always build, show/hide via forest-touch display
-(function(){
-  const ft=document.getElementById('forest-touch');
-  if(!ft)return;
-  // Create joystick
-  const joy=document.createElement('div');
-  joy.style.cssText='position:absolute;bottom:20px;left:20px;width:120px;height:120px;border-radius:50%;background:rgba(20,30,15,0.4);border:2px solid rgba(80,200,100,0.3);pointer-events:auto;touch-action:none;';
+var fTouchControlsBuilt=false;
+function buildForestTouchControls(){
+  if(fTouchControlsBuilt)return;
+  fTouchControlsBuilt=true;
+  var ft=document.getElementById('forest-touch');
+  if(!ft){console.error('forest-touch not found');return;}
+  ft.innerHTML=''; // clear old
+  // Joystick base
+  var joy=document.createElement('div');
+  joy.style.cssText='position:absolute;bottom:30px;left:30px;width:130px;height:130px;border-radius:50%;background:rgba(20,30,15,0.5);border:2px solid rgba(80,200,100,0.4);pointer-events:auto;touch-action:none;z-index:60;';
   joy.id='f-joystick';
-  const knob=document.createElement('div');
-  knob.style.cssText='position:absolute;top:50%;left:50%;width:50px;height:50px;border-radius:50%;background:rgba(80,200,100,0.35);border:2px solid rgba(80,200,100,0.6);transform:translate(-50%,-50%);pointer-events:none;';
-  knob.innerHTML='<div style="text-align:center;line-height:50px;font-size:24px;">▾</div>';
+  var knob=document.createElement('div');
+  knob.style.cssText='position:absolute;top:50%;left:50%;width:55px;height:55px;border-radius:50%;background:rgba(80,200,100,0.4);border:2px solid rgba(80,200,100,0.7);transform:translate(-50%,-50%);pointer-events:none;';
+  knob.innerHTML='<div style="text-align:center;line-height:55px;font-size:26px;">▲</div>';
   joy.appendChild(knob);ft.appendChild(joy);
   // Attack button
-  const atkBtn=document.createElement('div');
-  atkBtn.style.cssText='position:absolute;bottom:100px;right:20px;width:56px;height:56px;border-radius:50%;background:rgba(180,50,40,0.5);border:2px solid #b43228;color:#ff6644;display:flex;align-items:center;justify-content:center;font-size:22px;pointer-events:auto;touch-action:none;';
-  atkBtn.textContent='⚔️';
-  ft.appendChild(atkBtn);
+  var atkBtn=document.createElement('div');
+  atkBtn.style.cssText='position:absolute;bottom:120px;right:30px;width:70px;height:70px;border-radius:50%;background:rgba(180,50,40,0.6);border:2px solid #b43228;color:#ff6644;display:flex;align-items:center;justify-content:center;font-size:28px;pointer-events:auto;touch-action:none;z-index:60;';
+  atkBtn.textContent='⚔️';ft.appendChild(atkBtn);
   // Dash button
-  const dashBtn=document.createElement('div');
-  dashBtn.style.cssText='position:absolute;bottom:160px;right:30px;width:56px;height:56px;border-radius:50%;background:rgba(60,120,200,0.4);border:2px solid #3c78c8;color:#66aaff;display:flex;align-items:center;justify-content:center;font-size:22px;pointer-events:auto;touch-action:none;';
-  dashBtn.textContent='💨';
-  ft.appendChild(dashBtn);
+  var dashBtn=document.createElement('div');
+  dashBtn.style.cssText='position:absolute;bottom:210px;right:40px;width:60px;height:60px;border-radius:50%;background:rgba(60,120,200,0.5);border:2px solid #3c78c8;color:#66aaff;display:flex;align-items:center;justify-content:center;font-size:24px;pointer-events:auto;touch-action:none;z-index:60;';
+  dashBtn.textContent='💨';ft.appendChild(dashBtn);
 
-  // Joystick handlers
-  let jStart={x:0,y:0},jActive=false;
-  function jStartFn(e){e.preventDefault();jActive=true;fTouchMove.active=true;const r=joy.getBoundingClientRect();jStart={x:r.left+r.width/2,y:r.top+r.height/2};joy.classList.add('active');jMoveFn(e);}
-  function jMoveFn(e){if(!jActive)return;e.preventDefault();const t=e.touches?e.touches[0]:e;let dx=t.clientX-jStart.x,dy=t.clientY-jStart.y;const d=Math.hypot(dx,dy);if(d>12){fTouchMove.vec={x:dx/d,y:dy/d};const angle=Math.atan2(dy,dx)*180/Math.PI+90;knob.style.transform=`translate(-50%,-50%) rotate(${angle}deg)`;}else{fTouchMove.vec={x:0,y:0};knob.style.transform='translate(-50%,-50%)';}}
-  function jEndFn(){jActive=false;fTouchMove.active=false;fTouchMove.vec={x:0,y:0};knob.style.transform='translate(-50%,-50%)';}
-  joy.addEventListener('touchstart',jStartFn,{passive:false});
-  joy.addEventListener('touchmove',jMoveFn,{passive:false});
-  joy.addEventListener('touchend',jEndFn);
-  joy.addEventListener('mousedown',jStartFn);
-  document.addEventListener('mousemove',e=>{if(jActive)jMoveFn(e);});
-  document.addEventListener('mouseup',e=>{if(jActive)jEndFn();});
-
-  // Action buttons
-  atkBtn.addEventListener('touchstart',e=>{e.preventDefault();e.stopPropagation();if(fPlayer.attackCD<=0)fAttack();},{passive:false});
-  atkBtn.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();if(fPlayer.attackCD<=0)fAttack();});
-  dashBtn.addEventListener('touchstart',e=>{e.preventDefault();e.stopPropagation();if(fPlayer.dashCD<=0)fDash();},{passive:false});
-  dashBtn.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();if(fPlayer.dashCD<=0)fDash();});
-})();
+  // Joystick logic
+  var jcx=0,jcy=0;
+  function jStart(e){
+    e.preventDefault();e.stopPropagation();
+    fTouchMove.active=true;
+    var r=joy.getBoundingClientRect();
+    jcx=r.left+r.width/2;jcy=r.top+r.height/2;
+    jMove(e);
+  }
+  function jMove(e){
+    if(!fTouchMove.active)return;
+    e.preventDefault();
+    var t=e.touches?e.touches[0]:e;
+    var dx=t.clientX-jcx,dy=t.clientY-jcy;
+    var d=Math.hypot(dx,dy);
+    if(d>15){
+      fTouchMove.vec={x:dx/d,y:dy/d};
+      var angle=Math.atan2(dy,dx)*180/Math.PI+90;
+      knob.style.transform='translate(-50%,-50%) rotate('+angle+'deg)';
+    }else{
+      fTouchMove.vec={x:0,y:0};
+      knob.style.transform='translate(-50%,-50%)';
+    }
+  }
+  function jEnd(e){
+    if(e)e.preventDefault();
+    fTouchMove.active=false;fTouchMove.vec={x:0,y:0};
+    knob.style.transform='translate(-50%,-50%)';
+  }
+  joy.addEventListener('touchstart',jStart,{passive:false});
+  joy.addEventListener('touchmove',jMove,{passive:false});
+  joy.addEventListener('touchend',jEnd);
+  joy.addEventListener('touchcancel',jEnd);
+  // Attack
+  atkBtn.addEventListener('touchstart',function(e){e.preventDefault();e.stopPropagation();if(fPlayer.attackCD<=0)fAttack();},{passive:false});
+  // Dash
+  dashBtn.addEventListener('touchstart',function(e){e.preventDefault();e.stopPropagation();if(fPlayer.dashCD<=0)fDash();},{passive:false});
+  // Prevent touch from reaching canvas
+  [joy,atkBtn,dashBtn].forEach(function(el){
+    el.addEventListener('touchmove',function(e){e.preventDefault();e.stopPropagation();},{passive:false});
+  });
+}
 </script>
 </body>
 </html>
