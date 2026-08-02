@@ -3063,7 +3063,7 @@ function enterForestDebug(){
     fCaves=[];
     for(var i=0;i<5;i++)fCaves.push({x:FW*(i+1)/6,y:50,w:70,h:60});
     fEgg.x=FW/2;fEgg.y=FH/2+40;fEgg.pickedUp=false;fEgg.taps=0;
-    fTiger={x:FW/2,y:FH/2-20,r:28,hp:400,maxHp:400,speed:4.5,damage:18,attackRange:60,attackCD:50,attackTimer:0,state:'idle',stateTimer:0,hitFlash:0,enraged:false,cloneTimer:0};
+    fTiger={x:FW/2,y:FH/2-20,r:28,hp:400,maxHp:400,speed:2.6,damage:18,attackRange:60,attackCD:50,attackTimer:0,state:'idle',stateTimer:0,hitFlash:0,enraged:false,cloneTimer:0};
     fClones=[];fParticles=[];fFloats=[];fSlashes=[];
     steps.push('entities-set');
     document.querySelectorAll('[id^="forest-stage-"]').forEach(function(el){el.style.display='none';});
@@ -3096,7 +3096,8 @@ function enterForest(){
   // Setup egg in center
   fEgg.x=FW/2;fEgg.y=FH/2+40;fEgg.pickedUp=false;fEgg.taps=0;fEgg.longPressing=false;
   // Setup White Tiger
-  fTiger={x:FW/2,y:FH/2-20,r:28,hp:400,maxHp:400,speed:4.5,damage:18,attackRange:60,attackCD:50,attackTimer:0,state:'idle',stateTimer:0,hitFlash:0,enraged:false,cloneTimer:0,movePattern:'chase'};
+  fTiger={x:FW/2,y:FH/2-20,r:28,hp:400,maxHp:400,speed:2.6,damage:18,attackRange:60,attackCD:50,attackTimer:0,state:'idle',stateTimer:0,hitFlash:0,enraged:false,cloneTimer:0,movePattern:'chase'};
+  fPlayer.invuln=120; // 2s grace period at start
   fClones=[];fParticles=[];fFloats=[];fSlashes=[];
   // Hide ALL overlays including stage cards
   document.querySelectorAll('[id^="forest-stage-"]').forEach(el=>el.style.display='none');
@@ -3318,13 +3319,14 @@ function fUpdate(){
     fTiger.stateTimer++;fTiger.attackTimer--;
     const td=Math.hypot(fTiger.x-fPlayer.x,fTiger.y-fPlayer.y);
     const ta=Math.atan2(fPlayer.y-fTiger.y,fPlayer.x-fPlayer.x);
-    // Chase
-    fTiger.x+=Math.cos(ta)*fTiger.speed;
-    fTiger.y+=Math.sin(ta)*fTiger.speed;
+    // Chase only after 2s grace
+    var tSpeed=fTiger.stateTimer<120?0:fTiger.speed;
+    fTiger.x+=Math.cos(ta)*tSpeed;
+    fTiger.y+=Math.sin(ta)*tSpeed;
     fTiger.x=clamp(fTiger.x,fTiger.r,FW-fTiger.r);
     fTiger.y=clamp(fTiger.y,fTiger.r,FH-fTiger.r);
-    // Attack
-    if(td<fTiger.attackRange+fTiger.r&&fTiger.attackTimer<=0){
+    // Attack (only after grace)
+    if(td<fTiger.attackRange+fTiger.r&&fTiger.attackTimer<=0&&fTiger.stateTimer>120){
       fTiger.attackTimer=fTiger.attackCD;
       SFX.slash();
       fSlashes.push({x:fTiger.x,y:fTiger.y,angle:ta,arc:Math.PI*0.4,range:fTiger.attackRange,life:10,maxLife:10,color:'#ff6644'});
