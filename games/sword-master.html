@@ -3295,6 +3295,12 @@ function fUpdate(){
   }
   fPlayer.x=clamp(fPlayer.x,fPlayer.r,FW-fPlayer.r);
   fPlayer.y=clamp(fPlayer.y,fPlayer.r,FH-fPlayer.r);
+  // Push player away from tiger body
+  if(fTiger&&fTiger.hp>0&&fTiger.stateTimer>120){
+    var tdx=fPlayer.x-fTiger.x,tdy=fPlayer.y-fTiger.y;var td=Math.hypot(tdx,tdy);
+    var minDist=fPlayer.r+fTiger.r;
+    if(td<minDist&&td>0.1){fPlayer.x=fTiger.x+tdx/td*minDist;fPlayer.y=fTiger.y+tdy/td*minDist;}
+  }
   if(fPlayer.attackCD>0)fPlayer.attackCD--;
   if(fPlayer.attackTimer>0)fPlayer.attackTimer--;
   if(fPlayer.dashCD>0)fPlayer.dashCD--;
