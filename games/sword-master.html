@@ -633,6 +633,7 @@ function smRenderPetBagMain(){
 <div id="sm-page-forest" class="sm-page" style="background:#06080a;overflow:hidden;position:relative;display:none;">
   <a class="sm-back-btn" onclick="smShowPage('pets')"><img src="assets/back-arrow.png" alt="返回"></a>
   <canvas id="forest-canvas" style="display:block;"></canvas>
+  <div id="forest-touch" style="position:absolute;inset:0;display:none;z-index:10;pointer-events:none;"></div>
   <div id="forest-hud" style="position:absolute;top:0;left:0;right:0;display:none;justify-content:space-between;padding:10px 18px;z-index:5;pointer-events:none;">
     <div class="hp-block"><div class="hp-label" style="color:#6db84f;">林风</div><div class="hp-bg"><div class="hp-fill player" id="f-p-hp" style="width:100%"></div><div class="hp-text" id="f-p-hp-t">150/150</div></div></div>
     <div class="hp-block" style="align-items:flex-end;"><div class="hp-label" id="f-tiger-label" style="color:#ff6644;">白虎</div><div class="hp-bg"><div class="hp-fill boss" id="f-tiger-hp" style="width:100%"></div><div class="hp-text" id="f-tiger-hp-t">—</div></div></div>
@@ -1149,6 +1150,13 @@ const keys={};
 const justPressed={};
 document.addEventListener('keydown',e=>{
   const k=e.key.toLowerCase();
+  if(fState==='battle'){
+    // Forest battle keyboard - handle first
+    fKeyset[k]=true;
+    if(k==='j'||k===' '){e.preventDefault();if(fPlayer.attackCD<=0)fAttack();}
+    if(k==='shift'){if(fPlayer.dashCD<=0)fDash();}
+    return;
+  }
   if(!keys[k]){
     if(gameState==='battle'||gameState==='break'){
       if(k==='j'||k===' '){if(player.attackCD<=0)doAttack();}
@@ -3039,12 +3047,8 @@ function exitForest(){
 }
 
 // Forest input
-document.addEventListener('keydown',e=>{
-  if(fState!=='battle')return;
-  const k=e.key.toLowerCase();fKeyset[k]=true;
-  if(k==='j'||k===' '){e.preventDefault();if(fPlayer.attackCD<=0)fAttack();}
-  if(k==='shift'){if(fPlayer.dashCD<=0)fDash();}
-});
+// Forest keyboard handled in main keydown above
+
 document.addEventListener('keyup',e=>{fKeyset[e.key.toLowerCase()]=false;});
 
 function fAttack(){
