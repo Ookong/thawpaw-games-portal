@@ -503,12 +503,12 @@ function getBackendBase(){
 // ── Init ──
 (function init(){
   // Restore session
-  const saved = sessionStorage.getItem('tpgHqSession');
+  const saved = localStorage.getItem('tpgHqSession');
   if(saved){
     try{
       session = JSON.parse(saved); isSuperAdmin = (session.role === "super");
       showDashboard();
-    }catch(e){ sessionStorage.removeItem('tpgHqSession'); }
+    }catch(e){ localStorage.removeItem('tpgHqSession'); }
   }
 
   // Login input: digits only
@@ -633,7 +633,7 @@ function confirmNick(){
   apiPost('verify', { id: pendingId, nickname: nick }).then(res => {
     if(res.ok){
       session = { id: res.id, nickname: res.nickname, role: res.role }; isSuperAdmin = (session.role === "super");
-      sessionStorage.setItem('tpgHqSession', JSON.stringify(session));
+      localStorage.setItem('tpgHqSession', JSON.stringify(session));
       document.getElementById('nick-step').classList.remove('show');
       showDashboard();
     } else {
@@ -644,7 +644,7 @@ function confirmNick(){
         let role = 'player';
         if(pendingId === SUPER_ADMIN_ID || pendingId === SUPER_ADMIN_ID_2) role = 'super';
         session = { id: pendingId, nickname: nick, role: role }; isSuperAdmin = (session.role === "super");
-        sessionStorage.setItem('tpgHqSession', JSON.stringify(session));
+        localStorage.setItem('tpgHqSession', JSON.stringify(session));
         document.getElementById('nick-step').classList.remove('show');
         showDashboard();
       } else {
@@ -658,7 +658,7 @@ function confirmNick(){
       let role = 'player';
       if(pendingId === SUPER_ADMIN_ID || pendingId === SUPER_ADMIN_ID_2) role = 'super';
       session = { id: pendingId, nickname: nick, role: role }; isSuperAdmin = (session.role === "super");
-      sessionStorage.setItem('tpgHqSession', JSON.stringify(session));
+      localStorage.setItem('tpgHqSession', JSON.stringify(session));
       document.getElementById('nick-step').classList.remove('show');
       showDashboard();
     } else {
@@ -726,7 +726,7 @@ function showDashboard(){
 }
 
 function hqLogout(){
-  sessionStorage.removeItem('tpgHqSession');
+  localStorage.removeItem('tpgHqSession');
   session = null; isSuperAdmin = false;
   stopFeedbackWatcher();
   document.getElementById('dashboard').classList.remove('active');
@@ -998,7 +998,7 @@ function transferSuperAdmin(){
       alert('✅ 超级管理员已转移给 ' + res.newSuperNickname + '\n你现在是副管理员了。');
       // Update local session to admin
       session.role = 'admin'; isSuperAdmin = false;
-      sessionStorage.setItem('tpgHqSession', JSON.stringify(session));
+      localStorage.setItem('tpgHqSession', JSON.stringify(session));
       // Update UI
       showDashboard();
       loadAdmins();
@@ -1013,6 +1013,7 @@ var chatHistoryPage = 1;
 var CHAT_PAGE_SIZE = 20;
 
 function loadChatHistory(page){
+  if(!session) return;
   page = page || 1;
   if(page < 1) page = 1;
   chatHistoryPage = page;
