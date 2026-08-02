@@ -3088,8 +3088,11 @@ function enterForest(){
   var pg=document.getElementById('sm-page-forest');
   if(pg){pg.style.display='flex';pg.classList.add('active');}
   fState='battle';
-  fPlayer.x=FW/2;fPlayer.y=FH-100;fPlayer.hp=fPlayer.maxHp;fPlayer.hasEgg=false;fPlayer.invuln=0;
+  fPlayer.x=FW/2;fPlayer.y=FH-100;fPlayer.hp=fPlayer.maxHp;fPlayer.hasEgg=false;fPlayer.invuln=120;
   fPlayer.attackCD=0;fPlayer.dashCD=0;fPlayer.dashing=0;fPlayer.trail=[];
+  // Reset all control states
+  fKeyset={};fTouchMove={active:false,vec:{x:0,y:0}};
+  fHitStop=0;fScreenShake=0;
   // Setup 5 caves at top
   fCaves=[];
   for(let i=0;i<5;i++)fCaves.push({x:FW*(i+1)/6,y:50,w:70,h:60});
