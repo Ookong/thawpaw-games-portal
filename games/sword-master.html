@@ -646,7 +646,7 @@ function smRenderPetBagMain(){
 <div id="sm-page-forest" class="sm-page" style="background:#06080a;overflow:hidden;position:relative;display:none;">
   <a class="sm-back-btn" onclick="smShowPage('pets')"><img src="assets/back-arrow.png" alt="返回"></a>
   <canvas id="forest-canvas" style="display:block;"></canvas>
-  <div id="forest-touch" style="position:absolute;inset:0;display:none;z-index:10;pointer-events:none;"></div>
+  <div id="forest-touch" style="position:fixed;inset:0;display:none;z-index:50;pointer-events:none;"></div>
   <div id="forest-hud" style="position:absolute;top:0;left:0;right:0;display:none;justify-content:space-between;padding:10px 18px;z-index:5;pointer-events:none;">
     <div class="hp-block"><div class="hp-label" style="color:#6db84f;">林风</div><div class="hp-bg"><div class="hp-fill player" id="f-p-hp" style="width:100%"></div><div class="hp-text" id="f-p-hp-t">150/150</div></div></div>
     <div class="hp-block" style="align-items:flex-end;"><div class="hp-label" id="f-tiger-label" style="color:#ff6644;">白虎</div><div class="hp-bg"><div class="hp-fill boss" id="f-tiger-hp" style="width:100%"></div><div class="hp-text" id="f-tiger-hp-t">—</div></div></div>
@@ -3153,9 +3153,12 @@ function fHitTiger(t,dmg){
   fFloats.push({x:t.x,y:t.y-t.r,text:'-'+dmg,color:'#ff4444',life:30,vy:-1.3});
   for(let i=0;i<5;i++)fParticles.push({x:t.x,y:t.y,vx:rand(-3,3),vy:rand(-3,3),life:rand(10,20),size:rand(2,4),color:'#ff6644'});
 }
-function fHitPlayer(dmg){
+function fHitPlayer(dmg,fromClone){
   if(fPlayer.invuln>0)return;
-  fPlayer.hp-=dmg;fPlayer.invuln=35;fScreenShake=Math.max(fScreenShake,8);fHitStop=4;SFX.hurt();
+  fPlayer.hp-=dmg;fPlayer.invuln=fromClone?20:35;
+  if(!fromClone){fScreenShake=Math.max(fScreenShake,8);fHitStop=4;}
+  else{fScreenShake=Math.max(fScreenShake,2);}
+  SFX.hurt();
   fFloats.push({x:fPlayer.x,y:fPlayer.y-28,text:'-'+dmg,color:'#ff4444',life:30,vy:-1.3});
   for(let i=0;i<6;i++)fParticles.push({x:fPlayer.x,y:fPlayer.y,vx:rand(-4,4),vy:rand(-4,4),life:rand(10,24),size:rand(2,4),color:'#ff4444'});
   fUpdatePlayerHP();
@@ -3350,7 +3353,7 @@ function fUpdate(){
     c.x=clamp(c.x,c.r,FW-c.r);c.y=clamp(c.y,c.r,FH-c.r);
     if(cd<c.attackRange+c.r&&c.attackTimer<=0){
       c.attackTimer=c.attackCD;
-      if(cd<c.attackRange+fPlayer.r)fHitPlayer(c.damage);
+      if(cd<c.attackRange+fPlayer.r)fHitPlayer(c.damage,true);
     }
     return true;
   });
@@ -3577,9 +3580,9 @@ if(FCV)FCV.addEventListener('mousedown',e=>{
 
   // Joystick handlers
   let jStart={x:0,y:0},jActive=false;
-  function jStartFn(e){e.preventDefault();jActive=true;const r=joy.getBoundingClientRect();jStart={x:r.left+r.width/2,y:r.top+r.height/2};joy.classList.add('active');jMoveFn(e);}
+  function jStartFn(e){e.preventDefault();jActive=true;fTouchMove.active=true;const r=joy.getBoundingClientRect();jStart={x:r.left+r.width/2,y:r.top+r.height/2};joy.classList.add('active');jMoveFn(e);}
   function jMoveFn(e){if(!jActive)return;e.preventDefault();const t=e.touches?e.touches[0]:e;let dx=t.clientX-jStart.x,dy=t.clientY-jStart.y;const d=Math.hypot(dx,dy);if(d>12){fTouchMove.vec={x:dx/d,y:dy/d};const angle=Math.atan2(dy,dx)*180/Math.PI+90;knob.style.transform=`translate(-50%,-50%) rotate(${angle}deg)`;}else{fTouchMove.vec={x:0,y:0};knob.style.transform='translate(-50%,-50%)';}}
-  function jEndFn(){jActive=false;fTouchMove.vec={x:0,y:0};knob.style.transform='translate(-50%,-50%)';}
+  function jEndFn(){jActive=false;fTouchMove.active=false;fTouchMove.vec={x:0,y:0};knob.style.transform='translate(-50%,-50%)';}
   joy.addEventListener('touchstart',jStartFn,{passive:false});
   joy.addEventListener('touchmove',jMoveFn,{passive:false});
   joy.addEventListener('touchend',jEndFn);
