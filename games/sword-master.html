@@ -465,9 +465,9 @@ body.shape-square .sm-home-content{max-width:100%;}
 })();
 </script>
 <!-- ===== FOREST PAGE ===== -->
-<div id="sm-page-forest" class="sm-page" style="background:linear-gradient(to bottom,#0a1a0a,#061205);overflow:hidden;">
+<div id="sm-page-forest" class="sm-page" style="background:#06080a;overflow:hidden;position:relative;display:none;">
   <a class="sm-back-btn" onclick="smShowPage('pets')"><img src="assets/back-arrow.png" alt="返回"></a>
-  <canvas id="forest-canvas" style="display:block;width:100%;height:100%;"></canvas>
+  <canvas id="forest-canvas" style="display:block;position:absolute;top:0;left:0;width:100%;height:100%;z-index:1;"></canvas>
   <div id="forest-hud" style="position:absolute;top:0;left:0;right:0;display:none;justify-content:space-between;padding:10px 18px;z-index:5;pointer-events:none;">
     <div class="hp-block"><div class="hp-label" style="color:#6db84f;">林风</div><div class="hp-bg"><div class="hp-fill player" id="f-p-hp" style="width:100%"></div><div class="hp-text" id="f-p-hp-t">150/150</div></div></div>
     <div class="hp-block" style="align-items:flex-end;"><div class="hp-label" id="f-tiger-label" style="color:#ff6644;">白虎</div><div class="hp-bg"><div class="hp-fill boss" id="f-tiger-hp" style="width:100%"></div><div class="hp-text" id="f-tiger-hp-t">—</div></div></div>
@@ -476,17 +476,40 @@ body.shape-square .sm-home-content{max-width:100%;}
     <div class="gold-display">📜 <span id="f-seals">0</span> 宝印</div>
     <div class="weapon-display" id="f-cave-display">🌲 森林</div>
   </div>
-  <div id="forest-overlay" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:300;gap:12px;background:linear-gradient(to bottom,rgba(6,18,5,0.85),rgba(4,12,3,0.9));">
+  <!-- 地点选择页 -->
+  <div id="forest-overlay" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:300;gap:16px;background:linear-gradient(to bottom,rgba(6,18,5,0.85),rgba(4,12,3,0.9));">
     <div style="font-size:48px;">🌲🐅🌲</div>
     <div style="font-size:36px;font-weight:700;color:#88ee99;letter-spacing:6px;text-shadow:0 0 30px rgba(80,200,100,0.4);">神秘森林</div>
     <div style="font-size:14px;color:#66aa77;max-width:360px;text-align:center;line-height:1.8;">
+      选择前往的地点
+    </div>
+    <!-- 地点卡片容器 -->
+    <div id="forest-locations" style="display:flex;flex-wrap:wrap;gap:14px;justify-content:center;max-width:440px;">
+      <!-- 白虎洞 -->
+      <div onclick="smShowForestStage('tiger-cave')" style="width:180px;cursor:pointer;border-radius:14px;overflow:hidden;background:linear-gradient(135deg,rgba(60,30,10,0.6),rgba(30,15,5,0.8));border:2px solid rgba(180,120,60,0.3);transition:transform .15s,border-color .15s;" onmouseover="this.style.transform='scale(1.05)';this.style.borderColor='rgba(220,160,80,0.6)';" onmouseout="this.style.transform='scale(1)';this.style.borderColor='rgba(180,120,60,0.3)';">
+        <div style="font-size:48px;text-align:center;padding:16px 0 4px;">🐅</div>
+        <div style="font-size:16px;font-weight:700;color:#ddbb88;text-align:center;letter-spacing:2px;">白虎洞</div>
+        <div style="font-size:12px;color:#aa8866;text-align:center;padding:2px 0 12px;">守护神蛋的白虎领地</div>
+      </div>
+      <!-- 以后加更多地点：
+      <div onclick="smShowForestStage('fox-den')">🦊 狐狸穴</div>
+      <div onclick="smShowForestStage('wolf-cave')">🐺 狼窟</div>
+      -->
+    </div>
+    <button class="btn small" style="background:linear-gradient(135deg,#666,#444);font-size:14px;margin-top:8px;" onclick="smShowPage('pets')">🔙 返回</button>
+  </div>
+  <!-- 白虎洞信息页 -->
+  <div id="forest-stage-tiger-cave" style="position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;z-index:300;gap:12px;background:linear-gradient(to bottom,rgba(40,20,8,0.9),rgba(20,10,4,0.95));">
+    <div style="font-size:56px;">🐅</div>
+    <div style="font-size:32px;font-weight:700;color:#ddbb88;letter-spacing:6px;text-shadow:0 0 30px rgba(220,160,80,0.3);">白虎洞</div>
+    <div style="font-size:14px;color:#aa8866;max-width:340px;text-align:center;line-height:1.8;">
       🐅 白虎栖居于此，守护着一枚神秘的蛋<br>
       🥚 偷走蛋会让白虎暴怒，技能增强<br>
       🚪 活着走到洞口可带蛋逃离<br>
       💀 死亡将扣除 5 📜 剑客宝印
     </div>
-    <button class="btn" style="background:linear-gradient(135deg,#2a8a3a,#1a6a2a);border-color:#44cc55;color:#fff;" onclick="enterForest()">🌲 进入森林</button>
-    <button class="btn small" style="background:linear-gradient(135deg,#666,#444);font-size:14px;" onclick="smShowPage('pets')">🔙 返回</button>
+    <button class="btn" style="background:linear-gradient(135deg,#8a5a2a,#6a3a1a);border-color:#cc8844;color:#fff;" onclick="enterForest()">⚔️ 挑战白虎</button>
+    <button class="btn small" style="background:linear-gradient(135deg,#666,#444);font-size:14px;" onclick="smShowForestLocations()">🔙 返回地点</button>
   </div>
   <div id="forest-victory-overlay" style="position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;z-index:300;gap:12px;background:rgba(4,12,3,0.85);">
     <div style="font-size:56px;">🥚✨</div>
@@ -2606,17 +2629,35 @@ function toggleBgMode(){
   if(btn)btn.textContent=bgMode==='cozy'?'🎨':'✨';
 }
 
+// ===== FOREST NAV =====
+function smShowForestStage(stageId){
+  document.getElementById('forest-overlay').style.display='none';
+  const el=document.getElementById('forest-stage-'+stageId);
+  if(el)el.style.display='flex';
+}
+function smShowForestLocations(){
+  // hide all stage pages
+  document.querySelectorAll('[id^="forest-stage-"]').forEach(el=>el.style.display='none');
+  document.getElementById('forest-overlay').style.display='flex';
+}
+
 // ===== FOREST GAME =====
-const FCV=document.getElementById('forest-canvas');
-const FCTX=FCV.getContext('2d');
+let FCV=null,FCTX=null;
 const FW=960,FH=640;
-FCV.width=FW;FCV.height=FH;
+function initForestCanvas(){
+  FCV=document.getElementById('forest-canvas');
+  if(!FCV){console.error('forest-canvas not found!');return false;}
+  FCV.width=FW;FCV.height=FH;
+  FCTX=FCV.getContext('2d');
+  return true;
+}
+// Try init immediately
+initForestCanvas();
 function fitForestCanvas(){
-  const sw=innerWidth,sh=innerHeight;
-  const scale=Math.min(sw/FW,sh/FH);
-  const cw=FW*scale,ch=FH*scale;
-  FCV.style.width=cw+'px';FCV.style.height=ch+'px';
-  FCV.style.position='fixed';FCV.style.left=((sw-cw)/2)+'px';FCV.style.top=((sh-ch)/2)+'px';
+  if(!FCV)return;
+  const page=document.getElementById('sm-page-forest');
+  if(page){page.style.display='flex';}
+  FCV.style.width='100%';FCV.style.height='100%';
 }
 
 // Forest state
@@ -2644,6 +2685,9 @@ let fStars=[];
 for(let i=0;i<60;i++)fStars.push({x:rand(0,FW),y:rand(0,FH*0.4),r:rand(0.4,2),tw:rand(0,6.28),sp:rand(0.015,0.04)});
 
 function enterForest(){
+  if(!FCV){if(!initForestCanvas()){alert('森林加载失败，请刷新页面重试');return;}}
+  var pg=document.getElementById('sm-page-forest');
+  if(pg){pg.style.display='flex';pg.classList.add('active');}
   fState='battle';
   fPlayer.x=FW/2;fPlayer.y=FH-100;fPlayer.hp=fPlayer.maxHp;fPlayer.hasEgg=false;fPlayer.invuln=0;
   fPlayer.attackCD=0;fPlayer.dashCD=0;fPlayer.dashing=0;fPlayer.trail=[];
@@ -2672,6 +2716,7 @@ function exitForest(){
   document.getElementById('forest-bottom-hud').style.display='none';
   document.getElementById('forest-victory-overlay').style.display='none';
   document.getElementById('forest-defeat-overlay').style.display='none';
+  document.querySelectorAll('[id^="forest-stage-"]').forEach(el=>el.style.display='none');
   document.getElementById('forest-overlay').style.display='flex';
   smUpdateHome();
 }
@@ -2920,6 +2965,7 @@ function fUpdate(){
 
 // Forest render
 function fRender(){
+  if(!FCTX)return;
   fBgFrame++;
   FCTX.save();
   if(fScreenShake>0.5)FCTX.translate(rand(-fScreenShake,fScreenShake),rand(-fScreenShake,fScreenShake));
@@ -3071,13 +3117,13 @@ function fRender(){
 }
 
 function forestLoop(){
-  if(fState==='battle'){fUpdate();fRender();}
+  if(fState==='battle'&&FCTX){fUpdate();fRender();}
   else if(fState==='idle'){fRender();} // keep rendering background
   requestAnimationFrame(forestLoop);
 }
 
 // Click on canvas for egg tap + attack
-FCV.addEventListener('click',e=>{
+if(FCV)FCV.addEventListener('click',e=>{
   if(fState!=='battle')return;
   // Check egg tap first
   const rect=FCV.getBoundingClientRect();
@@ -3090,7 +3136,7 @@ FCV.addEventListener('click',e=>{
 });
 
 // Long press for egg (mouse)
-FCV.addEventListener('mousedown',e=>{
+if(FCV)FCV.addEventListener('mousedown',e=>{
   if(fState!=='battle')return;
   if(!fEgg.longPressing)return;
   fEgg.longPressStart=Date.now(); // reset timer for hold
