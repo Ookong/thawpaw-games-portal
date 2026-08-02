@@ -606,24 +606,29 @@ function smRenderPetBagMain(){
     }else{
       var shelf=document.createElement('div');
       shelf.className='pet-shelf';
-      var row=document.createElement('div');
-      row.className='pet-shelf-row';
-      for(var i=0;i<eggs.length;i++){
-        (function(egg,idx){
+      var eggIdx=0;
+      for(var r=0;r<5;r++){
+        var row=document.createElement('div');
+        row.className='pet-shelf-row';
+        for(var c=0;c<4;c++){
           var slot=document.createElement('div');
           slot.className='pet-shelf-slot';
-          slot.style.cursor='pointer';
-          slot.innerHTML='<img src="'+egg.img+'" style="width:48px;height:48px;object-fit:contain;"><span class="slot-name">'+egg.name+'</span>';
-          slot.addEventListener('click',function(){
-            alert('🥚 '+egg.name+'\n获得日期：'+(egg.got||'未知'));
-          });
+          if(eggIdx<eggs.length){
+            (function(egg){
+              slot.style.cursor='pointer';
+              slot.innerHTML='<img src="'+egg.img+'" style="width:48px;height:48px;object-fit:contain;"><span class="slot-name">'+egg.name+'</span>';
+              slot.addEventListener('click',function(){
+                alert('🥚 '+egg.name+'\n获得日期：'+(egg.got||'未知'));
+              });
+            })(eggs[eggIdx]);
+            eggIdx++;
+          }else{
+            slot.innerHTML='—<span class="slot-name">空</span>';
+          }
           row.appendChild(slot);
-        })(eggs[i],i);
+        }
+        shelf.appendChild(row);
       }
-      // Fill remaining slots
-      var remain=Math.max(0,4-(eggs.length%4));
-      if(eggs.length%4!==0){for(var j=0;j<remain;j++){var s=document.createElement('div');s.className='pet-shelf-slot';s.innerHTML='—<span class="slot-name">空</span>';row.appendChild(s);}}
-      shelf.appendChild(row);
       box.appendChild(shelf);
     }
     return;
