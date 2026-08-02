@@ -454,8 +454,8 @@ body.shape-square .sm-home-content{max-width:100%;}
       b.style.animationDuration = (3.5+Math.random()*2)+'s';
       (function(menu){
         b.addEventListener('click',function(){
-          if(menu==='商店')smOpenBag();
-          else if(menu==='背包')smOpenBag();
+          if(menu==='商店')smShowPage('pet-shop');
+          else if(menu==='背包')smShowPage('pet-bag');
           else if(menu==='前往森林')smShowPage('forest');
         });
       })(menus[i]);
@@ -464,6 +464,26 @@ body.shape-square .sm-home-content{max-width:100%;}
   };
 })();
 </script>
+<!-- ===== PET SHOP PAGE ===== -->
+<div id="sm-page-pet-shop" class="sm-page" style="display:none;flex-direction:column;align-items:center;justify-content:flex-start;padding:16px;overflow-y:auto;background:linear-gradient(to bottom,rgba(30,20,8,0.95),rgba(20,12,4,0.98));">
+  <a class="sm-back-btn" onclick="smShowPage('pets')"><img src="assets/back-arrow.png" alt="返回"></a>
+  <div style="font-size:28px;margin-top:20px;">🏪</div>
+  <div style="font-size:20px;font-weight:700;color:#d4af37;letter-spacing:4px;margin:8px 0 4px;">宠物商店</div>
+  <div style="font-size:12px;color:#887755;margin-bottom:20px;">购买宠物用品</div>
+  <div id="pet-shop-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;width:100%;max-width:480px;padding:0 8px;">
+    <div style="grid-column:1/-1;text-align:center;color:#554433;font-size:13px;padding:60px 0;">货架上还没东西……</div>
+  </div>
+</div>
+<!-- ===== PET BAG PAGE ===== -->
+<div id="sm-page-pet-bag" class="sm-page" style="display:none;flex-direction:column;align-items:center;justify-content:flex-start;padding:16px;overflow-y:auto;background:linear-gradient(to bottom,rgba(20,25,15,0.95),rgba(12,15,8,0.98));">
+  <a class="sm-back-btn" onclick="smShowPage('pets')"><img src="assets/back-arrow.png" alt="返回"></a>
+  <div style="font-size:28px;margin-top:20px;">🎒</div>
+  <div style="font-size:20px;font-weight:700;color:#88cc66;letter-spacing:4px;margin:8px 0 4px;">宠物背包</div>
+  <div style="font-size:12px;color:#667755;margin-bottom:20px;">查看宠物物品</div>
+  <div id="pet-bag-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;width:100%;max-width:480px;padding:0 8px;">
+    <div style="grid-column:1/-1;text-align:center;color:#445533;font-size:13px;padding:60px 0;">背包还是空的……</div>
+  </div>
+</div>
 <!-- ===== FOREST PAGE ===== -->
 <div id="sm-page-forest" class="sm-page" style="background:#06080a;overflow:hidden;position:relative;display:none;">
   <a class="sm-back-btn" onclick="smShowPage('pets')"><img src="assets/back-arrow.png" alt="返回"></a>
@@ -508,7 +528,7 @@ body.shape-square .sm-home-content{max-width:100%;}
       🚪 活着走到洞口可带蛋逃离<br>
       💀 死亡将扣除 5 📜 剑客宝印
     </div>
-    <button class="btn" style="background:linear-gradient(135deg,#8a5a2a,#6a3a1a);border-color:#cc8844;color:#fff;" onclick="enterForest()">⚔️ 挑战白虎</button>
+    <button class="btn" style="background:linear-gradient(135deg,#8a5a2a,#6a3a1a);border-color:#cc8844;color:#fff;" onclick="alert('1');enterForest();alert('2')">⚔️ 挑战白虎</button>
     <button class="btn small" style="background:linear-gradient(135deg,#666,#444);font-size:14px;" onclick="smShowForestLocations()">🔙 返回地点</button>
   </div>
   <div id="forest-victory-overlay" style="position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;z-index:300;gap:12px;background:rgba(4,12,3,0.85);">
