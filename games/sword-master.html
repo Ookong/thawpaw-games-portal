@@ -2831,7 +2831,8 @@ let fStars=[];
 for(let i=0;i<60;i++)fStars.push({x:rand(0,FW),y:rand(0,FH*0.4),r:rand(0.4,2),tw:rand(0,6.28),sp:rand(0.015,0.04)});
 
 function enterForest(){
-  if(!FCV){if(!initForestCanvas()){alert('森林加载失败，请刷新页面重试');return;}}
+  document.body.style.background='#ff0000'; // DEBUG: red flash to confirm function runs
+  if(!FCV){if(!initForestCanvas()){alert('森林加载失败');return;}}
   var pg=document.getElementById('sm-page-forest');
   if(pg){pg.style.display='flex';pg.classList.add('active');}
   fState='battle';
