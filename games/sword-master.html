@@ -2385,9 +2385,13 @@ function drawPlayer(){
 function drawEnemy(e){
   const frozen=player.enemyFreeze>0;
   const flash=e.hitFlash>0;
-  ctx.save();ctx.translate(e.x,e.y);ctx.shadowColor=e.accent;ctx.shadowBlur=12;ctx.fillStyle=flash?'#fff':e.color;ctx.beginPath();ctx.arc(0,0,e.size,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;ctx.strokeStyle=e.accent;ctx.lineWidth=3;ctx.stroke();
-  // 有自定义图片用图片，否则用 emoji
-  if(e.imgKey&&BOSS_IMAGES[e.imgKey]){const img=BOSS_IMAGES[e.imgKey];const s=e.size*2;ctx.drawImage(img,-s/2,-s/2,s,s*1.5);}
+  const hasImg=e.imgKey&&BOSS_IMAGES[e.imgKey];
+  ctx.save();ctx.translate(e.x,e.y);
+  if(!hasImg){
+    // 没有自定义图片时才画圆圈
+    ctx.shadowColor=e.accent;ctx.shadowBlur=12;ctx.fillStyle=flash?'#fff':e.color;ctx.beginPath();ctx.arc(0,0,e.size,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;ctx.strokeStyle=e.accent;ctx.lineWidth=3;ctx.stroke();
+  }
+  if(hasImg){const img=BOSS_IMAGES[e.imgKey];const s=e.size*2.8;if(flash){ctx.save();ctx.globalAlpha=0.7;ctx.fillStyle='#fff';ctx.fillRect(-s/2,-s/2*1.5,s,s*1.5);ctx.restore();}ctx.drawImage(img,-s/2,-s/2*1.5,s,s*1.5);}
   else{ctx.font=`${e.size*1.1}px sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(e.emoji,0,2);}
   ctx.restore();
   if(frozen){
