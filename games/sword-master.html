@@ -2814,6 +2814,14 @@ var fKeyset={};
 var fLoopRunning=false;
 var fBgFrame=0;
 var fFireflies=[];
+var fScreenShake=0;
+var fHitStop=0;
+var fTouchMove={active:false,vec:{x:0,y:0}};
+var fTrees=[];
+for(var _ti=0;_ti<20;_ti++)fTrees.push({x:rand(20,FW-20),y:rand(60,FH-60),h:rand(40,80),w:rand(20,35)});
+for(var _fi=0;_fi<15;_fi++)fFireflies.push({x:rand(0,FW),y:rand(60,FH-60),vx:rand(-0.3,0.3),vy:rand(-0.3,0.3),phase:rand(0,6.28),life:rand(0,200)});
+var fStars=[];
+for(var _si=0;_si<60;_si++)fStars.push({x:rand(0,FW),y:rand(0,FH*0.4),r:rand(0.4,2),tw:rand(0,6.28),sp:rand(0.015,0.04)});
 function initForestCanvas(){
   FCV=document.getElementById('forest-canvas');
   if(!FCV){return false;}
@@ -2885,16 +2893,6 @@ function smShowForestLocations(){
   document.querySelectorAll('[id^="forest-stage-"]').forEach(el=>el.style.display='none');
   document.getElementById('forest-overlay').style.display='flex';
 }
-
-// ===== FOREST GAME (extra vars) =====
-var fScreenShake=0;
-var fHitStop=0;
-var fTouchMove={active:false,vec:{x:0,y:0}};
-var fTrees=[];
-for(let i=0;i<20;i++)fTrees.push({x:rand(20,FW-20),y:rand(60,FH-60),h:rand(40,80),w:rand(20,35)});
-for(let i=0;i<15;i++)fFireflies.push({x:rand(0,FW),y:rand(60,FH-60),vx:rand(-0.3,0.3),vy:rand(-0.3,0.3),phase:rand(0,6.28),life:rand(0,200)});
-var fStars=[];
-for(let i=0;i<60;i++)fStars.push({x:rand(0,FW),y:rand(0,FH*0.4),r:rand(0.4,2),tw:rand(0,6.28),sp:rand(0.015,0.04)});
 
 function enterForestDebug(){
   var steps=[];
