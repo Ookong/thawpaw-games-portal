@@ -3084,12 +3084,14 @@ function smPetHatch(idx){
   if(!n||n.hatched)return;
   n.hatched=true;
   n.hatchedAt=Date.now();
-  // 蛋图标转为宠物图标（暂时用同一个图）
-  n.petImg=n.egg?n.egg.img:'';
-  n.petName=n.egg?n.egg.name+'宝宝':'神秘宠物';
+  var cubMap={'tiger':'assets/tiger-cub.jpg'};
+  var cubNameMap={'tiger':'小白虎'};
+  var t=n.egg?n.egg.type:'tiger';
+  n.petImg=cubMap[t]||'assets/tiger-cub.jpg';
+  n.petName=cubNameMap[t]||'神秘宠物';
   smSaveSave();
   smRenderPetNests();
-  alert('\u{1F431} 恭喜！'+n.petName+' 孵化了！');
+  alert('\u{1F431}\u200D\uD83D\uDD25 恭喜！'+n.petName+' 孵化了！');
 }
 function smGetHatchingProgress(nestIdx){
   var n=smSave.petNests[nestIdx];
