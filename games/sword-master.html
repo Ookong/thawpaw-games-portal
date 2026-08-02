@@ -383,6 +383,19 @@ body.shape-square .sm-home-content{max-width:100%;}
     <div id="sm-atk-bars" style="display:flex;gap:4px;margin-bottom:14px;"></div>
     <button id="sm-atk-btn" class="btn" style="width:100%;" onclick="smUpgradeAtk()">升级</button>
   </div>
+  <!-- 血量强化 -->
+  <div style="margin:16px auto;max-width:420px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:16px;">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+      <span style="font-size:28px;">❤️</span>
+      <div>
+        <div style="font-size:16px;font-weight:700;color:#ff6688;">生命强化</div>
+        <div style="font-size:12px;color:#885566;">每级 +170 最大生命值</div>
+      </div>
+      <div style="margin-left:auto;font-size:14px;color:#d4af37;font-weight:700;" id="sm-hp-level-text">Lv.0</div>
+    </div>
+    <div id="sm-hp-bars" style="display:flex;gap:4px;margin-bottom:14px;"></div>
+    <button id="sm-hp-btn" class="btn" style="width:100%;" onclick="smUpgradeHp()">升级</button>
+  </div>
 </div>
 <!-- ===== ACTIVITIES PAGE ===== -->
 <div id="sm-page-activities" class="sm-page">
@@ -1128,7 +1141,7 @@ function getWeaponStat(){return WEAPONS[player.weapon];}
 function resetPlayer(full){
   player.x=W/2;player.y=H/2+120;
   if(full){
-    player.hp=player.maxHp;player.gold=0;player.defense=0;player.defLevel=0;
+    player.hp=player.maxHp=(150+(typeof smSave!=='undefined'?smSave.hpLevel:0)*170);player.gold=0;player.defense=0;player.defLevel=0;
     player.speed=typeof smGetPlayerSpeed==='function'?smGetPlayerSpeed():3.2;
     player.weapon='fists';player.ownedWeapons=new Set(['fists']);
     player.items={potion:1,ginseng:0,bomb:0,mine:0,circle:0};player.ginsengSips=0;
@@ -2745,7 +2758,7 @@ function smEquipArmor(key){
   smSave.equippedArmor=key;smSaveSave();smRenderShop();smUpdateHome();
 }
 function smGetKey(){const id=localStorage.getItem('thawpawActiveId')||'default';return 'sword_master_save_'+id;}
-function smLoadSave(){try{const d=JSON.parse(localStorage.getItem(smGetKey()));if(!d)d={};return{coins:d.coins||0,seals:d.seals||0,highestLevel:d.highestLevel||1,ownedArmors:d.ownedArmors||{},equippedArmor:d.equippedArmor||null,speedLevel:d.speedLevel||0,atkLevel:d.atkLevel||0};}catch(e){return{coins:0,seals:0,highestLevel:1,ownedArmors:{},equippedArmor:null,speedLevel:0,atkLevel:0};}}
+function smLoadSave(){try{const d=JSON.parse(localStorage.getItem(smGetKey()));if(!d)d={};return{coins:d.coins||0,seals:d.seals||0,highestLevel:d.highestLevel||1,ownedArmors:d.ownedArmors||{},equippedArmor:d.equippedArmor||null,speedLevel:d.speedLevel||0,atkLevel:d.atkLevel||0,hpLevel:d.hpLevel||0};}catch(e){return{coins:0,seals:0,highestLevel:1,ownedArmors:{},equippedArmor:null,speedLevel:0,atkLevel:0,hpLevel:0};}}
 function smSaveSave(){localStorage.setItem(smGetKey(),JSON.stringify(smSave));}
 
 // ===== 速度强化 =====
@@ -2801,6 +2814,7 @@ function smUpgradeSpeed(){
   document.getElementById('sm-enhance-seals').textContent=smSave.seals;
   smRenderSpeedEnhance();
   smRenderAtkEnhance();
+  smRenderHpEnhance();
   smUpdateHome();
 }
 
@@ -2856,6 +2870,67 @@ function smUpgradeAtk(){
   document.getElementById('sm-enhance-seals').textContent=smSave.seals;
   smRenderAtkEnhance();
   smRenderSpeedEnhance();
+  smRenderHpEnhance();
+  smUpdateHome();
+}
+
+// ===== 血量强化 =====
+var SM_HP_COSTS=[7,9,14,19,27]; // 攻击基础上每级+3
+var SM_HP_BASE=150;
+var SM_HP_STEP=170; // (1000-150)/5=170
+function smGetMaxHp(){return SM_HP_BASE+smSave.hpLevel*SM_HP_STEP;}
+function smRenderHpEnhance(){
+  var lv=smSave.hpLevel;
+  var el=document.getElementById('sm-hp-level-text');
+  if(!el)return;
+  el.textContent='Lv.'+lv+(lv>=5?' MAX':'');
+  var bars=document.getElementById('sm-hp-bars');
+  bars.innerHTML='';
+  for(var i=0;i<5;i++){
+    var b=document.createElement('div');
+    b.style.cssText='flex:1;height:12px;border-radius:3px;';
+    if(i<lv){
+      b.style.background='linear-gradient(to top,#cc2244,#ee4466)';
+      b.style.boxShadow='0 0 6px rgba(238,68,102,0.4)';
+    }else{
+      b.style.background='rgba(255,255,255,0.06)';
+      b.style.border='1px solid rgba(255,255,255,0.04)';
+    }
+    bars.appendChild(b);
+  }
+  var btn=document.getElementById('sm-hp-btn');
+  var curHp=SM_HP_BASE+lv*SM_HP_STEP;
+  var nextHp=lv<5?SM_HP_BASE+(lv+1)*SM_HP_STEP:curHp;
+  if(lv>=5){
+    btn.textContent='❤️ 已满级（'+curHp+' HP）';
+    btn.disabled=true;
+    btn.style.opacity=0.5;
+    btn.style.cursor='default';
+    btn.style.background='linear-gradient(135deg,#444,#333)';
+  }else{
+    var cost=SM_HP_COSTS[lv];
+    var can=smSave.seals>=cost;
+    btn.textContent=(can?'⬆️ ':'🔒 ')+'升到 Lv.'+(lv+1)+'（'+cost+' 📜）'+curHp+'→'+nextHp+' HP';
+    btn.disabled=!can;
+    btn.style.opacity=can?1:0.6;
+    btn.style.cursor=can?'pointer':'default';
+    btn.style.background=can?'linear-gradient(135deg,#8a1a3a,#6a1a2a)':'linear-gradient(135deg,#555,#444)';
+    btn.style.border='1px solid '+(can?'#ee4466':'#666');
+    btn.style.color='#fff';
+  }
+}
+function smUpgradeHp(){
+  var lv=smSave.hpLevel;
+  if(lv>=5)return;
+  var cost=SM_HP_COSTS[lv];
+  if(smSave.seals<cost)return;
+  smSave.seals-=cost;
+  smSave.hpLevel++;
+  smSaveSave();
+  document.getElementById('sm-enhance-seals').textContent=smSave.seals;
+  smRenderHpEnhance();
+  smRenderSpeedEnhance();
+  smRenderAtkEnhance();
   smUpdateHome();
 }
 let smSave=smLoadSave();
@@ -2865,7 +2940,7 @@ function smShowPage(name){
   const pg=document.getElementById('sm-page-'+name);if(pg){pg.classList.add('active');pg.style.display='';}
   if(name==='home')smUpdateHome();
   if(name==='levels')smRenderLevels();
-  if(name==='enhance'){document.getElementById('sm-enhance-seals').textContent=smSave.seals;smRenderSpeedEnhance();smRenderAtkEnhance();}
+  if(name==='enhance'){document.getElementById('sm-enhance-seals').textContent=smSave.seals;smRenderSpeedEnhance();smRenderAtkEnhance();smRenderHpEnhance();}
   if(name==='shop')smRenderShop();
   if(name==='pets'&&typeof smRenderPetBubbles==='function')smRenderPetBubbles();
   if(name==='pet-shop'){smRenderPetShopCats();smRenderPetShopMain();document.getElementById('sm-pet-shop-coins').textContent=smSave.coins;}
@@ -3145,10 +3220,17 @@ function fCheckCaveExit(){
 
 function fPlayerDie(){
   fState='defeat';SFX.lose();
-  // Penalty: -5 seals
-  const lost=Math.min(5,smSave.seals);
-  smSave.seals-=lost;smSaveSave();
-  document.getElementById('f-defeat-text').textContent='白虎的爪牙将你击倒……失去了 '+lost+' 📜 宝印';
+  // One-time compensation for control-bug deaths (Aug 2 bug)
+  if(!localStorage.getItem('forestCompensatedAug2')){
+    smSave.seals+=10;
+    localStorage.setItem('forestCompensatedAug2','1');
+    document.getElementById('f-defeat-text').textContent='白虎的爪牙将你击倒……但调试员冰爪补你 10 颗宝印作为抱歉！';
+  }else{
+    const lost=Math.min(5,smSave.seals);
+    smSave.seals-=lost;
+    document.getElementById('f-defeat-text').textContent='白虎的爪牙将你击倒……失去了 '+lost+' 📜 宝印';
+  }
+  smSaveSave();
   document.getElementById('forest-defeat-overlay').style.display='flex';
   document.getElementById('forest-hud').style.display='none';
   document.getElementById('forest-bottom-hud').style.display='none';
