@@ -110,6 +110,19 @@ canvas{display:block;width:100%;height:100%;box-shadow:0 0 40px rgba(180,50,40,0
 .sm-currency-bubble{background:rgba(212,175,55,0.08);border:1px solid rgba(212,175,55,0.25);border-radius:20px;padding:5px 12px;font-size:13px;font-weight:600;white-space:nowrap;color:#d4af37;}
 .paw-coin-icon{display:inline-block;width:16px;height:16px;vertical-align:-3px;}
 body.shape-portrait .paw-coin-icon{width:14px;height:14px;vertical-align:-2px;}
+/* ===== Pet Toast ===== */
+.pet-toast{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(20,15,8,0.95);border:2px solid rgba(212,175,55,0.5);border-radius:12px;padding:16px 28px;z-index:9999;font-size:16px;font-weight:700;color:#d4af37;box-shadow:0 8px 32px rgba(0,0,0,0.5);animation:petToastIn .3s ease,petToastOut .3s ease 1.2s forwards;text-align:center;pointer-events:none;}
+@keyframes petToastIn{from{opacity:0;transform:translate(-50%,-50%) scale(0.7);}to{opacity:1;transform:translate(-50%,-50%) scale(1);}}
+@keyframes petToastOut{to{opacity:0;transform:translate(-50%,-60%) scale(0.9);}}
+/* ===== Feed Animation ===== */
+.pet-feed-overlay{position:absolute;inset:0;z-index:400;pointer-events:none;display:flex;align-items:center;justify-content:center;}
+.pet-feed-icon{font-size:48px;animation:feedBounce 1.2s ease forwards;}
+@keyframes feedBounce{0%{transform:translateY(-80px) scale(0.5);opacity:0;}30%{transform:translateY(0) scale(1.2);opacity:1;}60%{transform:translateY(0) scale(1);opacity:1;}100%{transform:translateY(20px) scale(0.8);opacity:0;}}
+.pet-feed-stats{position:absolute;top:30%;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;gap:4px;align-items:center;z-index:401;}
+.pet-feed-stat{font-size:18px;font-weight:700;text-shadow:0 2px 8px rgba(0,0,0,0.8);animation:feedStatFloat 1.5s ease forwards;}
+@keyframes feedStatFloat{0%{opacity:0;transform:translateY(20px);}20%{opacity:1;transform:translateY(0);}80%{opacity:1;transform:translateY(-30px);}100%{opacity:0;transform:translateY(-50px);}}
+.pet-eating-bounce{animation:petEatingBounce 0.3s ease 3;}
+@keyframes petEatingBounce{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
 .sm-avatar{width:40px;height:40px;border-radius:50%;background:rgba(180,50,40,0.2);display:flex;align-items:center;justify-content:center;font-size:22px;border:2px solid rgba(212,175,55,0.4);}
 .sm-profile-info{display:flex;flex-direction:column;gap:2px;}
 .sm-profile-info .name-row{display:flex;align-items:center;gap:6px;}
@@ -618,13 +631,46 @@ function smRenderPetShopMain(){
   }
   box.appendChild(shelf);
 }
+function smPetToast(msg){
+  var old=document.getElementById('pet-toast-el');if(old)old.remove();
+  var t=document.createElement('div');
+  t.id='pet-toast-el';t.className='pet-toast';t.textContent=msg;
+  document.body.appendChild(t);
+  setTimeout(function(){if(t.parentNode)t.remove();},1600);
+}
+function smPetFeedAnimation(nestIdx, icon, statTexts){
+  var nest=document.getElementById('pet-nest-'+nestIdx);
+  if(!nest)return;
+  var page=document.getElementById('sm-page-pets');
+  var target=page||nest.parentElement;
+  // Bounce the pet
+  var petImg=nest.querySelector('img');
+  if(petImg){petImg.classList.add('pet-eating-bounce');setTimeout(function(){petImg.classList.remove('pet-eating-bounce');},1000);}
+  // Falling food icon
+  var ov=document.createElement('div');ov.className='pet-feed-overlay';
+  var rect=nest.getBoundingClientRect();
+  ov.style.cssText='position:fixed;left:'+(rect.left+rect.width/2-30)+'px;top:'+(rect.top-40)+'px;width:60px;height:'+(rect.height+80)+'px;';
+  ov.innerHTML='<div class="pet-feed-icon">'+icon+'</div>';
+  document.body.appendChild(ov);
+  // Floating stat texts
+  if(statTexts&&statTexts.length){
+    var stats=document.createElement('div');stats.className='pet-feed-stats';
+    stats.style.cssText='position:fixed;left:'+(rect.left+rect.width/2)+'px;top:'+(rect.top-10)+'px;transform:translateX(-50%);';
+    statTexts.forEach(function(txt,i){
+      var s=document.createElement('div');s.className='pet-feed-stat';
+      s.textContent=txt;s.style.animationDelay=(i*0.15)+'s';
+      stats.appendChild(s);
+    });
+    document.body.appendChild(stats);
+    setTimeout(function(){if(stats.parentNode)stats.remove();},2000);
+  }
+  setTimeout(function(){if(ov.parentNode)ov.remove();},1300);
+}
 function smBuyPetItem(it){
   if(smSave.petCoins < it.price) return;
   smSave.petCoins -= it.price;
-  // Add to petBag
-  var cat = smPetShopActive; // current category
+  var cat = smPetShopActive;
   if(!smSave.petBag[cat]) smSave.petBag[cat] = [];
-  // Stack if same id
   var existing = smSave.petBag[cat].find(function(x){return x.id === it.id;});
   if(existing){ existing.qty = (existing.qty||1) + 1; }
   else { smSave.petBag[cat].push({id:it.id, icon:it.icon, name:it.name, desc:it.desc, price:it.price, effects:it.effects, qty:1}); }
@@ -632,6 +678,7 @@ function smBuyPetItem(it){
   smRenderPetShopMain();
   document.getElementById('sm-pet-shop-coins').textContent = formatNum(smSave.petCoins);
   smUpdateHome();
+  smPetToast(it.icon + ' ' + it.name + ' ✅ 购买成功！');
 }
 
 // 宠物背包分类
@@ -755,23 +802,22 @@ function smUsePetItem(item, cat){
     for(var i=0;i<smSave.petNests.length;i++){
       if(smSave.petNests[i] && smSave.petNests[i].hatched){ toyPetIdx = i; break; }
     }
-    if(toyPetIdx < 0){ alert('还没有孵化的宠物，先去孵化蛋吧！'); return; }
+    if(toyPetIdx < 0){ smPetToast('🐱 还没有孵化的宠物'); return; }
     var n1 = smSave.petNests[toyPetIdx];
     var s1 = smEnsurePetStats(n1);
-    // Toggle: if already playing with this toy, stop
     if(s1.activeToy === e.activeToy){
       delete s1.activeToy;
       delete s1.toyQiPerMin;
       smSaveSave();
       smRenderPetBagMain();
-      alert(item.icon + ' ' + item.name + ' → ' + (n1.petName||'宠物') + '\n停止玩耍');
+      smPetToast(item.icon + ' 停止玩耍');
       return;
     }
     s1.activeToy = e.activeToy;
     s1.toyQiPerMin = e.qiPerMin || 5;
     smSaveSave();
     smRenderPetBagMain();
-    alert(item.icon + ' ' + item.name + ' → ' + (n1.petName||'宠物') + '\n开始玩耍！每分钟+' + s1.toyQiPerMin + '灵气');
+    smPetToast(item.icon + ' ' + item.name + ' ✅ 开始玩耍！');
     return;
   }
   
@@ -782,15 +828,14 @@ function smUsePetItem(item, cat){
       var n0 = smSave.petNests[i];
       if(n0 && !n0.hatched && n0.placedAt){ incubatingIdx = i; break; }
     }
-    if(incubatingIdx < 0){ alert('当前没有正在孵化的蛋！'); return; }
+    if(incubatingIdx < 0){ smPetToast('🥚 当前没有正在孵化的蛋'); return; }
     var boostMs = e.hatchBoost * 24 * 60 * 60 * 1000;
     smSave.petNests[incubatingIdx].placedAt -= boostMs;
-    // Check if hatched now
     var elapsed = Date.now() - smSave.petNests[incubatingIdx].placedAt;
+    var hatchedNow = false;
     if(elapsed >= PET_HATCH_TIME){
-      smPetHatch(incubatingIdx);
+      hatchedNow = true;
     }
-    // Decrement qty
     item.qty = (item.qty||1) - 1;
     if(item.qty <= 0){
       var arr0 = smSave.petBag[cat] || [];
@@ -799,8 +844,12 @@ function smUsePetItem(item, cat){
     }
     smSaveSave();
     smRenderPetBagMain();
+    smShowPage('pets');
     smRenderPetNests();
-    alert(item.icon + ' ' + item.name + ' → 窝 ' + (incubatingIdx+1) + '\n孵化加速' + e.hatchBoost + '天！');
+    smPetFeedAnimation(incubatingIdx, item.icon, ['孵化加速' + e.hatchBoost + '天!']);
+    if(hatchedNow){
+      setTimeout(function(){ smPetHatch(incubatingIdx); }, 800);
+    }
     return;
   }
   
@@ -809,14 +858,15 @@ function smUsePetItem(item, cat){
   for(var i=0;i<smSave.petNests.length;i++){
     if(smSave.petNests[i] && smSave.petNests[i].hatched){ petIdx = i; break; }
   }
-  if(petIdx < 0){ alert('还没有孵化的宠物，先去孵化蛋吧！'); return; }
+  if(petIdx < 0){ smPetToast('🐱 还没有孵化的宠物'); return; }
   var n = smSave.petNests[petIdx];
   var s = smEnsurePetStats(n);
   smCalcPetStats(petIdx);
   var msgs = [];
-  if(e.satiety){ s.satiety = Math.min(s.maxSatiety, s.satiety + e.satiety); msgs.push('饱食+' + e.satiety); }
-  if(e.qi){ s.qi = Math.min(s.maxQi, s.qi + e.qi); msgs.push('灵气+' + e.qi); }
-  if(e.cultivation){ s.cultivation = Math.min(s.maxCultivation, s.cultivation + e.cultivation); msgs.push('修养+' + e.cultivation); }
+  var statTexts = [];
+  if(e.satiety){ s.satiety = Math.min(s.maxSatiety, s.satiety + e.satiety); msgs.push('饱食+' + e.satiety); statTexts.push('🍖 饱食+' + e.satiety); }
+  if(e.qi){ s.qi = Math.min(s.maxQi, s.qi + e.qi); msgs.push('灵气+' + e.qi); statTexts.push('✨ 灵气+' + e.qi); }
+  if(e.cultivation){ s.cultivation = Math.min(s.maxCultivation, s.cultivation + e.cultivation); msgs.push('修养+' + e.cultivation); statTexts.push('📚 修养+' + e.cultivation); }
   // Decrement qty
   item.qty = (item.qty || 1) - 1;
   if(item.qty <= 0){
@@ -826,7 +876,10 @@ function smUsePetItem(item, cat){
   }
   smSaveSave();
   smRenderPetBagMain();
-  alert(item.icon + ' ' + item.name + ' → ' + (n.petName||'宠物') + '\n' + msgs.join(' · '));
+  // Navigate to pets page and play feed animation
+  smShowPage('pets');
+  smRenderPetNests();
+  smPetFeedAnimation(petIdx, item.icon, statTexts);
 }
 </script>
 <!-- ===== PET SHOP PAGE ===== -->
