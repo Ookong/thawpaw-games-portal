@@ -277,6 +277,7 @@ body.shape-square .sm-home-content{max-width:100%;}
     </div>
     <div class="sm-currency-bubble">💰 <span id="sm-home-coins">0</span></div>
     <div class="sm-currency-bubble">📜 <span id="sm-home-seals">0</span></div>
+    <div class="sm-currency-bubble">🐾 <span id="sm-home-petcoins">0</span></div>
     <span class="sm-settings-btn" onclick="toggleBgMode()" id="sm-bg-btn" title="切换背景风格">🎨</span>
     <span class="sm-settings-btn" onclick="goPortal()" title="返回 Portal" style="font-size:20px;">🏠</span>
   </div>
@@ -677,7 +678,7 @@ function smRenderPetBagMain(){
   <a class="sm-back-btn" onclick="smShowPage('pets')"><img src="assets/back-arrow.png" alt="返回"></a>
   <div style="text-align:center;padding:14px 0 6px;">
     <div style="font-size:24px;font-weight:700;color:#d4af37;letter-spacing:4px;">🏪 宠物商店</div>
-    <div style="font-size:12px;color:#887755;margin-top:3px;">💰 金币：<span id="sm-pet-shop-coins">0</span></div>
+    <div style="font-size:12px;color:#887755;margin-top:3px;">🐾 宠物币：<span id="sm-pet-shop-coins">0</span></div>
   </div>
   <div style="flex:1;display:flex;overflow:hidden;">
     <!-- 左边分类栏 -->
@@ -770,7 +771,7 @@ function smRenderPetBagMain(){
   <div class="sm-modal">
     <span class="sm-modal-close" onclick="smCloseModal('bank')">✕</span>
     <h3>🏦 银行</h3>
-    <div style="text-align:center;margin-bottom:12px;font-size:14px;color:#a08060;">💰 金币：<span id="sm-bank-coins">0</span> · 📜 宝印：<span id="sm-bank-seals">0</span></div>
+    <div style="text-align:center;margin-bottom:12px;font-size:14px;color:#a08060;">💰 金币：<span id="sm-bank-coins">0</span> · 📜 宝印：<span id="sm-bank-seals">0</span> · 🐾 宠物币：<span id="sm-bank-petcoins">0</span></div>
     <div class="sm-exchange-box">
       <div style="font-size:14px;font-weight:600;color:#e8d8b0;margin-bottom:8px;">💰 → 📜 兑换剑客宝印</div>
       <div style="font-size:12px;color:#a08060;margin-bottom:8px;">汇率：50💰 = 1📜</div>
@@ -780,6 +781,17 @@ function smRenderPetBagMain(){
       </div>
       <div style="text-align:center;margin-top:8px;">
         <button class="sm-exchange-btn" onclick="smDoExchange()">兑换</button>
+      </div>
+    </div>
+    <div class="sm-exchange-box" style="margin-top:12px;">
+      <div style="font-size:14px;font-weight:600;color:#e8d8b0;margin-bottom:8px;">💰 → 🐾 兑换宠物币</div>
+      <div style="font-size:12px;color:#a08060;margin-bottom:8px;">汇率：5💰 = 1🐾</div>
+      <div class="sm-exchange-row">
+        <span>兑换数量：</span>
+        <input type="number" id="sm-exchange-pet-input" min="0" value="0" style="width:80px;padding:4px 8px;background:rgba(212,175,55,0.1);border:1px solid rgba(212,175,55,0.3);border-radius:6px;color:#e8d8b0;font-size:14px;text-align:center;">
+      </div>
+      <div style="text-align:center;margin-top:8px;">
+        <button class="sm-exchange-btn" onclick="smDoPetExchange()">兑换</button>
       </div>
     </div>
   </div>
@@ -792,6 +804,7 @@ function smRenderPetBagMain(){
     <div style="font-size:14px;color:#a08060;line-height:2;">
       <div>💰 金币：<span id="sm-bag-coins">0</span></div>
       <div>📜 剑客宝印：<span id="sm-bag-seals">0</span></div>
+      <div>🐾 宠物币：<span id="sm-bag-petcoins">0</span></div>
       <div>🏆 最高层数：<span id="sm-bag-highest">1</span></div>
       <div>🛡️ 当前装备：<span id="sm-bag-armor">无</span></div>
     </div>
@@ -2756,6 +2769,7 @@ setupTouchControls();
 
 // ===== PAGE SYSTEM =====
 const SM_RATE=50;
+const SM_PET_RATE=5;
 
 // ===== ARMOR SYSTEM =====
 const SM_ARMORS=[
@@ -2831,7 +2845,7 @@ function smEquipArmor(key){
   smSave.equippedArmor=key;smSaveSave();smRenderShop();smUpdateHome();
 }
 function smGetKey(){const id=localStorage.getItem('thawpawActiveId')||'default';return 'sword_master_save_'+id;}
-function smLoadSave(){try{const d=JSON.parse(localStorage.getItem(smGetKey()));if(!d)d={};return{coins:d.coins||0,seals:d.seals||0,highestLevel:d.highestLevel||1,ownedArmors:d.ownedArmors||{},equippedArmor:d.equippedArmor||null,speedLevel:d.speedLevel||0,atkLevel:d.atkLevel||0,hpLevel:d.hpLevel||0,petNests:d.petNests||[null,null,null],petBag:d.petBag||{food:[],toy:[],care:[],egg:[]}};}catch(e){return{coins:0,seals:0,highestLevel:1,ownedArmors:{},equippedArmor:null,speedLevel:0,atkLevel:0,hpLevel:0,petNests:[null,null,null],petBag:{food:[],toy:[],care:[],egg:[]}};}}
+function smLoadSave(){try{const d=JSON.parse(localStorage.getItem(smGetKey()));if(!d)d={};return{coins:d.coins||0,seals:d.seals||0,petCoins:d.petCoins||0,highestLevel:d.highestLevel||1,ownedArmors:d.ownedArmors||{},equippedArmor:d.equippedArmor||null,speedLevel:d.speedLevel||0,atkLevel:d.atkLevel||0,hpLevel:d.hpLevel||0,petNests:d.petNests||[null,null,null],petBag:d.petBag||{food:[],toy:[],care:[],egg:[]}};}catch(e){return{coins:0,seals:0,petCoins:0,highestLevel:1,ownedArmors:{},equippedArmor:null,speedLevel:0,atkLevel:0,hpLevel:0,petNests:[null,null,null],petBag:{food:[],toy:[],care:[],egg:[]}};}}
 function smSaveSave(){localStorage.setItem(smGetKey(),JSON.stringify(smSave));}
 
 // ===== 速度强化 =====
@@ -3111,7 +3125,7 @@ function smShowPage(name){
   if(name==='shop')smRenderShop();
   if(name==='pets'&&typeof smRenderPetBubbles==='function')smRenderPetBubbles();
   if(name==='pets'&&typeof smRenderPetNests==='function')smRenderPetNests();
-  if(name==='pet-shop'){smRenderPetShopCats();smRenderPetShopMain();document.getElementById('sm-pet-shop-coins').textContent=formatNum(smSave.coins);}
+  if(name==='pet-shop'){smRenderPetShopCats();smRenderPetShopMain();document.getElementById('sm-pet-shop-coins').textContent=formatNum(smSave.petCoins);}
   if(name==='pet-bag'){smRenderPetBagCats();smRenderPetBagMain();}
   if(name==='forest'){if(typeof fitForestCanvas==='function')fitForestCanvas();var _ft=document.getElementById('forest-touch');if(_ft)_ft.style.display='block';}
   else{var _ft2=document.getElementById('forest-touch');if(_ft2)_ft2.style.display='none';}
@@ -3172,6 +3186,7 @@ function smUpdateHome(){
   const idEl=document.getElementById('sm-wuxia-id');if(idEl)idEl.textContent=(localStorage.getItem('thawpawActiveId')||'--------');
   document.getElementById('sm-home-coins').textContent=formatNum(smSave.coins);
   document.getElementById('sm-home-seals').textContent=formatNum(smSave.seals);
+  var _pc=document.getElementById('sm-home-petcoins');if(_pc)_pc.textContent=formatNum(smSave.petCoins);
   document.getElementById('sm-home-highest').textContent=smSave.highestLevel;
   var _h2=document.getElementById('sm-home-highest-2');if(_h2)_h2.textContent=smSave.highestLevel;
   var _c2=document.getElementById('sm-home-coins-2');if(_c2)_c2.textContent=formatNum(smSave.coins);
@@ -3189,10 +3204,11 @@ function smRenderLevels(){
     grid.appendChild(card);
   }
 }
-function smOpenBank(){document.getElementById('sm-bank-coins').textContent=smSave.coins;document.getElementById('sm-bank-seals').textContent=smSave.seals;document.getElementById('sm-exchange-input').max=Math.floor(smSave.coins/SM_RATE);document.getElementById('sm-modal-bank').classList.add('show');}
-function smOpenBag(){document.getElementById('sm-bag-coins').textContent=formatNum(smSave.coins);document.getElementById('sm-bag-seals').textContent=formatNum(smSave.seals);document.getElementById('sm-bag-highest').textContent=smSave.highestLevel;const a=smGetArmorDef();document.getElementById('sm-bag-armor').textContent=a?(a.icon+' '+a.name):'无';document.getElementById('sm-modal-bag').classList.add('show');}
+function smOpenBank(){document.getElementById('sm-bank-coins').textContent=smSave.coins;document.getElementById('sm-bank-seals').textContent=smSave.seals;var _bpc=document.getElementById('sm-bank-petcoins');if(_bpc)_bpc.textContent=smSave.petCoins;document.getElementById('sm-exchange-input').max=Math.floor(smSave.coins/SM_RATE);var _pi=document.getElementById('sm-exchange-pet-input');if(_pi)_pi.max=Math.floor(smSave.coins/SM_PET_RATE);document.getElementById('sm-modal-bank').classList.add('show');}
+function smOpenBag(){document.getElementById('sm-bag-coins').textContent=formatNum(smSave.coins);document.getElementById('sm-bag-seals').textContent=formatNum(smSave.seals);var _bpc2=document.getElementById('sm-bag-petcoins');if(_bpc2)_bpc2.textContent=formatNum(smSave.petCoins);document.getElementById('sm-bag-highest').textContent=smSave.highestLevel;const a=smGetArmorDef();document.getElementById('sm-bag-armor').textContent=a?(a.icon+' '+a.name):'无';document.getElementById('sm-modal-bag').classList.add('show');}
 function smCloseModal(n){document.getElementById('sm-modal-'+n).classList.remove('show');}
 function smDoExchange(){const amt=parseInt(document.getElementById('sm-exchange-input').value)||0;if(amt<=0)return;const cost=amt*SM_RATE;if(smSave.coins<cost)return;smSave.coins-=cost;smSave.seals+=amt;smSaveSave();smOpenBank();smUpdateHome();}
+function smDoPetExchange(){const amt=parseInt(document.getElementById('sm-exchange-pet-input').value)||0;if(amt<=0)return;const cost=amt*SM_PET_RATE;if(smSave.coins<cost)return;smSave.coins-=cost;smSave.petCoins+=amt;smSaveSave();smOpenBank();smUpdateHome();}
 smShowPage('home');
 function goPortal(){window.location.href='../index.html';}
 function toggleBgMode(){
