@@ -545,6 +545,17 @@ var smPetShopCats = [
   {id:'egg',   icon:'🥚', name:'蛋类'},
 ];
 var smPetShopActive = 'food';
+// ===== PET SHOP ITEMS =====
+var SM_PET_ITEMS = {
+  food: [
+    {id:'meat_fan', icon:'🍖', name:'肉·凡', desc:'饱食+3', price:1, effects:{satiety:3}},
+    {id:'meat_shen', icon:'🥩', name:'肉·神', desc:'饱食+5 · 灵气+5 · 修养+1', price:5, effects:{satiety:5,qi:5,cultivation:1}},
+    {id:'qi_orb', icon:'🔮', name:'精气球', desc:'饱食+10 · 灵气+50 · 修养+10', price:20, effects:{satiety:10,qi:50,cultivation:10}},
+  ],
+  toy: [],
+  care: [],
+  egg: [],
+};
 
 function smRenderPetShopCats(){
   var box = document.getElementById('pet-shop-cats');
@@ -566,20 +577,55 @@ function smRenderPetShopMain(){
   var box = document.getElementById('pet-shop-main');
   if(!box) return;
   box.innerHTML = '';
+  var items = SM_PET_ITEMS[smPetShopActive] || [];
+  if(items.length === 0){
+    box.innerHTML = '<div style="text-align:center;color:#554433;font-size:13px;padding:50px 0;">货架上还没东西……</div>';
+    return;
+  }
   var shelf = document.createElement('div');
   shelf.className = 'pet-shelf';
+  var idx = 0;
   for(var r=0;r<5;r++){
     var row = document.createElement('div');
     row.className = 'pet-shelf-row';
     for(var c=0;c<4;c++){
       var slot = document.createElement('div');
       slot.className = 'pet-shelf-slot';
-      slot.innerHTML = '—<span class="slot-name">空</span>';
+      if(idx < items.length){
+        (function(it){
+          var canAfford = smSave.petCoins >= it.price;
+          slot.style.cursor = canAfford ? 'pointer' : 'default';
+          slot.style.opacity = canAfford ? '1' : '0.5';
+          slot.innerHTML = '<span style="font-size:28px;">' + it.icon + '</span>' +
+            '<span class="slot-name" style="color:#ccaa88;">' + it.name + '</span>' +
+            '<span style="font-size:9px;color:#aa8844;margin-top:2px;">' + it.desc + '</span>' +
+            '<span style="font-size:10px;font-weight:700;color:#d4af37;margin-top:2px;"><img src="assets/paw-coin.png" class="paw-coin-icon" alt="🐾"> ' + it.price + '</span>';
+          slot.addEventListener('click', function(){ smBuyPetItem(it); });
+        })(items[idx]);
+        idx++;
+      } else {
+        slot.innerHTML = '—<span class="slot-name">空</span>';
+      }
       row.appendChild(slot);
     }
     shelf.appendChild(row);
   }
   box.appendChild(shelf);
+}
+function smBuyPetItem(it){
+  if(smSave.petCoins < it.price) return;
+  smSave.petCoins -= it.price;
+  // Add to petBag
+  var cat = smPetShopActive; // current category
+  if(!smSave.petBag[cat]) smSave.petBag[cat] = [];
+  // Stack if same id
+  var existing = smSave.petBag[cat].find(function(x){return x.id === it.id;});
+  if(existing){ existing.qty = (existing.qty||1) + 1; }
+  else { smSave.petBag[cat].push({id:it.id, icon:it.icon, name:it.name, desc:it.desc, price:it.price, effects:it.effects, qty:1}); }
+  smSaveSave();
+  smRenderPetShopMain();
+  document.getElementById('sm-pet-shop-coins').textContent = formatNum(smSave.petCoins);
+  smUpdateHome();
 }
 
 // 宠物背包分类
@@ -658,21 +704,66 @@ function smRenderPetBagMain(){
     return;
   }
   
-  // Other categories: placeholder
-  var shelf = document.createElement('div');
-  shelf.className = 'pet-shelf';
-  for(var r=0;r<5;r++){
-    var row = document.createElement('div');
-    row.className = 'pet-shelf-row';
-    for(var c=0;c<4;c++){
-      var slot = document.createElement('div');
-      slot.className = 'pet-shelf-slot';
-      slot.innerHTML = '—<span class="slot-name">空</span>';
-      row.appendChild(slot);
-    }
-    shelf.appendChild(row);
+  // Other categories: show owned items with use button
+  var owned = (smSave.petBag[smPetBagActive] || []);
+  if(owned.length === 0){
+    box.innerHTML = '<div style="text-align:center;color:#556644;font-size:13px;padding:50px 0;">背包还是空的……</div>';
+    return;
   }
-  box.appendChild(shelf);
+  var shelf2 = document.createElement('div');
+  shelf2.className = 'pet-shelf';
+  var oi = 0;
+  for(var r2=0;r2<5;r2++){
+    var row2 = document.createElement('div');
+    row2.className = 'pet-shelf-row';
+    for(var c2=0;c2<4;c2++){
+      var slot2 = document.createElement('div');
+      slot2.className = 'pet-shelf-slot';
+      if(oi < owned.length){
+        (function(item, cat){
+          slot2.style.cursor = 'pointer';
+          var qty = item.qty || 1;
+          slot2.innerHTML = '<span style="font-size:28px;">' + item.icon + '</span>' +
+            '<span class="slot-name" style="color:#779955;">' + item.name + '</span>' +
+            '<span style="font-size:9px;color:#889966;margin-top:2px;">' + (item.desc||'') + '</span>' +
+            '<span style="font-size:10px;font-weight:700;color:#88cc66;margin-top:2px;">×' + qty + '</span>';
+          slot2.addEventListener('click', function(){ smUsePetItem(item, cat); });
+        })(owned[oi], smPetBagActive);
+        oi++;
+      } else {
+        slot2.innerHTML = '—<span class="slot-name">空</span>';
+      }
+      row2.appendChild(slot2);
+    }
+    shelf2.appendChild(row2);
+  }
+  box.appendChild(shelf2);
+}
+function smUsePetItem(item, cat){
+  // Find first hatched pet to feed
+  var petIdx = -1;
+  for(var i=0;i<smSave.petNests.length;i++){
+    if(smSave.petNests[i] && smSave.petNests[i].hatched){ petIdx = i; break; }
+  }
+  if(petIdx < 0){ alert('还没有孵化的宠物，先去孵化蛋吧！'); return; }
+  var n = smSave.petNests[petIdx];
+  var s = smEnsurePetStats(n);
+  smCalcPetStats(petIdx);
+  var e = item.effects || {};
+  var msgs = [];
+  if(e.satiety){ s.satiety = Math.min(s.maxSatiety, s.satiety + e.satiety); msgs.push('饱食+' + e.satiety); }
+  if(e.qi){ s.qi = Math.min(s.maxQi, s.qi + e.qi); msgs.push('灵气+' + e.qi); }
+  if(e.cultivation){ s.cultivation = Math.min(s.maxCultivation, s.cultivation + e.cultivation); msgs.push('修养+' + e.cultivation); }
+  // Decrement qty
+  item.qty = (item.qty || 1) - 1;
+  if(item.qty <= 0){
+    var arr = smSave.petBag[cat] || [];
+    var idx2 = arr.indexOf(item);
+    if(idx2 >= 0) arr.splice(idx2, 1);
+  }
+  smSaveSave();
+  smRenderPetBagMain();
+  alert(item.icon + ' ' + item.name + ' → ' + (n.petName||'宠物') + '\n' + msgs.join(' · '));
 }
 </script>
 <!-- ===== PET SHOP PAGE ===== -->
