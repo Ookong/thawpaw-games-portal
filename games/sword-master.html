@@ -124,7 +124,7 @@ body.shape-portrait .paw-coin-icon{width:14px;height:14px;vertical-align:-2px;}
 .pet-eating-bounce{animation:petEatingBounce 0.3s ease 3;}
 @keyframes petEatingBounce{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
 /* ===== Pet Status Bars (above head) ===== */
-.pet-statbars{position:absolute;top:-28px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;gap:2px;width:110px;z-index:10;pointer-events:none;}
+.pet-statbars{position:absolute;top:-28px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;gap:2px;width:150px;z-index:10;pointer-events:none;}
 .pet-statbar{display:flex;align-items:center;gap:3px;height:10px;}
 .pet-statbar-icon{font-size:9px;width:10px;text-align:center;line-height:1;}
 .pet-statbar-track{flex:1;height:5px;background:rgba(0,0,0,0.5);border-radius:2.5px;overflow:hidden;border:1px solid rgba(0,0,0,0.3);}
@@ -3270,7 +3270,7 @@ function smRenderPetNests(){
         statBar('📚',s.cultivation,s.maxCultivation,'linear-gradient(90deg,#9b59b6,#bb8fce)')+
       '</div>';
       el.innerHTML=barsHTML+
-        '<img src="'+(n.petImg||'')+'" style="width:240px;height:240px;object-fit:contain;">'+
+        '<img src="'+(n.petImg||'')+'" style="width:300px;height:300px;object-fit:contain;">'+
         (badge?'<div style="position:absolute;top:-4px;right:-4px;font-size:18px;">'+badge+'</div>':'');
       el.style.fontSize='';
       el.style.opacity='1';
