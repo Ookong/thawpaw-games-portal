@@ -553,7 +553,9 @@ var SM_PET_ITEMS = {
     {id:'meat_shen', icon:'🥩', name:'肉·神', desc:'饱食+5 · 灵气+5 · 修养+1', price:5, effects:{satiety:5,qi:5,cultivation:1}},
     {id:'qi_orb', icon:'🔮', name:'精气球', desc:'饱食+10 · 灵气+50 · 修养+10', price:20, effects:{satiety:10,qi:50,cultivation:10}},
   ],
-  toy: [],
+  toy: [
+    {id:'qi_ball', icon:'🧶', name:'精华毛球', desc:'玩耍时每分钟+5灵气', price:100, effects:{activeToy:'qi_ball', qiPerMin:5}},
+  ],
   care: [],
   egg: [],
   other: [
@@ -746,6 +748,32 @@ function smRenderPetBagMain(){
 }
 function smUsePetItem(item, cat){
   var e = item.effects || {};
+  
+  // Toy: set activeToy on first hatched pet
+  if(e.activeToy){
+    var toyPetIdx = -1;
+    for(var i=0;i<smSave.petNests.length;i++){
+      if(smSave.petNests[i] && smSave.petNests[i].hatched){ toyPetIdx = i; break; }
+    }
+    if(toyPetIdx < 0){ alert('还没有孵化的宠物，先去孵化蛋吧！'); return; }
+    var n1 = smSave.petNests[toyPetIdx];
+    var s1 = smEnsurePetStats(n1);
+    // Toggle: if already playing with this toy, stop
+    if(s1.activeToy === e.activeToy){
+      delete s1.activeToy;
+      delete s1.toyQiPerMin;
+      smSaveSave();
+      smRenderPetBagMain();
+      alert(item.icon + ' ' + item.name + ' → ' + (n1.petName||'宠物') + '\n停止玩耍');
+      return;
+    }
+    s1.activeToy = e.activeToy;
+    s1.toyQiPerMin = e.qiPerMin || 5;
+    smSaveSave();
+    smRenderPetBagMain();
+    alert(item.icon + ' ' + item.name + ' → ' + (n1.petName||'宠物') + '\n开始玩耍！每分钟+' + s1.toyQiPerMin + '灵气');
+    return;
+  }
   
   // Hatch boost: target incubating egg
   if(e.hatchBoost){
@@ -3286,6 +3314,14 @@ function smCalcPetStats(idx){
     // 昏迷判定：血量<50
     if(s.hp<50){
       s.cultivation=Math.max(0,s.cultivation-1);
+    }
+  }
+  // Active toy: add qi per minute
+  if(s.activeToy && s.toyQiPerMin){
+    var totalMins = Math.floor((now - last) / 60000);
+    if(totalMins > 0){
+      var qiGain = totalMins * s.toyQiPerMin;
+      s.qi = Math.min(s.maxQi, s.qi + qiGain);
     }
   }
   s.lastUpdate=now;
