@@ -540,6 +540,7 @@ function formatNum(n){n=Number(n)||0;if(n>=1e6)return(n/1e6).toFixed(1).replace(
 // 宠物商店分类（先空着，只有分类名）
 var smPetShopCats = [
   {id:'food',  icon:'🍖', name:'食物'},
+  {id:'other', icon:'⚡', name:'其他'},
   {id:'toy',   icon:'🎾', name:'玩具'},
   {id:'care',  icon:'🧴', name:'护理'},
   {id:'egg',   icon:'🥚', name:'蛋类'},
@@ -555,6 +556,9 @@ var SM_PET_ITEMS = {
   toy: [],
   care: [],
   egg: [],
+  other: [
+    {id:'time_boost', icon:'⏩', name:'时光加速器', desc:'加速孵化2天', price:20, effects:{hatchBoost:2}},
+  ],
 };
 
 function smRenderPetShopCats(){
@@ -631,6 +635,7 @@ function smBuyPetItem(it){
 // 宠物背包分类
 var smPetBagCats = [
   {id:'food',  icon:'🍖', name:'食物'},
+  {id:'other', icon:'⚡', name:'其他'},
   {id:'toy',   icon:'🎾', name:'玩具'},
   {id:'care',  icon:'🧴', name:'护理'},
   {id:'egg',   icon:'🥚', name:'蛋类'},
@@ -740,7 +745,38 @@ function smRenderPetBagMain(){
   box.appendChild(shelf2);
 }
 function smUsePetItem(item, cat){
-  // Find first hatched pet to feed
+  var e = item.effects || {};
+  
+  // Hatch boost: target incubating egg
+  if(e.hatchBoost){
+    var incubatingIdx = -1;
+    for(var i=0;i<smSave.petNests.length;i++){
+      var n0 = smSave.petNests[i];
+      if(n0 && !n0.hatched && n0.placedAt){ incubatingIdx = i; break; }
+    }
+    if(incubatingIdx < 0){ alert('当前没有正在孵化的蛋！'); return; }
+    var boostMs = e.hatchBoost * 24 * 60 * 60 * 1000;
+    smSave.petNests[incubatingIdx].placedAt -= boostMs;
+    // Check if hatched now
+    var elapsed = Date.now() - smSave.petNests[incubatingIdx].placedAt;
+    if(elapsed >= PET_HATCH_TIME){
+      smPetHatch(incubatingIdx);
+    }
+    // Decrement qty
+    item.qty = (item.qty||1) - 1;
+    if(item.qty <= 0){
+      var arr0 = smSave.petBag[cat] || [];
+      var idx0 = arr0.indexOf(item);
+      if(idx0 >= 0) arr0.splice(idx0, 1);
+    }
+    smSaveSave();
+    smRenderPetBagMain();
+    smRenderPetNests();
+    alert(item.icon + ' ' + item.name + ' → 窝 ' + (incubatingIdx+1) + '\n孵化加速' + e.hatchBoost + '天！');
+    return;
+  }
+  
+  // Food: feed first hatched pet
   var petIdx = -1;
   for(var i=0;i<smSave.petNests.length;i++){
     if(smSave.petNests[i] && smSave.petNests[i].hatched){ petIdx = i; break; }
@@ -749,7 +785,6 @@ function smUsePetItem(item, cat){
   var n = smSave.petNests[petIdx];
   var s = smEnsurePetStats(n);
   smCalcPetStats(petIdx);
-  var e = item.effects || {};
   var msgs = [];
   if(e.satiety){ s.satiety = Math.min(s.maxSatiety, s.satiety + e.satiety); msgs.push('饱食+' + e.satiety); }
   if(e.qi){ s.qi = Math.min(s.maxQi, s.qi + e.qi); msgs.push('灵气+' + e.qi); }
