@@ -123,6 +123,12 @@ body.shape-portrait .paw-coin-icon{width:14px;height:14px;vertical-align:-2px;}
 @keyframes feedStatFloat{0%{opacity:0;transform:translateY(20px);}20%{opacity:1;transform:translateY(0);}80%{opacity:1;transform:translateY(-30px);}100%{opacity:0;transform:translateY(-50px);}}
 .pet-eating-bounce{animation:petEatingBounce 0.3s ease 3;}
 @keyframes petEatingBounce{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
+/* ===== Pet Status Bars (above head) ===== */
+.pet-statbars{position:absolute;top:-28px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;gap:2px;width:72px;z-index:10;pointer-events:none;}
+.pet-statbar{display:flex;align-items:center;gap:3px;height:10px;}
+.pet-statbar-icon{font-size:9px;width:10px;text-align:center;line-height:1;}
+.pet-statbar-track{flex:1;height:5px;background:rgba(0,0,0,0.5);border-radius:2.5px;overflow:hidden;border:1px solid rgba(0,0,0,0.3);}
+.pet-statbar-fill{height:100%;border-radius:2.5px;transition:width .4s ease;}
 .sm-avatar{width:40px;height:40px;border-radius:50%;background:rgba(180,50,40,0.2);display:flex;align-items:center;justify-content:center;font-size:22px;border:2px solid rgba(212,175,55,0.4);}
 .sm-profile-info{display:flex;flex-direction:column;gap:2px;}
 .sm-profile-info .name-row{display:flex;align-items:center;gap:6px;}
@@ -3249,10 +3255,25 @@ function smRenderPetNests(){
       smCalcPetStats(i);
       var s=smEnsurePetStats(n);
       var badge=smPetStatusBadge(s);
-      el.innerHTML='<img src="'+(n.petImg||'')+'" style="width:60px;height:60px;object-fit:contain;">'+(badge?'<div style="position:absolute;top:-4px;right:-4px;font-size:18px;">'+badge+'</div>':'');
+      // Build stat bars HTML
+      function statBar(icon,val,max,color){
+        var pct=Math.max(0,Math.min(100,Math.round(val/max*100)));
+        return '<div class="pet-statbar">'+
+          '<div class="pet-statbar-icon">'+icon+'</div>'+
+          '<div class="pet-statbar-track"><div class="pet-statbar-fill" style="width:'+pct+'%;background:'+color+';"></div></div>'+
+        '</div>';
+      }
+      var barsHTML='<div class="pet-statbars">'+
+        statBar('❤️',s.hp,s.maxHp,'linear-gradient(90deg,#e74c3c,#ff6b6b)')+
+        statBar('🍖',s.satiety,s.maxSatiety,'linear-gradient(90deg,#f39c12,#ffb347)')+
+        statBar('✨',s.qi,s.maxQi,'linear-gradient(90deg,#3498db,#5dade2)')+
+        statBar('📚',s.cultivation,s.maxCultivation,'linear-gradient(90deg,#9b59b6,#bb8fce)')+
+      '</div>';
+      el.innerHTML=barsHTML+
+        '<img src="'+(n.petImg||'')+'" style="width:60px;height:60px;object-fit:contain;">'+
+        (badge?'<div style="position:absolute;top:-4px;right:-4px;font-size:18px;">'+badge+'</div>':'');
       el.style.fontSize='';
       el.style.opacity='1';
-      // 清掉旧进度条
       var parent3=el.parentElement;
       var oldBar3=parent3.querySelector('.nest-progress');
       if(oldBar3)oldBar3.remove();
