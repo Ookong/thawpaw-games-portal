@@ -704,6 +704,8 @@ a{color:#88aaff;}
 <div id="iceBtn">❄️</div>
 
 <script>
+// ===== FORMAT NUMBER (k/m) =====
+function formatNum(n){n=Number(n)||0;if(n>=1e6)return(n/1e6).toFixed(1).replace(/\.0$/,'')+'m';if(n>=1e3)return(n/1e3).toFixed(1).replace(/\.0$/,'')+'k';return n;}
 // ============================================================
 // 🐾 猫武士大冒险 (Moonstone Quest)
 // ============================================================
@@ -973,10 +975,10 @@ function refreshHomeUI(){
   document.getElementById('home-nickname').textContent=profile.nickname;
   document.getElementById('home-level').textContent='Lv.'+G.shared.level;
   document.getElementById('home-level-bar').style.width=Math.min(100,(G.shared.exp/expToNext()*100))+'%';
-  document.getElementById('home-moonstones').textContent=homeData.moonstones;
-  document.getElementById('home-gravel').textContent=homeData.gravel;
-  document.getElementById('home-stonecarvings').textContent=homeData.stoneCarvings;
-  document.getElementById('home-tickets').textContent=homeData.tickets;
+  document.getElementById('home-moonstones').textContent=formatNum(homeData.moonstones);
+  document.getElementById('home-gravel').textContent=formatNum(homeData.gravel);
+  document.getElementById('home-stonecarvings').textContent=formatNum(homeData.stoneCarvings);
+  document.getElementById('home-tickets').textContent=formatNum(homeData.tickets);
   // Update start/continue button
   const id = getUnifiedPlayerId();
   const hasSave = mode==='text_explore' ? !!localStorage.getItem('text_explore_save_'+id) : !!localStorage.getItem(_dungeonSaveKey());
@@ -2722,9 +2724,9 @@ function updateSidebar(){
   document.getElementById('sFloor').textContent=`${G.floor}/${MAX_FLOOR}`;
   // 🔮 Currency: refresh in-game sidebar counters
   var sMoon=document.getElementById('sMoon');
-  if(sMoon) sMoon.textContent=homeData.moonstones;
+  if(sMoon) sMoon.textContent=formatNum(homeData.moonstones);
   var sGravel=document.getElementById('sGravel');
-  if(sGravel) sGravel.textContent=homeData.gravel;
+  if(sGravel) sGravel.textContent=formatNum(homeData.gravel);
   var hhp=document.getElementById('hudHp');
   if(hhp){
     if(isDuo()){

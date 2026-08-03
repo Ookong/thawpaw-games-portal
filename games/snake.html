@@ -814,6 +814,8 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 </div>
 
 <script>
+// ===== FORMAT NUMBER (k/m) =====
+function formatNum(n){n=Number(n)||0;if(n>=1e6)return(n/1e6).toFixed(1).replace(/\.0$/,'')+'m';if(n>=1e3)return(n/1e3).toFixed(1).replace(/\.0$/,'')+'k';return n;}
 // ===== DATA =====
 const AVATARS = ['🐍','🐱','🐶','🐸','🦊','🐼','🐰','🦁','🐯','🐻','🐨','🐵','🦄','🐲','🦋','🐢'];
 // 两级分类：大分类 → 小分类 → 商品
@@ -1072,8 +1074,8 @@ function refreshHome(){
   document.getElementById('home-nickname').textContent = player.nickname || '未命名';
   document.getElementById('home-level').textContent = getSnakeTitleText(player.level);
   document.getElementById('home-level-bar').style.width = Math.min(100,(expInLevel()/expForNextLevel())*100)+'%';
-  document.getElementById('home-gold').textContent = player.gold;
-  document.getElementById('home-apples').textContent = player.apples;
+  document.getElementById('home-gold').textContent = formatNum(player.gold);
+  document.getElementById('home-apples').textContent = formatNum(player.apples);
   // Update skin display
   var skinEl = document.getElementById('skin-preview');
   var skinNameEl = document.getElementById('skin-name');
@@ -1260,9 +1262,9 @@ let shopSubCat = '';
 function refreshShop(){
   // Update balance display
   var balGold=document.getElementById('shop-bal-gold');
-  if(balGold) balGold.textContent=player.gold;
+  if(balGold) balGold.textContent=formatNum(player.gold);
   var balApples=document.getElementById('shop-bal-apples');
-  if(balApples) balApples.textContent=player.apples;
+  if(balApples) balApples.textContent=formatNum(player.apples);
   // Left sidebar: 大分类
   const cats = document.getElementById('shop-cats');
   cats.innerHTML = '';
