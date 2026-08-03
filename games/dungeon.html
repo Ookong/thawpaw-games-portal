@@ -681,6 +681,8 @@ body.solo-touch #joystickP2{display:none;}
 <div id="iceBtn">❄️</div>
 
 <script>
+// ===== FORMAT NUMBER (k/m) =====
+function formatNum(n){n=Number(n)||0;if(n>=1e6)return(n/1e6).toFixed(1).replace(/\.0$/,'')+'m';if(n>=1e3)return(n/1e3).toFixed(1).replace(/\.0$/,'')+'k';return n;}
 // ============================================================
 // 🗺️ 小小探险家 (Dungeon Explore)
 // ============================================================
@@ -993,8 +995,8 @@ function refreshHomeUI(){
   document.getElementById('home-nickname').textContent=profile.nickname;
   document.getElementById('home-level').textContent='Lv.'+level;
   document.getElementById('home-level-bar').style.width=Math.min(100,(kills%10)*10)+'%';
-  document.getElementById('home-maps').textContent=homeData.maps;
-  document.getElementById('home-booms').textContent=homeData.booms;
+  document.getElementById('home-maps').textContent=formatNum(homeData.maps);
+  document.getElementById('home-booms').textContent=formatNum(homeData.booms);
   const hasSave = !!localStorage.getItem(SAVE_KEY+'_'+getUnifiedPlayerId());
   document.getElementById('zone-start-title').textContent = hasSave ? '继续探索' : '开始探索';
   document.getElementById('zone-start-desc').textContent = hasSave ? `当前深度：第 ${level} 层` : '无尽地下城，越深越危险';
@@ -1713,7 +1715,7 @@ function closeShop(){
   updateContextPopup();
 }
 function renderShop(){
-  shopGoldEl.textContent=gold;
+  shopGoldEl.textContent=formatNum(gold);
   let html='';
   for(let i=0;i<shopStock.length;i++){
     const it=shopStock[i];
@@ -2160,16 +2162,16 @@ function updateHud(){
   }else{
     pBlock2.style.display='none';
   }
-  sGold.textContent=gold;
+  sGold.textContent=formatNum(gold);
   sKills.textContent=kills;
   sPots.textContent=potions;
   sBigP.textContent=bigPotions;
   sBombs.textContent=bombs;
   // 🗺️/💥 Home currency display in sidebar
   var sMapsEl=document.getElementById('sMaps');
-  if(sMapsEl) sMapsEl.textContent=homeData.maps;
+  if(sMapsEl) sMapsEl.textContent=formatNum(homeData.maps);
   var sBoomsEl=document.getElementById('sBooms');
-  if(sBoomsEl) sBoomsEl.textContent=homeData.booms;
+  if(sBoomsEl) sBoomsEl.textContent=formatNum(homeData.booms);
   // 🐛 FIX: hud* elements are mobile-only; guard each ref so missing
   // elements (e.g. hudAtk/hudDef not in slim mobile HUD) don't throw.
   if(hudHp)     { hudHp.textContent=`${p1.hp}/${p1.maxHp}`; }
@@ -2189,7 +2191,7 @@ function updateHud(){
     if(hudHp2)     hudHp2.style.display='none';
   }
   if(hudLv)   hudLv.textContent=level;
-  if(hudGold) hudGold.textContent=gold;
+  if(hudGold) hudGold.textContent=formatNum(gold);
   if(hudAtk)  hudAtk.textContent=p1.atk;
   if(hudDef)  hudDef.textContent=p1.defense;
 }

@@ -476,6 +476,8 @@ body.shape-square .sm-home-content{max-width:100%;}
 .pet-bubble:hover{transform:scale(1.1);}
 </style>
 <script>
+// ===== FORMAT NUMBER (k/m) =====
+function formatNum(n){n=Number(n)||0;if(n>=1e6)return(n/1e6).toFixed(1).replace(/\.0$/,'')+'m';if(n>=1e3)return(n/1e3).toFixed(1).replace(/\.0$/,'')+'k';return n;}
 (function(){
   // Pet stage: 'egg' or 'baby'
   var petStage = 'egg';
@@ -1567,7 +1569,7 @@ function flashShop(id){
   if(el){el.style.borderColor='#ff4444';setTimeout(()=>el.style.borderColor='',300);}
 }
 function updateShopUI(){
-  document.getElementById('gold-count').textContent=player.gold;
+  document.getElementById('gold-count').textContent=formatNum(player.gold);
   document.getElementById('def-desc').textContent=`减伤+${player.defLevel*3}（当前 Lv.${player.defLevel}）`;
   document.getElementById('def-price').textContent=(200+player.defLevel*100)+'💰';
   // 武器状态
@@ -2513,7 +2515,7 @@ function drawEnemy(e){
 // ===== HUD =====
 function updatePlayerHP(){const r=Math.max(0,player.hp/player.maxHp);const bar=document.getElementById('p-hp');bar.style.width=(r*100)+'%';bar.style.background=r<0.3?'linear-gradient(90deg,#c0392b,#e74c3c)':r<0.6?'linear-gradient(90deg,#e67e22,#f39c12)':'linear-gradient(90deg,#508c3c,#6db84f)';document.getElementById('p-hp-t').textContent=`${Math.max(0,Math.round(player.hp))}/${player.maxHp}`;}
 function updateEnemyHP(){if(enemies.length===0){document.getElementById('e-hp-t').textContent='—';document.getElementById('e-hp').style.width='0%';return;}const b=enemies.filter(e=>e.templateType.includes('boss'))[0]||enemies[0];const r=Math.max(0,b.hp/b.maxHp);document.getElementById('e-hp').style.width=(r*100)+'%';document.getElementById('e-hp-t').textContent=`${Math.max(0,Math.round(b.hp))}/${b.maxHp}`;document.getElementById('enemy-label').textContent=b.name;}
-function updateGold(){document.getElementById('gold-count').textContent=player.gold;document.getElementById('level-display').textContent=currentLevel;}
+function updateGold(){document.getElementById('gold-count').textContent=formatNum(player.gold);document.getElementById('level-display').textContent=currentLevel;}
 function updateWeaponDisplay(){document.getElementById('weapon-display').textContent=`${getWeaponStat().emoji} ${getWeaponStat().name}`;}
 function updateItems(){
   const bar=document.getElementById('items-bar');let html='';
@@ -2782,7 +2784,7 @@ const SM_ARMORS=[
 
 function smRenderShop(){
   const grid=document.getElementById('sm-shop-grid');if(!grid)return;
-  document.getElementById('sm-shop-coins').textContent=smSave.coins;
+  document.getElementById('sm-shop-coins').textContent=formatNum(smSave.coins);
   grid.innerHTML='';
   SM_ARMORS.forEach(a=>{
     const owned=!!smSave.ownedArmors[a.key];
@@ -2882,7 +2884,7 @@ function smUpgradeSpeed(){
   smSave.seals-=cost;
   smSave.speedLevel++;
   smSaveSave();
-  document.getElementById('sm-enhance-seals').textContent=smSave.seals;
+  document.getElementById('sm-enhance-seals').textContent=formatNum(smSave.seals);
   smRenderSpeedEnhance();
   smRenderAtkEnhance();
   smRenderHpEnhance();
@@ -2938,7 +2940,7 @@ function smUpgradeAtk(){
   smSave.seals-=cost;
   smSave.atkLevel++;
   smSaveSave();
-  document.getElementById('sm-enhance-seals').textContent=smSave.seals;
+  document.getElementById('sm-enhance-seals').textContent=formatNum(smSave.seals);
   smRenderAtkEnhance();
   smRenderSpeedEnhance();
   smRenderHpEnhance();
@@ -2998,7 +3000,7 @@ function smUpgradeHp(){
   smSave.seals-=cost;
   smSave.hpLevel++;
   smSaveSave();
-  document.getElementById('sm-enhance-seals').textContent=smSave.seals;
+  document.getElementById('sm-enhance-seals').textContent=formatNum(smSave.seals);
   smRenderHpEnhance();
   smRenderSpeedEnhance();
   smRenderAtkEnhance();
@@ -3105,11 +3107,11 @@ function smShowPage(name){
   const pg=document.getElementById('sm-page-'+name);if(pg){pg.classList.add('active');pg.style.display='';}
   if(name==='home')smUpdateHome();
   if(name==='levels')smRenderLevels();
-  if(name==='enhance'){document.getElementById('sm-enhance-seals').textContent=smSave.seals;smRenderSpeedEnhance();smRenderAtkEnhance();smRenderHpEnhance();}
+  if(name==='enhance'){document.getElementById('sm-enhance-seals').textContent=formatNum(smSave.seals);smRenderSpeedEnhance();smRenderAtkEnhance();smRenderHpEnhance();}
   if(name==='shop')smRenderShop();
   if(name==='pets'&&typeof smRenderPetBubbles==='function')smRenderPetBubbles();
   if(name==='pets'&&typeof smRenderPetNests==='function')smRenderPetNests();
-  if(name==='pet-shop'){smRenderPetShopCats();smRenderPetShopMain();document.getElementById('sm-pet-shop-coins').textContent=smSave.coins;}
+  if(name==='pet-shop'){smRenderPetShopCats();smRenderPetShopMain();document.getElementById('sm-pet-shop-coins').textContent=formatNum(smSave.coins);}
   if(name==='pet-bag'){smRenderPetBagCats();smRenderPetBagMain();}
   if(name==='forest'){if(typeof fitForestCanvas==='function')fitForestCanvas();var _ft=document.getElementById('forest-touch');if(_ft)_ft.style.display='block';}
   else{var _ft2=document.getElementById('forest-touch');if(_ft2)_ft2.style.display='none';}
@@ -3168,12 +3170,12 @@ function smGoHome(){
 function smUpdateHome(){
   const nick=smGetNick();const el=document.getElementById('sm-nick');if(el)el.textContent=nick;
   const idEl=document.getElementById('sm-wuxia-id');if(idEl)idEl.textContent=(localStorage.getItem('thawpawActiveId')||'--------');
-  document.getElementById('sm-home-coins').textContent=smSave.coins;
-  document.getElementById('sm-home-seals').textContent=smSave.seals;
+  document.getElementById('sm-home-coins').textContent=formatNum(smSave.coins);
+  document.getElementById('sm-home-seals').textContent=formatNum(smSave.seals);
   document.getElementById('sm-home-highest').textContent=smSave.highestLevel;
   var _h2=document.getElementById('sm-home-highest-2');if(_h2)_h2.textContent=smSave.highestLevel;
-  var _c2=document.getElementById('sm-home-coins-2');if(_c2)_c2.textContent=smSave.coins;
-  var _s2=document.getElementById('sm-home-seals-2');if(_s2)_s2.textContent=smSave.seals;
+  var _c2=document.getElementById('sm-home-coins-2');if(_c2)_c2.textContent=formatNum(smSave.coins);
+  var _s2=document.getElementById('sm-home-seals-2');if(_s2)_s2.textContent=formatNum(smSave.seals);
 }
 function smRenderLevels(){
   const grid=document.getElementById('sm-levels-grid');grid.innerHTML='';
@@ -3188,7 +3190,7 @@ function smRenderLevels(){
   }
 }
 function smOpenBank(){document.getElementById('sm-bank-coins').textContent=smSave.coins;document.getElementById('sm-bank-seals').textContent=smSave.seals;document.getElementById('sm-exchange-input').max=Math.floor(smSave.coins/SM_RATE);document.getElementById('sm-modal-bank').classList.add('show');}
-function smOpenBag(){document.getElementById('sm-bag-coins').textContent=smSave.coins;document.getElementById('sm-bag-seals').textContent=smSave.seals;document.getElementById('sm-bag-highest').textContent=smSave.highestLevel;const a=smGetArmorDef();document.getElementById('sm-bag-armor').textContent=a?(a.icon+' '+a.name):'无';document.getElementById('sm-modal-bag').classList.add('show');}
+function smOpenBag(){document.getElementById('sm-bag-coins').textContent=formatNum(smSave.coins);document.getElementById('sm-bag-seals').textContent=formatNum(smSave.seals);document.getElementById('sm-bag-highest').textContent=smSave.highestLevel;const a=smGetArmorDef();document.getElementById('sm-bag-armor').textContent=a?(a.icon+' '+a.name):'无';document.getElementById('sm-modal-bag').classList.add('show');}
 function smCloseModal(n){document.getElementById('sm-modal-'+n).classList.remove('show');}
 function smDoExchange(){const amt=parseInt(document.getElementById('sm-exchange-input').value)||0;if(amt<=0)return;const cost=amt*SM_RATE;if(smSave.coins<cost)return;smSave.coins-=cost;smSave.seals+=amt;smSaveSave();smOpenBank();smUpdateHome();}
 smShowPage('home');
@@ -3239,7 +3241,7 @@ function enterForestDebug(){
     document.getElementById('forest-hud').style.display='flex';
     document.getElementById('forest-bottom-hud').style.display='flex';
     steps.push('overlays-hidden');
-    if(typeof smSave!=='undefined')document.getElementById('f-seals').textContent=smSave.seals;
+    if(typeof smSave!=='undefined')document.getElementById('f-seals').textContent=formatNum(smSave.seals);
     fitForestCanvas();
     steps.push('canvas-fitted');
     if(!fLoopRunning){fLoopRunning=true;requestAnimationFrame(forestLoop);}
@@ -3276,7 +3278,7 @@ function enterForest(){
   document.getElementById('forest-hud').style.display='flex';
   document.getElementById('forest-bottom-hud').style.display='flex';
   var _ftel=document.getElementById('forest-touch');if(_ftel){_ftel.style.display='block';buildForestTouchControls();}
-  document.getElementById('f-seals').textContent=smSave.seals;
+  document.getElementById('f-seals').textContent=formatNum(smSave.seals);
   fUpdatePlayerHP();
   if(fTiger)fUpdateTigerHP();
   fitForestCanvas();
