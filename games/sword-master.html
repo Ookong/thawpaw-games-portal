@@ -3038,10 +3038,17 @@ function smRenderPetNests(){
       el.style.fontSize='40px';
       el.style.opacity='0.6';
     }else if(n.hatched){
-      // 已孵化：显示宠物图标
-      el.innerHTML='<img src="'+(n.petImg||'')+'" style="width:60px;height:60px;object-fit:contain;">';
+      // 已孵化：计算属性 + 显示宠物图标
+      smCalcPetStats(i);
+      var s=smEnsurePetStats(n);
+      var badge=smPetStatusBadge(s);
+      el.innerHTML='<img src="'+(n.petImg||'')+'" style="width:60px;height:60px;object-fit:contain;">'+(badge?'<div style="position:absolute;top:-4px;right:-4px;font-size:18px;">'+badge+'</div>':'');
       el.style.fontSize='';
       el.style.opacity='1';
+      // 清掉旧进度条
+      var parent3=el.parentElement;
+      var oldBar3=parent3.querySelector('.nest-progress');
+      if(oldBar3)oldBar3.remove();
     }else{
       // 蛋在孵化中：显示蛋图标+进度
       var now=Date.now();
@@ -3085,6 +3092,9 @@ function smPetNestClick(idx){
       var days=Math.floor(remain/86400000);var hours=Math.floor(remain%86400000/3600000);
       alert('\u{1F95A} 孵化中...\n剩余时间：'+days+'天'+hours+'小时');
     }
+  }else if(n.hatched){
+    // 已孵化：显示属性面板
+    smShowPetStats(idx);
   }
 }
 function smPetPlaceEgg(nestIdx,eggIdx){
@@ -3107,9 +3117,99 @@ function smPetHatch(idx){
   var t=n.egg?n.egg.type:'tiger';
   n.petImg=cubMap[t]||'assets/tiger-cub.jpg';
   n.petName=cubNameMap[t]||'神秘宠物';
+  // 初始化宠物四维属性
+  n.stats={hp:300,maxHp:300,satiety:40,maxSatiety:40,cultivation:500,maxCultivation:500,qi:0,maxQi:800,lastUpdate:Date.now(),satietyZeroHours:0,satietyFullHours:0};
   smSaveSave();
   smRenderPetNests();
   alert('\u{1F431}\u200D\uD83D\uDD25 恭喜！'+n.petName+' 孵化了！');
+}
+// ===== 宠物属性时间模拟 =====
+var PET_SATIETY_DECAY_MS=3600000; // 饱食度每1小时-1
+var PET_SATIETY_RULE_MS=10800000; // 3小时判定
+function smEnsurePetStats(n){
+  if(!n.stats){
+    n.stats={hp:300,maxHp:300,satiety:40,maxSatiety:40,cultivation:500,maxCultivation:500,qi:0,maxQi:800,lastUpdate:n.hatchedAt||Date.now(),satietyZeroHours:0,satietyFullHours:0};
+  }
+  return n.stats;
+}
+function smCalcPetStats(idx){
+  var n=smSave.petNests[idx];
+  if(!n||!n.hatched)return;
+  var s=smEnsurePetStats(n);
+  var now=Date.now();
+  var last=s.lastUpdate||now;
+  if(last>=now)return;
+  var totalHours=Math.floor((now-last)/3600000);
+  if(totalHours<=0)return;
+  for(var h=0;h<totalHours;h++){
+    // 检查当前饱食度状态
+    if(s.satiety<=0){
+      s.satietyZeroHours++;
+      s.satietyFullHours=0;
+      if(s.satietyZeroHours>=3){s.hp=Math.max(0,s.hp-10);s.satietyZeroHours=0;}
+    }else if(s.satiety>=s.maxSatiety){
+      s.satietyFullHours++;
+      s.satietyZeroHours=0;
+      if(s.satietyFullHours>=3){s.hp=Math.min(s.maxHp,s.hp+20);s.satietyFullHours=0;}
+    }else{
+      s.satietyZeroHours=0;
+      s.satietyFullHours=0;
+    }
+    // 饱食度自然衰减
+    if(s.satiety>0)s.satiety--;
+    // 昏迷判定：血量<50
+    if(s.hp<50){
+      s.cultivation=Math.max(0,s.cultivation-1);
+    }
+  }
+  s.lastUpdate=now;
+  smSaveSave();
+}
+function smPetStatusBadge(s){
+  if(s.hp<50)return'\uD83D\uDC80'; // 💀 昏迷
+  if(s.satiety<=5)return'\uD83C\uDF56'; // 🍖 极饿
+  if(s.hp<100)return'\u26A0\uFE0F'; // ⚠️ 低血
+  return'';
+}
+function smShowPetStats(idx){
+  var n=smSave.petNests[idx];
+  if(!n||!n.hatched)return;
+  smCalcPetStats(idx);
+  var s=n.stats;
+  var coma=s.hp<50;
+  var hungry=s.satiety<=5;
+  var statusText=coma?'\uD83D\uDC80 昏迷中':(hungry?'\uD83C\uDF56 极度饥饿':'\u2705 正常');
+  var statusColor=coma?'#e74c3c':(hungry?'#f39c12':'#7fbc6c');
+  function bar(label,val,max,color,icon){
+    var pct=Math.round(val/max*100);
+    return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">'+
+      '<div style="width:72px;font-size:12px;color:#ccaa88;text-align:right;">'+icon+' '+label+'</div>'+
+      '<div style="flex:1;height:14px;background:rgba(0,0,0,0.5);border-radius:7px;overflow:hidden;border:1px solid rgba(212,175,55,0.2);">'+
+      '<div style="height:100%;width:'+pct+'%;background:'+color+';border-radius:7px;transition:width .3s;"></div></div>'+
+      '<div style="width:72px;font-size:12px;color:#ddbb88;font-weight:600;text-align:right;">'+val+' / '+max+'</div></div>';
+  }
+  var old=document.getElementById('pet-stats-overlay');if(old)old.remove();
+  var ov=document.createElement('div');
+  ov.id='pet-stats-overlay';
+  ov.style.cssText='position:absolute;inset:0;background:rgba(0,0,0,0.75);z-index:500;display:flex;align-items:center;justify-content:center;';
+  ov.innerHTML='<div style="background:linear-gradient(135deg,#2a1f1a,#1a1510);border:2px solid rgba(212,175,55,0.4);border-radius:16px;padding:20px;max-width:340px;width:88%;box-shadow:0 8px 32px rgba(0,0,0,0.5);">'+
+    '<div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">'+
+    '<img src="'+(n.petImg||'')+'" style="width:56px;height:56px;border-radius:10px;background:rgba(255,255,255,0.05);object-fit:contain;">'+
+    '<div><div style="font-size:18px;font-weight:700;color:#ddbb88;">'+(n.petName||'宠物')+'</div>'+
+    '<div style="font-size:12px;color:'+statusColor+';">'+statusText+'</div></div>'+
+    '<div onclick="smClosePetStats()" style="margin-left:auto;cursor:pointer;font-size:22px;color:#886644;padding:4px 8px;">\u2715</div></div>'+
+    bar('血量',s.hp,s.maxHp,'#e74c3c','\u2764\uFE0F')+
+    bar('饱食度',s.satiety,s.maxSatiety,'#f39c12','\uD83C\uDF56')+
+    bar('修养',s.cultivation,s.maxCultivation,'#9b59b6','\uD83D\uDCDA')+
+    bar('灵气',s.qi,s.maxQi,'#3498db','\u2728')+
+    '</div>';
+  ov.onclick=function(e){if(e.target===ov)smClosePetStats();};
+  var page=document.getElementById('sm-page-pets');
+  if(page)page.appendChild(ov);else document.body.appendChild(ov);
+}
+function smClosePetStats(){
+  var ov=document.getElementById('pet-stats-overlay');
+  if(ov)ov.remove();
 }
 function smGetHatchingProgress(nestIdx){
   var n=smSave.petNests[nestIdx];
