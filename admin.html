@@ -575,6 +575,14 @@ document.addEventListener('DOMContentLoaded', function(){
     try{
       session = JSON.parse(saved);
       isSuperAdmin = (session.role === "super");
+      // If no chatroom token cached for this user, try to fetch it transparently
+      if(session.id && !localStorage.getItem('chatroomToken_' + session.id)){
+        apiPost('verify', { id: session.id, nickname: session.nickname }).then(function(res){
+          if(res.ok && res.chatroom_token){
+            localStorage.setItem('chatroomToken_' + session.id, res.chatroom_token);
+          }
+        }).catch(function(){});
+      }
       showDashboard();
     }catch(e){
       console.error('Session restore failed:', e);
