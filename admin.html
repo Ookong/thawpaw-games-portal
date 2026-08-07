@@ -704,6 +704,10 @@ function confirmNick(){
     if(res.ok){
       session = { id: res.id, nickname: res.nickname, role: res.role }; isSuperAdmin = (session.role === "super");
       localStorage.setItem('tpgHqSession', JSON.stringify(session));
+      // Transparently save chatroom token if backend provided one (admin is also a chatroom member)
+      if(res.chatroom_token && res.chatroom_member_id){
+        localStorage.setItem('chatroomToken_' + session.id, res.chatroom_token);
+      }
       document.getElementById('nick-step').classList.remove('show');
       showDashboard();
     } else {
