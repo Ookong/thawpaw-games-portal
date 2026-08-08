@@ -329,7 +329,7 @@ tr:hover td{background:var(--card2)}
     </div>
   </div>
   <div class="login-hint">© 2026 Thawpaw Games · 管理员入口 · <span id="build-time" style="opacity:.7">加载中…</span></div>
-<script>var BUILD_TIME="20260808-1454";var el=document.getElementById("build-time");if(el)el.textContent="v"+BUILD_TIME;</script>
+<script>var BUILD_TIME="20260808-1500";var el=document.getElementById("build-time");if(el)el.textContent="v"+BUILD_TIME;</script>
 </div>
 
 <!-- ===== DASHBOARD ===== -->
@@ -592,12 +592,10 @@ document.addEventListener('DOMContentLoaded', function(){
   }
 
   const idInput = document.getElementById('login-id-input');
-  idInput.addEventListener('input', e => {
-    // Only strip non-digits; don't re-set value if it's already clean
-    // (reassigning value in Safari can eat keystrokes when maxlength is also set)
-    var cleaned = e.target.value.replace(/\D/g,'').slice(0,8);
-    if(e.target.value !== cleaned) e.target.value = cleaned;
-  });
+  // NOTE: Do NOT add an 'input' event handler that reassigns e.target.value.
+  // Safari + maxlength has a bug: programmatic value reset decrements the
+  // internal character counter, causing it to cap at 7 chars on some keystrokes.
+  // Validation is done at submit time in hqLogin() via /^\d{8}$/.test(id).
   idInput.addEventListener('keydown', e => {
     if(e.key === 'Enter') hqLogin();
   });
