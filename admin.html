@@ -329,7 +329,7 @@ tr:hover td{background:var(--card2)}
     </div>
   </div>
   <div class="login-hint">© 2026 Thawpaw Games · 管理员入口 · <span id="build-time" style="opacity:.7">加载中…</span></div>
-<script>var BUILD_TIME="20260808-2145";var el=document.getElementById("build-time");if(el)el.textContent="v"+BUILD_TIME;var el2=document.getElementById("build-time-dash");if(el2)el2.textContent="v"+BUILD_TIME;</script>
+<script>var BUILD_TIME="20260808-2250";var el=document.getElementById("build-time");if(el)el.textContent="v"+BUILD_TIME;var el2=document.getElementById("build-time-dash");if(el2)el2.textContent="v"+BUILD_TIME;</script>
 </div>
 
 <!-- ===== DASHBOARD ===== -->
@@ -1347,12 +1347,15 @@ function loadChatroomMembers(){
       const statusText = m.status === 'active' ? '在线' : '已移除';
       const created = m.created_at ? new Date(m.created_at).toLocaleDateString('zh-CN') : '';
       const lastSeen = m.last_seen ? new Date(m.last_seen).toLocaleString('zh-CN') : '从未';
+      const aliases = (m.aliases && m.aliases.length > 0) ? m.aliases.map(function(a){ return escapeHtml(a); }).join('、') : '';
+      const displayName = m.display_name ? escapeHtml(m.display_name) : escapeHtml(m.nickname);
       return '<div class="admin-card">' +
         '<div class="admin-info">' +
           '<div class="admin-avatar">💬</div>' +
           '<div class="admin-details">' +
-            '<div class="admin-name">' + escapeHtml(m.nickname) + '</div>' +
+            '<div class="admin-name">' + displayName + '</div>' +
             '<div class="admin-id">ID: ' + escapeHtml(m.member_id) + ' · 平台: ' + escapeHtml(m.platform || 'unknown') + '</div>' +
+            (aliases ? '<div class="admin-id" style="color:var(--accent)">别名: ' + aliases + '</div>' : '') +
             '<div class="admin-id" style="color:var(--dim)">加入: ' + created + ' · 最后活跃: ' + lastSeen + '</div>' +
           '</div>' +
         '</div>' +
