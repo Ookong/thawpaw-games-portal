@@ -623,7 +623,7 @@ function saveBackendUrl(){
 }
 
 // ── API helpers ──
-const API_TIMEOUT = 8000; // 8 秒超时
+const API_TIMEOUT = 15000; // 15 秒超时（Workers 冷启动 + PostgREST 叠加偶超 8s）
 
 function fetchWithTimeout(url, opts, ms){
   ms = ms || API_TIMEOUT;
@@ -634,8 +634,21 @@ function fetchWithTimeout(url, opts, ms){
     .catch(err => { clearTimeout(timer); throw err; });
 }
 
+// fetch with auto-retry: on failure, wait 500ms and retry once
+function fetchWithRetry(url, opts, ms){
+  return fetchWithTimeout(url, opts, ms)
+    .catch(function(err){
+      return new Promise(function(resolve){ setTimeout(resolve, 500); })
+        .then(function(){ return fetchWithTimeout(url, opts, ms); });
+    });
+}
+
 function apiGet(fnName, params, ms){
   const url = getBackendBase() + '/' + fnName + (params ? '?' + new URLSearchParams(params).toString() : '');
+  // lookup and verify are critical for login — auto-retry on failure
+  if(fnName === 'lookup' || fnName === 'verify'){
+    return fetchWithRetry(url, {}, ms).then(r => r.json());
+  }
   return fetchWithTimeout(url, {}, ms).then(r => r.json());
 }
 function apiPost(fnName, data, ms){
