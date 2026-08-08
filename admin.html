@@ -68,7 +68,7 @@ body{
 @keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
 .icon-spin{display:inline-block;width:1em;height:1em;vertical-align:-0.125em;background:currentColor;-webkit-mask:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round' d='M2.5 8a5.5 5.5 0 1 1 1.6 3.9'/><path fill='%23000' d='M1.5 5.5h3v-3z'/></svg>") center/contain no-repeat;mask:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round' d='M2.5 8a5.5 5.5 0 1 1 1.6 3.9'/><path fill='%23000' d='M1.5 5.5h3v-3z'/></svg>") center/contain no-repeat}
 .refresh-btn{transition:transform .3s}
-.refresh-btn.spinning{animation:spin360 .8s ease-out}
+.refresh-btn.spinning .icon-spin{animation:spin360 .8s ease-out}.refresh-btn.spinning{transition:none}
 .refresh-btn:disabled{opacity:.5;cursor:not-allowed}
 .skeleton{background:linear-gradient(90deg,var(--card2) 25%,var(--card) 50%,var(--card2) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:6px}
 .skeleton-row{display:flex;align-items:center;gap:.75rem;padding:.6rem 1rem;border-bottom:1px solid var(--border)}
@@ -78,7 +78,7 @@ body{
 .skeleton-line.w60{width:60%}.skeleton-line.w40{width:40%}.skeleton-line.w80{width:80%}
 .retry-btn{display:inline-flex;align-items:center;gap:.4rem;padding:6px 16px;border:1px solid var(--accent);border-radius:6px;background:var(--accent-light);color:var(--accent);cursor:pointer;font-size:.85rem;transition:transform .3s}
 .retry-btn:hover{background:var(--accent);color:#fff}
-.retry-btn.spinning{animation:spin360 .8s ease-out}
+.retry-btn.spinning .icon-spin{animation:spin360 .8s ease-out}.retry-btn.spinning{transition:none}
 .loading-dots{display:inline-block;text-align:center;padding:2rem 0;color:var(--dim);font-size:.9rem}
 .loading-dots::after{content:'';display:inline-block;width:1.2em;animation:dots 1.5s steps(4) infinite}
 @keyframes dots{0%{content:''}25%{content:'·'}50%{content:'··'}75%{content:'···'}100%{content:''}}
@@ -329,7 +329,7 @@ tr:hover td{background:var(--card2)}
     </div>
   </div>
   <div class="login-hint">© 2026 Thawpaw Games · 管理员入口 · <span id="build-time" style="opacity:.7">加载中…</span></div>
-<script>var BUILD_TIME="20260808-1503";var el=document.getElementById("build-time");if(el)el.textContent="v"+BUILD_TIME;</script>
+<script>var BUILD_TIME="20260808-1514";var el=document.getElementById("build-time");if(el)el.textContent="v"+BUILD_TIME;var el2=document.getElementById("build-time-dash");if(el2)el2.textContent="v"+BUILD_TIME;</script>
 </div>
 
 <!-- ===== DASHBOARD ===== -->
@@ -337,7 +337,7 @@ tr:hover td{background:var(--card2)}
 
   <!-- Top bar -->
   <div class="top-bar">
-    <div class="top-logo">🐾 TPG 总部 <small>Thawpaw Games HQ</small></div>
+    <div class="top-logo">🐾 TPG 总部 <small>Thawpaw Games HQ</small> <span id="build-time-dash" style="opacity:.5;font-size:.7rem">v?</span></div>
     <div class="top-spacer"></div>
     <div class="user-badge" id="user-badge"></div>
     <button class="logout-btn" onclick="openProjectSettings()" title="切换后端项目">⚙️</button>
@@ -1196,13 +1196,17 @@ function sendChatMessageFromUI(){
   sendBtn.disabled = true;
   statusEl.textContent = '发送中...';
   ensureChatroomToken(statusEl).then(function(chatToken){
+    // Auto-add mentions so poll scripts can detect the message
+    var bodyObj = { channel: channel, content: content };
+    if(channel === 'all'){ bodyObj.mentions = ['all']; }
+    else if(channel.indexOf('dm:') === 0){ bodyObj.mentions = [channel.slice(3)]; }
     return fetch(getBackendBase() + '/chat/messages', {
       method: 'POST',
       headers: {
         'Authorization': 'Bearer ' + chatToken,
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ channel: channel, content: content })
+      body: JSON.stringify(bodyObj)
     }).then(function(r){ return r.json(); }).then(function(data){
       if(data.ok){
         statusEl.textContent = '✅ 发送成功 (seq=' + data.server_seq + ')';
