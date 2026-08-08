@@ -1,0 +1,2925 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="description" content="猫武士大冒险 - 化身猫武士学徒，深入地下10层，寻找传说中的月亮石！自由猫、狗、獾等多种敌人，升级装备，学习技能！" />
+<meta property="og:title" content="猫武士大冒险 🐱" />
+<meta property="og:description" content="深入地下10层，寻找传说中的月亮石！" />
+<meta property="og:url" content="https://games.thawflow.com/games/moonstone-quest.html" />
+<meta property="og:type" content="website" />
+<link rel="canonical" href="https://games.thawflow.com/games/moonstone-quest.html" />
+<title>猫武士大冒险 - ThawPaw Games</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#1a1a2e;--card:#16213e;--card2:#0f3460;--accent:#aaddff;
+  --gold:#ffd700;--moon:#aaddff;--rock:#888888;--text:#eee;--text2:#aaa;
+  --radius:12px;
+}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden;min-height:100vh;}
+a{color:#88aaff;}
+
+/* ===== PAGES ===== */
+.page{display:none;width:100%;min-height:100vh;}
+.page.active{display:flex;flex-direction:column;}
+
+/* ===== TOP BAR (home + game) ===== */
+.top-bar{display:flex;align-items:center;padding:10px 16px;background:var(--card);gap:12px;cursor:pointer;min-height:56px;}
+.profile-bubble{display:flex;align-items:center;gap:10px;flex:1;}
+.home-currency-bubble{background:var(--card2);border-radius:20px;padding:6px 12px;font-size:13px;font-weight:600;white-space:nowrap;}
+.avatar{width:40px;height:40px;border-radius:50%;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:20px;border:2px solid var(--accent);}
+.profile-info{display:flex;flex-direction:column;gap:2px;}
+.profile-info .name-row{display:flex;align-items:center;gap:6px;}
+.profile-info .nickname{font-weight:600;font-size:15px;}
+.level-badge{font-size:11px;background:var(--accent);color:#000;padding:1px 6px;border-radius:8px;font-weight:700;}
+.level-bar-wrap{height:4px;background:#333;border-radius:2px;width:80px;margin-top:2px;}
+.level-bar{height:100%;background:var(--gold);border-radius:2px;width:30%;transition:width .3s;}
+
+/* ===== BOTTOM BAR (home: bank/shop/bag) ===== */
+.bottom-bar{position:fixed;bottom:0;left:0;right:0;height:56px;background:var(--card);display:flex;align-items:center;justify-content:space-around;border-top:1px solid #333;z-index:100;}
+.bottom-bar .tab{display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:6px 16px;border-radius:8px;transition:background .2s;font-size:12px;}
+.bottom-bar .tab:hover,.bottom-bar .tab.active{background:var(--card2);}
+.bottom-bar .tab .icon{font-size:20px;}
+
+/* ===== HOME PAGE LAYOUT (3 cols: 1/4 + 1/2 + 1/4) ===== */
+.home-content{flex:1;display:grid;grid-template-columns:1fr 2fr 1fr;gap:8px;padding:12px;padding-bottom:72px;min-height:calc(100vh - 56px);}
+.home-content .col{display:flex;flex-direction:column;gap:8px;}
+
+/* Left 1/4 */
+.col-left{justify-content:center;align-items:center;color:var(--text2);font-size:13px;}
+
+/* Center 1/2 (merged lc + rc) — split into upper + lower zones */
+.col-mid{gap:10px;}
+.zone-upper,.zone-lower{
+  background:linear-gradient(135deg,var(--card2),#1a1a3e);
+  border-radius:var(--radius);
+  padding:18px;
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  cursor:pointer;
+  transition:transform .15s,box-shadow .15s;
+  border:1px solid #2a2a4e;
+  text-align:center;
+}
+.zone-upper:hover,.zone-lower:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(170,221,255,.2);}
+.zone-icon{font-size:42px;}
+.zone-title{font-size:20px;font-weight:700;color:var(--accent);}
+.zone-desc{font-size:12px;color:var(--text2);margin-top:2px;}
+.zone-lower{background:linear-gradient(135deg,#2a1a3e,#1a1a2e);}
+.zone-lower .zone-title{color:#ffaadd;}
+
+/* Right 1/4 */
+.col-right{gap:8px;}
+.col-right .top-row{display:flex;gap:6px;}
+.col-right .top-row .mini-card{flex:1;background:var(--card2);border-radius:var(--radius);padding:10px;text-align:center;cursor:pointer;font-size:13px;font-weight:600;transition:transform .15s;}
+.col-right .top-row .mini-card:hover{transform:scale(1.05);}
+.col-right .top-row .mini-card .icon{font-size:22px;display:block;margin-bottom:4px;}
+.hot-events{background:var(--card2);border-radius:var(--radius);padding:14px;flex:1;overflow-y:auto;}
+.hot-events h3{font-size:13px;margin-bottom:8px;color:var(--gold);}
+.hot-events .event-item{padding:8px;border-bottom:1px solid #333;font-size:12px;color:var(--text2);}
+.hot-events .event-item:last-child{border-bottom:none;}
+
+/* ===== PROFILE PAGE ===== */
+.profile-page{align-items:center;padding:20px;padding-bottom:80px;gap:16px;}
+.profile-page .big-avatar{width:90px;height:90px;border-radius:50%;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:48px;border:3px solid var(--accent);cursor:pointer;transition:transform .2s;position:relative;}
+.profile-page .big-avatar:hover{transform:scale(1.05);}
+.profile-page .big-avatar::after{content:'📷';position:absolute;bottom:0;right:0;font-size:16px;}
+.profile-page .name-section{text-align:center;}
+.profile-page .name-section .name-line{display:flex;align-items:center;justify-content:center;gap:8px;}
+.profile-page .name-section .nickname{font-size:20px;font-weight:700;}
+.profile-page .name-section .edit-btn{cursor:pointer;font-size:16px;}
+.profile-page .explorer-id{color:var(--text2);font-size:13px;margin-top:4px;}
+.profile-page .bio{color:var(--text2);font-size:13px;margin-top:2px;min-height:18px;}
+.profile-page .level-section{width:100%;max-width:300px;}
+.profile-page .level-info{display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;}
+.profile-page .level-bar-wrap{height:8px;background:#333;border-radius:4px;}
+.profile-page .level-bar{height:100%;background:linear-gradient(90deg,var(--accent),var(--gold));border-radius:4px;width:30%;}
+.back-btn{position:absolute;top:12px;left:12px;cursor:pointer;font-size:24px;z-index:10;}
+
+/* ===== LEVEL MAP PAGE ===== */
+.levelmap-page{padding:20px 16px 80px;gap:14px;align-items:center;}
+.levelmap-header{text-align:center;margin-top:8px;}
+.levelmap-header h1{font-size:22px;color:var(--accent);font-weight:700;}
+.levelmap-header p{color:var(--text2);font-size:13px;margin-top:4px;}
+.level-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;width:100%;max-width:480px;padding:8px;}
+.level-card{aspect-ratio:1;background:linear-gradient(135deg,var(--card2),#1a1a3e);border:2px solid #334488;border-radius:var(--radius);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;transition:all .15s;position:relative;}
+.level-card:hover:not(.locked){transform:translateY(-3px);box-shadow:0 4px 12px rgba(170,221,255,.3);}
+.level-card.boss{border-color:#ff6688;background:linear-gradient(135deg,#3a1a2e,#1a1a2e);}
+.level-card.current{border-color:var(--gold);box-shadow:0 0 12px rgba(255,215,0,.4);}
+.level-card.locked{opacity:.4;cursor:not-allowed;}
+.level-card .lvl-num{font-size:24px;font-weight:700;color:var(--accent);}
+.level-card.boss .lvl-num{color:#ff6688;}
+.level-card .lvl-icon{font-size:18px;}
+.level-card .lvl-status{font-size:10px;color:var(--text2);}
+.levelmap-actions{display:flex;gap:10px;margin-top:10px;}
+.action-btn{background:var(--accent);color:#000;border:none;padding:10px 20px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;transition:transform .15s;}
+.action-btn:hover{transform:scale(1.05);}
+.action-btn.secondary{background:var(--card2);color:var(--text);}
+
+/* ===== TEXT EXPLORATION PAGE ===== */
+.textexp-page{padding:12px 16px 80px;display:flex;flex-direction:column;gap:12px;max-width:560px;margin:0 auto;position:relative;z-index:1;}
+.textexp-header{text-align:center;margin-top:6px;}
+.textexp-header h1{font-size:20px;color:var(--accent);font-weight:700;}
+.textexp-header p{color:var(--text2);font-size:12px;margin-top:4px;}
+.textexp-stats{display:flex;justify-content:space-around;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px 8px;}
+.textexp-stat{font-size:13px;font-weight:600;color:var(--text);font-family:monospace;}
+.textexp-loc{text-align:center;font-size:18px;font-weight:700;color:var(--gold);margin-top:4px;}
+.textexp-desc{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 16px;line-height:1.6;font-size:14px;min-height:90px;}
+.textexp-choices{display:grid;grid-template-columns:1fr;gap:8px;}
+.textexp-choices button{background:var(--card2);color:var(--text);border:1px solid var(--border);padding:12px 14px;border-radius:10px;font-size:14px;cursor:pointer;text-align:left;transition:all .15s;}
+.textexp-choices button:hover{background:var(--accent);color:#000;border-color:var(--accent);transform:translateX(4px);}
+.textexp-choices button:disabled{opacity:.5;cursor:not-allowed;}
+.textexp-log{background:rgba(0,0,0,.4);border:1px solid var(--border);border-radius:10px;padding:10px 12px;max-height:160px;overflow-y:auto;font-size:12px;color:var(--text2);font-family:monospace;line-height:1.5;}
+.textexp-log .log-prey{color:var(--gold);}
+.textexp-log .log-hurt{color:#ff6644;}
+.textexp-log .log-heal{color:#66ee66;}
+.textexp-log .log-boss{color:#ff8866;font-weight:700;}
+.mm-ticket{display:inline-block;background:rgba(255,204,68,.18);color:var(--gold);font-size:10px;padding:2px 6px;border-radius:8px;margin-left:4px;font-weight:600;}
+
+/* ===== SETTINGS (gear) ===== */
+.settings-btn{font-size:22px;cursor:pointer;padding:6px 8px;border-radius:8px;transition:background .2s;margin-left:6px;line-height:1;user-select:none;}
+.settings-btn:hover{background:rgba(255,255,255,.08);}
+.settings-row{display:flex;align-items:center;justify-content:space-between;padding:12px 4px;border-bottom:1px solid #333;}
+.settings-row:last-child{border-bottom:none;}
+.settings-label{display:flex;align-items:center;gap:10px;font-size:14px;color:var(--text);}
+.settings-label .lbl-icon{font-size:22px;}
+.settings-label small{color:var(--text2);font-size:11px;display:block;margin-top:2px;}
+.settings-toggle{position:relative;width:48px;height:26px;background:#444;border-radius:13px;cursor:pointer;transition:background .2s;flex-shrink:0;}
+.settings-toggle::after{content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;background:#fff;border-radius:50%;transition:transform .2s;}
+.settings-toggle.on{background:var(--accent);}
+.settings-toggle.on::after{transform:translateX(22px);}
+.settings-hint{font-size:11px;color:var(--text2);text-align:center;margin-top:14px;line-height:1.5;}
+
+/* ===== GAME PAGE ===== */
+.game-page{align-items:center;justify-content:center;position:relative;background:#0a0a14;}
+.game-page canvas{border:2px solid var(--card2);border-radius:8px;background:#0a0a1a;}
+.game-page .game-top{display:flex;justify-content:space-between;align-items:center;width:100%;padding:8px 12px;background:rgba(10,10,20,.8);font-size:12px;}
+.game-page .game-back{position:absolute;top:10px;left:10px;cursor:pointer;font-size:22px;z-index:10;background:rgba(10,10,20,.6);padding:4px 10px;border-radius:8px;}
+.game-page .game-exit{position:absolute;top:10px;right:10px;cursor:pointer;font-size:13px;z-index:10;background:rgba(170,68,68,.4);padding:5px 12px;border-radius:8px;color:#ffaaaa;font-weight:600;}
+
+/* Mobile HUD overlay (game) */
+#mobileHud{display:none;position:fixed;top:0;left:0;right:0;z-index:30;background:rgba(10,10,20,.82);backdrop-filter:blur(4px);padding:4px 10px 5px;font-size:11px;pointer-events:none;}
+#mobileHud .hud-row{display:flex;align-items:center;gap:8px;}
+#mobileHud .hud-row+.hud-row{margin-top:2px;}
+#mobileHud .hud-hpbar{flex:1;height:10px;background:#1a1a2a;border:1px solid #333;border-radius:2px;overflow:hidden;}
+#mobileHud .hud-hpfill{height:100%;background:#44cc44;transition:width .2s;}
+#mobileHud .hud-expbar{width:80px;height:6px;background:#1a1a2a;border:1px solid #333;border-radius:2px;overflow:hidden;}
+#mobileHud .hud-expfill{height:100%;background:#aa44ff;transition:width .2s;}
+#mobileHud .hud-label{color:#888;white-space:nowrap;}
+#mobileHud .hud-val{color:#ddd;white-space:nowrap;}
+#mobileHud .hud-msg{color:#aaa;font-size:10px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;max-width:100%;}
+
+/* ===== TOUCH CONTROLS (game) ===== */
+#touchControls{display:none;position:fixed;bottom:0;left:0;right:0;height:160px;z-index:40;pointer-events:none;}
+#touchControls.active{display:block;}
+#joystick{position:absolute;bottom:20px;left:20px;width:120px;height:120px;pointer-events:auto;}
+#joystickBase{width:120px;height:120px;background:rgba(255,255,255,.08);border:2px solid rgba(255,255,255,.15);border-radius:50%;position:relative;}
+#joystickKnob{width:50px;height:50px;background:rgba(255,255,255,.25);border:2px solid rgba(255,255,255,.35);border-radius:50%;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);transition:none;}
+#touchActions{position:absolute;bottom:15px;right:15px;display:grid;grid-template-columns:repeat(4,1fr);gap:5px;pointer-events:auto;}
+#touchActions button{width:64px;height:54px;background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.18);border-radius:10px;color:#ccc;font-size:12px;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;}
+#touchActions button:active{background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.35);}
+#touchActions button .icon{font-size:20px;}
+#touchActions button .label{font-size:8px;opacity:.7;}
+@media (max-width:400px){
+  #joystick{bottom:10px;left:10px;width:100px;height:100px;}
+  #joystickBase{width:100px;height:100px;}
+  #joystickKnob{width:40px;height:40px;}
+  #touchActions{bottom:8px;right:8px;gap:5px;}
+  #touchActions button{width:56px;height:46px;}
+  #touchActions button .icon{font-size:18px;}
+}
+
+/* Desktop controls (dpad) */
+#controls{display:none;padding:6px 8px 10px;background:#0e0e1a;border-top:1px solid #222;flex-shrink:0;}
+#controls>div{display:flex;align-items:center;justify-content:center;gap:0;}
+#dpad{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,1fr);width:144px;height:96px;gap:3px;flex-shrink:0;}
+#dpad button{width:100%;height:100%;background:#1a1a2e;border:1px solid #333;color:#ccc;font-size:22px;border-radius:8px;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
+#dpad button:active{background:#2a2a4e;color:#fff;}
+#actionBtns{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-left:16px;flex:1;max-width:260px;}
+#actionBtns button{height:38px;background:#1a1a2e;border:1px solid #333;color:#ccc;font-size:12px;border-radius:8px;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;white-space:nowrap;}
+#actionBtns button:active{background:#2a2a4e;color:#fff;}
+
+/* Sidebar (game, desktop) */
+#game-sidebar{width:260px;background:#0e0e1a;border-left:1px solid #222;padding:14px;overflow-y:auto;font-size:16px;line-height:1.6;flex-shrink:0;display:flex;flex-direction:column;}
+#game-sidebar h2{color:#aaddff;font-size:20px;margin-bottom:8px;}
+#game-sidebar .stat{margin:2px 0;}
+#game-sidebar .stat .label{color:#888;}
+#game-sidebar .stat .val{color:#ddd;}
+#hpBar,#expBar{width:100%;background:#1a1a2a;border:1px solid #333;border-radius:3px;overflow:hidden;margin:3px 0;}
+#hpBar{height:14px;}
+#expBar{height:10px;}
+#hpFill{height:100%;background:#44cc44;transition:width .2s;}
+#expFill{height:100%;background:#aa44ff;transition:width .2s;}
+#msgLog{margin-top:8px;flex:1;overflow-y:auto;}
+#msgLog .msg{color:#aaa;font-size:14px;margin:1px 0;word-wrap:break-word;}
+#msgLog .msg.hurt{color:#ff6666;}
+#msgLog .msg.good{color:#66ff66;}
+#msgLog .msg.info{color:#6688ff;}
+#msgLog .msg.gold{color:#ffcc44;}
+
+/* In-game shop overlay */
+#shopOverlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.85);z-index:50;justify-content:center;align-items:center;}
+#shopBox{background:#12122a;border:2px solid #3355aa;border-radius:10px;padding:18px 22px;max-width:420px;width:90%;max-height:85vh;overflow-y:auto;position:relative;}
+#shopBox h2{color:#ffcc44;text-align:center;margin-bottom:10px;}
+#shopBox .shopItem{display:flex;align-items:center;padding:6px 0;border-bottom:1px solid #1a1a2e;cursor:pointer;}
+#shopBox .shopItem:hover{background:#1a1a3e;}
+#shopBox .shopItem .siIcon{width:28px;text-align:center;font-size:16px;}
+#shopBox .shopItem .siName{flex:1;color:#ccc;font-size:13px;}
+#shopBox .shopItem .siCost{color:#ffcc44;font-size:13px;margin-right:10px;}
+#shopBox .shopMsg{color:#66ff66;text-align:center;margin-top:8px;font-size:12px;min-height:16px;}
+#shopCloseBtn{position:absolute;top:10px;right:14px;background:none;border:none;color:#888;font-size:22px;cursor:pointer;padding:4px 8px;border-radius:6px;}
+#shopCloseBtn:hover{color:#ff6644;background:rgba(255,255,255,.05);}
+
+/* ===== MODAL / OVERLAY (home modals) ===== */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;align-items:center;justify-content:center;}
+.modal-overlay.active{display:flex;}
+.modal{background:var(--card);border-radius:var(--radius);padding:20px;width:90%;max-width:480px;max-height:80vh;overflow:hidden;position:relative;display:flex;flex-direction:column;}
+.modal .modal-close{position:absolute;top:10px;right:14px;cursor:pointer;font-size:22px;color:#888;z-index:1;}
+.modal .modal-close:hover{color:#ff6644;}
+.modal h3{margin-bottom:12px;font-size:18px;text-align:center;color:var(--accent);}
+.modal-body{flex:1;overflow-y:auto;}
+
+/* ===== BANK ===== */
+.bank-content{padding:8px 4px;}
+.bank-intro{text-align:center;font-size:13px;color:var(--text2);margin-bottom:14px;}
+.bank-exchange{background:var(--card2);border-radius:var(--radius);padding:14px;margin-bottom:12px;}
+.bank-rate{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:10px;font-size:14px;font-weight:600;}
+.bank-rate .arrow{color:var(--gold);font-size:18px;}
+.bank-controls{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.bank-controls input[type=number]{background:#1a1a2e;border:1px solid #444;color:var(--text);padding:8px 10px;border-radius:8px;width:80px;font-size:16px;text-align:center;}
+.bank-controls .eq{font-size:14px;color:var(--text2);}
+.bank-preview{text-align:center;font-size:13px;color:var(--gold);margin-bottom:8px;}
+.bank-btns{display:flex;gap:8px;}
+.bank-btns button{flex:1;padding:10px;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:700;background:var(--accent);color:#000;}
+.bank-btns button:hover{filter:brightness(1.15);}
+.bank-btns button.secondary{background:var(--card);color:var(--text);border:1px solid #444;}
+.bank-balance{text-align:center;font-size:12px;color:var(--text2);margin-top:6px;}
+
+/* ===== SHOP / BAG / ACTIVITIES / WELFARE (sidebar+main pattern) ===== */
+.cat-content{display:flex;height:60vh;gap:0;}
+.cat-sidebar{width:90px;background:var(--card2);border-radius:var(--radius) 0 0 var(--radius);overflow-y:auto;flex-shrink:0;}
+.cat-sidebar .cat{padding:14px 8px;text-align:center;cursor:pointer;font-size:12px;border-bottom:1px solid #333;transition:background .2s;color:var(--text);}
+.cat-sidebar .cat.active{background:var(--accent);color:#000;font-weight:700;}
+.cat-main{flex:1;background:var(--bg);border-radius:0 var(--radius) var(--radius) 0;padding:14px;overflow-y:auto;display:grid;grid-template-columns:1fr 1fr;gap:10px;align-content:start;}
+.cat-item{background:var(--card2);border-radius:8px;padding:12px;cursor:pointer;transition:transform .15s;text-align:center;border:1px solid transparent;}
+.cat-item:hover{transform:translateY(-2px);border-color:var(--accent);}
+.cat-item .item-icon{font-size:32px;margin-bottom:6px;}
+.cat-item .item-name{font-size:13px;font-weight:600;margin-bottom:4px;}
+.cat-item .item-desc{font-size:11px;color:var(--text2);margin-bottom:4px;min-height:14px;}
+.cat-item .item-price{font-size:12px;color:var(--gold);font-weight:700;}
+.cat-empty{padding:40px 20px;text-align:center;color:var(--text2);font-size:13px;grid-column:1/-1;}
+
+/* ===== MORE MODES ===== */
+.moremodes-content{display:flex;flex-direction:column;gap:12px;padding:8px 0;}
+.moremodes-item{background:var(--card2);border-radius:var(--radius);padding:16px;cursor:pointer;transition:transform .15s,box-shadow .15s;border:2px solid transparent;}
+.moremodes-item:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(170,221,255,.15);}
+.moremodes-item.active{border-color:var(--gold);}
+.moremodes-item .mm-icon{font-size:32px;margin-bottom:6px;}
+.moremodes-item .mm-name{font-size:16px;font-weight:700;color:var(--accent);margin-bottom:4px;}
+.moremodes-item .mm-desc{font-size:12px;color:var(--text2);}
+
+/* ===== AVATAR PICKER ===== */
+.avatar-picker{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:10px;padding:4px;}
+.avatar-option{width:48px;height:48px;border-radius:50%;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:26px;cursor:pointer;border:2px solid transparent;transition:border .2s;margin:0 auto;}
+.avatar-option:hover,.avatar-option.selected{border-color:var(--accent);}
+
+/* Confirm dialog */
+.confirm-dialog{text-align:center;}
+.confirm-dialog .confirm-text{margin:16px 0;font-size:15px;}
+.confirm-dialog .confirm-btns{display:flex;gap:10px;justify-content:center;}
+.confirm-dialog .confirm-btns button{padding:8px 24px;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600;}
+.confirm-dialog .btn-yes{background:var(--accent);color:#000;}
+.confirm-dialog .btn-no{background:#444;color:var(--text);}
+
+/* Toast notification */
+.toast{position:fixed;top:80px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.85);color:var(--gold);padding:10px 20px;border-radius:8px;font-size:14px;font-weight:600;z-index:9999;opacity:0;transition:opacity .25s;pointer-events:none;}
+.toast.show{opacity:1;}
+
+/* Floating Ice button */
+#iceBtn{position:fixed;z-index:999;width:44px;height:44px;border-radius:50%;background:rgba(170,220,255,.18);border:1.5px solid rgba(170,220,255,.35);display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer;touch-action:none;user-select:none;-webkit-user-select:none;transition:background .15s;left:6px;top:80px;}
+#iceBtn:active{background:rgba(170,220,255,.35);}
+
+/* Mobile layout tweaks */
+@media (max-width:700px){
+  body.touch-active #game-sidebar{display:none;}
+  body.touch-active #mobileHud{display:block;}
+  body.touch-active #controls{display:none;}
+  .level-grid{grid-template-columns:repeat(5,1fr);max-width:100%;}
+}
+@media (max-width:400px){
+  .home-content{grid-template-columns:1fr 2fr 1fr;gap:6px;padding:8px;}
+  .zone-icon{font-size:32px;}
+  .zone-title{font-size:16px;}
+  .zone-desc{font-size:11px;}
+  .home-currency-bubble{padding:4px 8px;font-size:11px;}
+  .bottom-bar .tab{padding:6px 8px;font-size:11px;}
+}
+</style>
+</head>
+<body>
+
+<!-- ===== HOME PAGE ===== -->
+<div id="page-home" class="page active">
+  <div class="top-bar">
+    <div class="profile-bubble" onclick="showPage('profile')">
+      <div class="avatar" id="home-avatar">🐾</div>
+      <div class="profile-info">
+        <div class="name-row">
+          <span class="nickname" id="home-nickname">未命名</span>
+          <span class="level-badge" id="home-level">Lv.1</span>
+        </div>
+        <div class="level-bar-wrap"><div class="level-bar" id="home-level-bar"></div></div>
+      </div>
+    </div>
+    <div class="home-currency-bubble">🔮 <span id="home-moonstones">0</span></div>
+    <div class="home-currency-bubble">🪨 <span id="home-gravel">0</span></div>
+    <div class="home-currency-bubble">🐾 <span id="home-stonecarvings">0</span></div>
+    <div class="home-currency-bubble">🎟️ <span id="home-tickets">0</span></div>
+    <div class="settings-btn" onclick="event.stopPropagation();openSettings()" title="设置">⚙️</div>
+  </div>
+
+  <div class="home-content">
+    <!-- 左 1/4: 预留 -->
+    <div class="col col-left">
+      <div style="color:#555;font-size:12px;text-align:center;">🔒 敬请期待</div>
+    </div>
+
+    <!-- 中 1/2 (合并 lc + rc) -->
+    <div class="col col-mid">
+      <div class="zone-upper" id="zone-start" onclick="onClickExplore()">
+        <div class="zone-icon">🗺️</div>
+        <div class="zone-title" id="zone-start-title">开始探索</div>
+        <div class="zone-desc" id="zone-start-desc">踏入神秘地下，搜寻月亮石 🔮</div>
+      </div>
+      <div class="zone-lower" onclick="openModal('modal-moremodes')">
+        <div class="zone-icon">🎮</div>
+        <div class="zone-title">更多模式</div>
+        <div class="zone-desc">探索不同的玩法</div>
+      </div>
+    </div>
+
+    <!-- 右 1/4: 活动 + 福利 + 热门 -->
+    <div class="col col-right">
+      <div class="top-row">
+        <div class="mini-card" onclick="openModal('modal-activities')"><span class="icon">🎊</span>活动</div>
+        <div class="mini-card" onclick="openModal('modal-welfare')"><span class="icon">🎁</span>福利</div>
+      </div>
+      <div class="hot-events">
+        <h3>🔥 热门活动</h3>
+        <div class="event-item">🎉 猫武士大冒险上线啦！</div>
+        <div class="event-item">🔮 探索10层找到月亮石</div>
+        <div class="event-item">🐾 与伙伴一起冒险</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bottom-bar">
+    <div class="tab active" onclick="showPage('home')"><div class="icon">🏠</div><span>首页</span></div>
+    <div class="tab" onclick="openModal('modal-bank')"><div class="icon">🏦</div><span>银行</span></div>
+    <div class="tab" onclick="openModal('modal-shop')"><div class="icon">🛒</div><span>商店</span></div>
+    <div class="tab" onclick="openModal('modal-bag')"><div class="icon">🎒</div><span>背包</span></div>
+  </div>
+</div>
+
+<!-- ===== PROFILE PAGE ===== -->
+<div id="page-profile" class="page">
+  <div class="back-btn" onclick="showPage('home')">←</div>
+  <div class="profile-page">
+    <div class="big-avatar" id="profile-avatar" onclick="openAvatarPicker()">🐾</div>
+    <div class="name-section">
+      <div class="name-line">
+        <span class="nickname" id="profile-nickname">未命名</span>
+        <span class="edit-btn" onclick="editNickname()">📝</span>
+      </div>
+      <div class="explorer-id" id="profile-explorer-id">探索号：--------</div>
+      <div class="bio" id="profile-bio">点击设置简介</div>
+    </div>
+    <div class="level-section">
+      <div class="level-info"><span id="profile-level">Lv.1</span><span id="profile-exp">30/100</span></div>
+      <div class="level-bar-wrap"><div class="level-bar" id="profile-level-bar"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== LEVEL MAP PAGE ===== -->
+<div id="page-levelmap" class="page">
+  <div class="back-btn" onclick="showPage('home')">←</div>
+  <div class="levelmap-page">
+    <div class="levelmap-header">
+      <h1>🗺️ 关卡地图</h1>
+      <p>共 10 层 · 第 5、10 层有 BOSS</p>
+    </div>
+    <div class="level-grid" id="level-grid">
+      <!-- Generated by JS -->
+    </div>
+    <div class="levelmap-actions">
+      <button class="action-btn secondary" onclick="resetProgress()">↻ 重置进度</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== TEXT EXPLORATION PAGE ===== -->
+<div id="page-textexp" class="page">
+  <div class="back-btn" onclick="exitTextExplore()">←</div>
+  <div class="textexp-page">
+    <div class="textexp-header">
+      <h1>📖 文字探索模式</h1>
+      <p>走遍 10 个地点，带回多少猎物 = 多少月亮石 · BOSS +5 🔮</p>
+    </div>
+    <div class="textexp-stats" id="textexp-stats">
+      <div class="textexp-stat">📍 <span id="tx-station">1</span>/10</div>
+      <div class="textexp-stat">❤️ <span id="tx-hp">5</span>/5</div>
+      <div class="textexp-stat">🐾 <span id="tx-prey">0</span></div>
+    </div>
+    <div class="textexp-loc" id="textexp-loc">—</div>
+    <div class="textexp-desc" id="textexp-desc">选择下方按钮开始你的巡逻。</div>
+    <div class="textexp-choices" id="textexp-choices"></div>
+    <div class="textexp-log" id="textexp-log"></div>
+  </div>
+</div>
+
+<!-- ===== GAME PAGE ===== -->
+<div id="page-game" class="page">
+  <div class="game-back" onclick="confirmExitGame()">←</div>
+  <div class="game-exit" onclick="confirmExitGame()">退出</div>
+  <div id="wrap" style="display:flex;flex:1;width:100%;min-height:0;">
+    <div id="canvasWrap" style="flex:1;display:flex;align-items:center;justify-content:center;min-width:0;position:relative;">
+      <canvas id="game" style="margin:auto;display:block;"></canvas>
+    </div>
+    <div id="game-sidebar">
+      <h2>🐾 猫武士大冒险</h2>
+      <div class="stat"><span class="label">Lv </span><span class="val" id="sLv">1</span> &nbsp;<span class="label">ATK </span><span class="val" id="sAtk">5</span></div>
+      <div class="stat"><span class="label">HP</span></div>
+      <div id="hpBar"><div id="hpFill" style="width:100%"></div></div>
+      <div class="stat"><span class="val" id="sHp">30/30</span></div>
+      <div class="stat"><span class="label">EXP</span></div>
+      <div id="expBar"><div id="expFill" style="width:0%"></div></div>
+      <div class="stat"><span class="val" id="sExp">0/15</span> <span id="sExpUp" style="display:none;cursor:pointer;color:var(--gold);font-weight:700;font-size:12px;margin-left:6px;" onclick="showLevelUpPrompt()">⬆️升级</span></div>
+      <div class="stat"><span class="label">🌿 </span><span class="val" id="sHerb">2</span> &nbsp;<span class="label">✦ </span><span class="val" id="sExpH">0</span></div>
+      <div class="stat" style="border-top:1px solid #333;padding-top:4px;margin-top:4px;"><span class="label">🔮 </span><span class="val" id="sMoon" style="color:#aaddff;">0</span> &nbsp;<span class="label">🪨 </span><span class="val" id="sGravel" style="color:#888;">0</span></div>
+      <div class="stat"><span class="label">Floor </span><span class="val" id="sFloor">1/10</span></div>
+      <div id="msgLog"></div>
+    </div>
+  </div>
+  <div id="controls">
+    <div>
+      <div id="dpad">
+        <span></span><button onclick="doMove(0,-1)">▲</button><span></span>
+        <button onclick="doMove(-1,0)">◄</button><button onclick="doMove(0,1)">▼</button><button onclick="doMove(1,0)">►</button>
+      </div>
+      <div id="actionBtns">
+        <button onclick="doAttack()">⚔️ Attack</button>
+        <button onclick="doHeal()">🌿 Heal</button>
+        <button onclick="doShop()">🏪 Shop</button>
+        <button onclick="doExpHerb()">✦ Exp</button>
+        <button onclick="doDescend()">▼ Down</button>
+        <button onclick="confirmExitGame()">🏠 Menu</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MOBILE HUD (game, on touch) ===== -->
+<div id="mobileHud">
+  <div class="hud-row" id="hudP1Row">
+    <span class="hud-label">🐾</span>
+    <div class="hud-hpbar"><div class="hud-hpfill" id="hudHpFill" style="width:100%"></div></div>
+    <span class="hud-val" id="hudHp">30/30</span>
+  </div>
+  <div class="hud-row" id="hudP2Row" style="display:none">
+    <span class="hud-label">🐼</span>
+    <div class="hud-hpbar"><div class="hud-hpfill" id="hudHpFill2" style="width:100%"></div></div>
+    <span class="hud-val" id="hudHp2">30/30</span>
+  </div>
+  <div class="hud-row">
+    <span class="hud-label">Lv</span><span class="hud-val" id="hudLv">1</span>
+    <span class="hud-label">ATK</span><span class="hud-val" id="hudAtk">5</span>
+    <span class="hud-label">EXP</span>
+    <div class="hud-expbar"><div class="hud-expfill" id="hudExpFill" style="width:0%"></div></div>
+    <span class="hud-val" id="hudExp" style="cursor:pointer;" onclick="if(G.shared.exp>=expToNext())showLevelUpPrompt()">0/15</span>
+  </div>
+  <div class="hud-row">
+    <span class="hud-val" id="hudHerbs">🌿2</span>
+    <span class="hud-val" id="hudFloor">🏠1/10</span>
+    <span class="hud-msg" id="hudMsg">Welcome!</span>
+  </div>
+</div>
+
+<!-- Touch controls (game) -->
+<div id="touchControls">
+  <div id="joystick">
+    <div id="joystickBase">
+      <div id="joystickKnob"></div>
+    </div>
+  </div>
+  <div id="touchActions">
+    <button id="btnAttack" ontouchstart="event.preventDefault();doAttack(1)"><span class="icon">⚔️</span><span class="label">Attack</span></button>
+    <button id="btnHeal" ontouchstart="event.preventDefault();doHeal()"><span class="icon">🌿</span><span class="label">Heal</span></button>
+    <button id="btnExp" ontouchstart="event.preventDefault();doExpHerb()"><span class="icon">✦</span><span class="label">Exp</span></button>
+    <button id="btnDown" ontouchstart="event.preventDefault();doDescend()"><span class="icon">▼</span><span class="label">Down</span></button>
+    <button id="btnShop" ontouchstart="event.preventDefault();doShop()"><span class="icon">🏪</span><span class="label">Shop</span></button>
+    <button id="btnRevive" style="display:none" ontouchstart="event.preventDefault();doRevive()"><span class="icon">✨</span><span class="label">Revive</span></button>
+    <button id="btnRestart" ontouchstart="event.preventDefault();newGame()"><span class="icon">🔄</span><span class="label">Retry</span></button>
+    <button id="btnSpeed" ontouchstart="event.preventDefault();toggleSpeed()"><span class="icon">⏩</span><span class="label">Speed</span></button>
+  </div>
+</div>
+
+<!-- In-game shop overlay -->
+<div id="shopOverlay">
+  <div id="shopBox">
+    <button id="shopCloseBtn" onclick="closeShop()">×</button>
+    <h2>🏪 Cave Shop</h2>
+    <div style="text-align:center;color:#888;margin-bottom:10px;font-size:13px;">EXP: <span id="shopExp">0</span></div>
+    <div id="shopItems"></div>
+    <div class="shopMsg" id="shopMsg"></div>
+    <div class="shopClose">Press P or Esc to close</div>
+  </div>
+</div>
+
+<!-- ===== HOME MODALS ===== -->
+
+<!-- Bank Modal -->
+<div id="modal-bank" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-close" onclick="closeModal('modal-bank')">×</div>
+    <h3>🏦 月亮石银行</h3>
+    <div class="modal-body bank-content">
+      <div class="bank-intro">在月亮石与碎石之间自由转换</div>
+      <div class="bank-exchange">
+        <div class="bank-rate">🔮 月亮石 <span class="arrow">⇄</span> 🪨 碎石</div>
+        <div style="text-align:center;font-size:12px;color:var(--text2);margin-bottom:10px;">汇率：1 🔮 ＝ 5 🪨</div>
+        <div class="bank-controls">
+          <input type="number" id="bank-amount" min="1" value="1">
+          <div class="eq" id="bank-eq">= 5 🪨</div>
+        </div>
+        <div class="bank-preview" id="bank-preview"></div>
+        <div class="bank-btns">
+          <button onclick="bankDecompose()">分解 🔮→🪨</button>
+          <button onclick="bankCompose()">合成 🪨→🔮</button>
+        </div>
+        <div class="bank-balance">余额：🔮 <span id="bank-bal-moon">0</span> · 🪨 <span id="bank-bal-rock">0</span></div>
+      </div>
+      <div class="bank-exchange" style="margin-top:18px;border-top:1px dashed #333;padding-top:14px;">
+        <div class="bank-rate">🔮 月亮石 + 🪨 碎石 <span class="arrow">→</span> 🐾 石刻</div>
+        <div style="text-align:center;font-size:12px;color:var(--text2);margin-bottom:10px;">汇率：3 🔮 + 30 🪨 ＝ 1 🐾</div>
+        <div class="bank-btns">
+          <button onclick="bankExchangeCarving()">兑换 1 🐾（-3🔮 -30🪨）</button>
+        </div>
+        <div class="bank-balance">石刻余额：🐾 <span id="bank-bal-paw">0</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Shop Modal -->
+<div id="modal-shop" class="modal-overlay">
+  <div class="modal" style="max-width:540px;">
+    <div class="modal-close" onclick="closeModal('modal-shop')">×</div>
+    <h3>🛒 商店</h3>
+    <div class="cat-content">
+      <div class="cat-sidebar" id="shop-cats"></div>
+      <div class="cat-main" id="shop-items"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Bag Modal -->
+<div id="modal-bag" class="modal-overlay">
+  <div class="modal" style="max-width:540px;">
+    <div class="modal-close" onclick="closeModal('modal-bag')">×</div>
+    <h3>🎒 背包</h3>
+    <div class="cat-content">
+      <div class="cat-sidebar" id="bag-cats"></div>
+      <div class="cat-main" id="bag-items"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Activities Modal -->
+<div id="modal-activities" class="modal-overlay">
+  <div class="modal" style="max-width:540px;">
+    <div class="modal-close" onclick="closeModal('modal-activities')">×</div>
+    <h3>🎊 活动</h3>
+    <div class="cat-content">
+      <div class="cat-sidebar" id="act-cats"></div>
+      <div class="cat-main" id="act-items"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Welfare Modal -->
+<div id="modal-welfare" class="modal-overlay">
+  <div class="modal" style="max-width:540px;">
+    <div class="modal-close" onclick="closeModal('modal-welfare')">×</div>
+    <h3>🎁 福利</h3>
+    <div class="cat-content">
+      <div class="cat-sidebar" id="wel-cats"></div>
+      <div class="cat-main" id="wel-items"></div>
+    </div>
+  </div>
+</div>
+
+<!-- More Modes Modal -->
+<div id="modal-moremodes" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-close" onclick="closeModal('modal-moremodes')">×</div>
+    <h3>🎮 更多模式</h3>
+    <div class="modal-body moremodes-content" id="moremodes-list">
+      <!-- Generated by JS -->
+    </div>
+  </div>
+</div>
+
+<!-- ===== Settings Modal ===== -->
+<div id="modal-settings" class="modal-overlay">
+  <div class="modal" style="max-width:380px;">
+    <div class="modal-close" onclick="closeModal('modal-settings')">×</div>
+    <h3>⚙️ 设置</h3>
+    <div class="modal-body">
+      <div class="settings-row">
+        <div class="settings-label">
+          <span class="lbl-icon">🎵</span>
+          <div>音乐<small>背景音乐（暂无）</small></div>
+        </div>
+        <div class="settings-toggle" id="toggle-music" onclick="toggleSetting('music')"></div>
+      </div>
+      <div class="settings-row">
+        <div class="settings-label">
+          <span class="lbl-icon">🔊</span>
+          <div>音效<small>打斗、拾取、升级等</small></div>
+        </div>
+        <div class="settings-toggle" id="toggle-sfx" onclick="toggleSetting('sfx')"></div>
+      </div>
+      <div class="settings-hint">⚙️ 设置会自动保存到本地<br>在所有 Thawpaw 游戏间共享</div>
+    </div>
+  </div>
+</div>
+
+<!-- Avatar Picker Modal -->
+<div id="modal-avatar" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-close" onclick="closeModal('modal-avatar')">×</div>
+    <h3>🐾 选择头像</h3>
+    <div class="modal-body">
+      <div class="avatar-picker" id="avatar-picker"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm dialog -->
+<div id="modal-confirm" class="modal-overlay">
+  <div class="modal" style="max-width:340px;">
+    <div class="modal-body confirm-dialog">
+      <div class="confirm-text" id="confirm-text">确定吗？</div>
+      <div class="confirm-btns">
+        <button class="btn-yes" id="confirm-yes">确定</button>
+        <button class="btn-no" onclick="closeConfirm()">取消</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Level Up Modal -->
+<div id="modal-levelup" class="modal-overlay">
+  <div class="modal" style="max-width:360px;text-align:center;">
+    <div class="modal-body" style="padding:10px;">
+      <div style="font-size:48px;margin-bottom:8px;">⭐</div>
+      <h3 style="color:var(--gold);font-size:20px;margin-bottom:6px;">升级了！</h3>
+      <div id="levelup-text" style="font-size:14px;color:var(--text2);margin-bottom:16px;line-height:1.6;">经验已满！是否现在升级？</div>
+      <div id="levelup-stats" style="font-size:13px;color:var(--gold);margin-bottom:16px;">HP +5 · ATK +2</div>
+      <div class="confirm-btns">
+        <button class="btn-yes" onclick="acceptLevelUp()">✅ 升级！</button>
+        <button class="btn-no" onclick="deferLevelUp()">稍后</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- Floating Ice button -->
+<div id="iceBtn">❄️</div>
+
+<script>
+// ===== FORMAT NUMBER (k/m) =====
+function formatNum(n){n=Number(n)||0;if(n>=1e6)return(n/1e6).toFixed(1).replace(/\.0$/,'')+'m';if(n>=1e3)return(n/1e3).toFixed(1).replace(/\.0$/,'')+'k';return n;}
+// ============================================================
+// 🐾 猫武士大冒险 (Moonstone Quest)
+// ============================================================
+
+// ===== CONSTANTS =====
+const MAP_W=40, MAP_H=20, FOV_RAD=5, MAX_FLOOR=10, TILE=28;
+const canvas=document.getElementById('game'), ctx=canvas.getContext('2d');
+
+// ===== AVATAR OPTIONS =====
+const AVATAR_OPTIONS=['🐾','🐱','🐼','🦊','🐯','🐻','🦁','🐺','🐨','🐰','🦝','🐹','🦄','🐲','🐉','🦅','🦉','🐸','🐢','🐍'];
+
+// ===== ENEMY DATA =====
+const EDATA={
+  rat:{ch:'🐭',col:'#999999',hp:8,atk:2,exp:5,name:'Rat'},
+  badger:{ch:'🐻',col:'#cc4444',hp:18,atk:5,exp:12,name:'Badger'},
+  fox:{ch:'🦊',col:'#ddaa33',hp:14,atk:4,exp:10,name:'Fox'},
+  snake:{ch:'🐍',col:'#44cc44',hp:16,atk:6,exp:14,name:'Snake'},
+  shadow_cat:{ch:'🐈‍⬛',col:'#bb44bb',hp:22,atk:7,exp:18,name:'Shadow Cat'},
+  dark_warrior:{ch:'🦇',col:'#ff4444',hp:30,atk:10,exp:25,name:'Bat'},
+  owl:{ch:'🦉',col:'#44bbbb',hp:12,atk:3,exp:8,name:'Owl'},
+  spider:{ch:'🕷️',col:'#aa44aa',hp:10,atk:3,exp:7,name:'Spider'},
+  adder:{ch:'🐉',col:'#ccaa33',hp:15,atk:8,exp:13,name:'Adder'},
+  dog:{ch:'🐕',col:'#ff6644',hp:28,atk:9,exp:20,name:'Dog'},
+  twoleg_trap:{ch:'🪤',col:'#dddddd',hp:35,atk:5,exp:22,name:'Twoleg Trap'},
+  rogue:{ch:'😼',col:'#4466dd',hp:24,atk:8,exp:20,name:'Rogue'},
+  badger_lord:{ch:'🐺',col:'#ff4444',hp:45,atk:12,exp:35,name:'Wolf'},
+  tigerstar_spirit:{ch:'👻',col:'#dd44ff',hp:60,atk:15,exp:50,name:'Tigerstar Spirit'},
+  // Boss variants
+  tigerstar_boss:{ch:'👑',col:'#ff44aa',hp:120,atk:22,exp:80,name:'Tigerstar Boss'},
+  shadow_boss:{ch:'🌑',col:'#7700ff',hp:200,atk:28,exp:120,name:'Moonstone Guardian'},
+};
+const FLOOR_ENEMIES={
+  1:['rat','rat'],2:['rat','rat','spider'],3:['rat','badger','fox'],
+  4:['badger','fox','snake','owl'],5:['fox','snake','shadow_cat','adder','tigerstar_boss'],
+  6:['snake','shadow_cat','dark_warrior','rogue'],
+  7:['shadow_cat','dark_warrior','dog','rogue'],
+  8:['dark_warrior','dog','rogue','twoleg_trap','badger_lord'],
+  9:['dog','rogue','badger_lord','tigerstar_spirit'],
+  10:['badger_lord','tigerstar_spirit','dark_warrior','rogue','dog','shadow_boss'],
+};
+
+// ===== IN-GAME SHOP (uses EXP, unchanged) =====
+const SHOP=[
+  {key:'1',name:'Healing Herb',icon:'🌿',desc:'Restore 15 HP',cost:8,type:'heal_herb'},
+  {key:'2',name:'Exp Herb',icon:'✦',desc:'+10 EXP',cost:12,type:'exp_herb'},
+  {key:'3',name:'Sharp Claw',icon:'†',desc:'ATK +1 permanently',cost:20,type:'atk_up'},
+  {key:'4',name:'Iron Fur',icon:'🛡',desc:'MaxHP +5 & full heal',cost:25,type:'max_hp_up'},
+  {key:'5',name:'StarClan Blessing',icon:'⭐',desc:'Full HP restore',cost:18,type:'full_heal'},
+  {key:'6',name:'Eagle Eyes',icon:'👁',desc:'FOV +1 permanently',cost:30,type:'fov_up'},
+  {key:'7',name:'Swift Paws',icon:'💨',desc:'Stun all enemies 1 turn',cost:15,type:'stun'},
+];
+
+// ============================================================
+// 📦 DATA TO FILL (ThawPaw 亲自添加)
+// ============================================================
+// 格式：每个数组里的对象都有 category 字段；category 用于左侧分类栏
+// category 不要重复，会自动归类
+
+// === Home 商店商品 (用 🔮 月亮石购买) ===
+const SHOP_ITEMS = [
+  { category: '工具', name: '入场券', icon: '🎟️', desc: '开启一次探索（双人模式除外）。', price: 2, currency: '🐾' },
+];
+
+// === Home 活动 ===
+const ACTIVITIES = [
+  // { category: '日常', name: '示例活动', icon: '🎯', desc: '描述', reward: '🔮 x10' },
+];
+
+// === Home 福利 ===
+const WELFARE = [
+  // { category: '新手', name: '示例福利', icon: '🎁', desc: '描述', reward: '🔮 x5' },
+];
+
+// === Home 背包物品 ===
+const BAG_ITEMS = [
+  // { category: '材料', name: '示例物品', icon: '🧪', desc: '描述', count: 1 },
+];
+
+// ===== HOME CURRENCIES (持久化) =====
+let homeData = { moonstones: 0, gravel: 0, stoneCarvings: 0, tickets: 0 };
+
+// ===== SETTINGS (音乐/音效，在所有 Thawpaw 游戏间共享) =====
+let settings = { music: true, sfx: true };
+function loadSettings(){
+  try{ const s=localStorage.getItem('thawpaw_settings'); if(s) settings=Object.assign(settings,JSON.parse(s)); }catch(e){}
+}
+function saveSettings(){
+  try{ localStorage.setItem('thawpaw_settings',JSON.stringify(settings)); }catch(e){}
+}
+function openSettings(){
+  refreshSettingsUI();
+  openModal('modal-settings');
+}
+function refreshSettingsUI(){
+  const m=document.getElementById('toggle-music');
+  const s=document.getElementById('toggle-sfx');
+  if(m) m.classList.toggle('on', !!settings.music);
+  if(s) s.classList.toggle('on', !!settings.sfx);
+}
+function toggleSetting(key){
+  settings[key]=!settings[key];
+  saveSettings();
+  refreshSettingsUI();
+  if(key==='sfx' && settings.sfx) sfxPickup(); // 试听一下
+}
+
+// ===== PROFILE (持久化) =====
+let profile = {
+  nickname: '未命名',
+  avatar: '🐾',
+  bio: '点击设置简介',
+  explorerId: getUnifiedPlayerId(),
+};
+// 统一 ID：优先用 portal 的 8 位数字 ID
+function getUnifiedPlayerId(){
+  const activeId = localStorage.getItem('thawpawActiveId');
+  if(activeId) return activeId;
+  let id = localStorage.getItem('thawpawPlayerId');
+  if(!id){
+    id = String(Math.floor(10000000 + Math.random() * 90000000));
+    localStorage.setItem('thawpawPlayerId', id);
+  }
+  return id;
+}
+// 统一昵称：从 portal 共享 profile 读
+function getSharedNickname(){
+  const id = getUnifiedPlayerId();
+  try{
+    const players = JSON.parse(localStorage.getItem('thawpawPlayers') || '{}');
+    if(players[id] && players[id].nickname) return players[id].nickname;
+  }catch(e){}
+  try{
+    const old = JSON.parse(localStorage.getItem('thawpawPlayer') || '{}');
+    if(old.nickname) return old.nickname;
+  }catch(e){}
+  return '未命名';
+}
+function setSharedNickname(nickname){
+  const id = getUnifiedPlayerId();
+  let players;
+  try{ players = JSON.parse(localStorage.getItem('thawpawPlayers') || '{}'); }
+  catch(e){ players = {}; }
+  if(!players[id]){
+    players[id] = {nickname, avatar:'🐾', bio:'', firstSeen:Date.now(), lastSeen:Date.now()};
+  } else {
+    players[id].nickname = nickname;
+    players[id].lastSeen = Date.now();
+  }
+  localStorage.setItem('thawpawPlayers', JSON.stringify(players));
+  if(!localStorage.getItem('thawpawActiveId')){
+    localStorage.setItem('thawpawActiveId', id);
+  }
+}
+
+// ===== MODE =====
+let mode='solo'; // 'solo' or 'duo'
+
+// ===== GAME STATE =====
+let G={
+  state:'home', // home, levelmap, playing, shop, dead, won, title
+  floor:1,
+  maxFloorReached:1,
+  grid:null, rooms:null, stairsPos:null,
+  seen:null,
+  enemies:[], items:[],
+  shared:{hp:30,maxHp:30,atk:5,exp:0,level:1,herbs:2,expHerbs:0,kills:0,fovBonus:0},
+  p1:{x:0,y:0,hp:30,maxHp:30,alive:true},
+  p2:{x:0,y:0,hp:30,maxHp:30,alive:true},
+  p1Acted:false, p2Acted:false,
+  messages:[],
+  shopMsg:'',
+  totalSpent:0,
+  turnCount:0,
+};
+
+function syncPlayerAlias(){G.player=G.shared;}
+syncPlayerAlias();
+function fovRadius(){return FOV_RAD+G.shared.fovBonus;}
+function expToNext(){return G.shared.level*15;}
+function isSolo(){return mode==='solo';}
+function isDuo(){return mode==='duo';}
+function getPlayer(idx){return idx===1?G.p1:G.p2;}
+function getAlivePlayers(){
+  const out=[];
+  if(isSolo()){if(G.p1.alive)out.push(1);return out;}
+  if(G.p1.alive)out.push(1);
+  if(G.p2.alive)out.push(2);
+  return out;
+}
+function addMsg(txt,cls){
+  G.messages.push({txt,cls:cls||''});
+  if(G.messages.length>50)G.messages=G.messages.slice(-50);
+}
+
+// ============================================================
+// 🔄 PAGE & MODAL MANAGEMENT
+// ============================================================
+function showPage(page){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  const el=document.getElementById('page-'+page);
+  if(el) el.classList.add('active');
+  if(page==='game'){
+    G.state='playing';
+    showTouchControls();
+    // 🐛 FIX: desktop canvas was 0×0 because showTouchControls() only
+    // triggers resize on touch devices. Now resizeCanvas runs unconditionally.
+    if(typeof resizeCanvas==='function') setTimeout(resizeCanvas,50);
+  }else{
+    hideTouchControls();
+    if(page==='levelmap'){G.state='levelmap';renderLevelMap();}
+    else if(page==='home'){G.state='home';refreshHomeUI();}
+    else if(page==='profile'){G.state='home';refreshProfileUI();}
+  }
+}
+// Touch control visibility — only during gameplay
+function showTouchControls(){
+  if(!touchSupported) return;
+  const tc=document.getElementById('touchControls');
+  if(tc&&!tc.classList.contains('active')) tc.classList.add('active');
+  document.body.classList.add('touch-active');
+  if(typeof resizeCanvas==='function') setTimeout(resizeCanvas,50);
+}
+function hideTouchControls(){
+  const tc=document.getElementById('touchControls');
+  if(tc&&tc.classList.contains('active')) tc.classList.remove('active');
+  document.body.classList.remove('touch-active');
+}
+function openModal(id){
+  const m=document.getElementById(id);
+  if(m) m.classList.add('active');
+  // Populate content as needed
+  if(id==='modal-bank') refreshBankUI();
+  if(id==='modal-shop') renderCatPage('shop');
+  if(id==='modal-bag') renderCatPage('bag');
+  if(id==='modal-activities') renderCatPage('activities');
+  if(id==='modal-welfare') renderCatPage('welfare');
+  if(id==='modal-moremodes') renderMoreModes();
+  if(id==='modal-avatar') renderAvatarPicker();
+}
+function closeModal(id){
+  const m=document.getElementById(id);
+  if(m) m.classList.remove('active');
+}
+function showConfirm(text, onYes){
+  document.getElementById('confirm-text').textContent=text;
+  const yesBtn=document.getElementById('confirm-yes');
+  yesBtn.onclick=()=>{closeConfirm();onYes();};
+  document.getElementById('modal-confirm').classList.add('active');
+}
+function closeConfirm(){
+  document.getElementById('modal-confirm').classList.remove('active');
+}
+let toastTimer=null;
+function showToast(msg,ms=1500){
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.classList.add('show');
+  if(toastTimer) clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('show'),ms);
+}
+
+// ============================================================
+// 🏠 HOME UI
+// ============================================================
+function refreshHomeUI(){
+  document.getElementById('home-avatar').textContent=profile.avatar;
+  document.getElementById('home-nickname').textContent=profile.nickname;
+  document.getElementById('home-level').textContent='Lv.'+G.shared.level;
+  document.getElementById('home-level-bar').style.width=Math.min(100,(G.shared.exp/expToNext()*100))+'%';
+  document.getElementById('home-moonstones').textContent=formatNum(homeData.moonstones);
+  document.getElementById('home-gravel').textContent=formatNum(homeData.gravel);
+  document.getElementById('home-stonecarvings').textContent=formatNum(homeData.stoneCarvings);
+  document.getElementById('home-tickets').textContent=formatNum(homeData.tickets);
+  // Update start/continue button
+  const id = getUnifiedPlayerId();
+  const hasSave = mode==='text_explore' ? !!localStorage.getItem('text_explore_save_'+id) : !!localStorage.getItem(_dungeonSaveKey());
+  if(mode==='text_explore'){
+    const txSave=!!localStorage.getItem('text_explore_save_'+id);
+    document.getElementById('zone-start-title').textContent = txSave && !TX.finished ? '继续探索' : '开始探索';
+    document.getElementById('zone-start-desc').textContent = '📖 文字探索模式：10 站巡逻，猎物换月亮石。需要 1 张入场券 🎟️'; // 文字探索需要入场券
+  }else{
+    document.getElementById('zone-start-title').textContent = hasSave ? '继续探索' : '开始探索';
+    document.getElementById('zone-start-desc').textContent = hasSave ? `当前进度：第 ${G.maxFloorReached} / ${MAX_FLOOR} 层` : '踏入神秘地下，搜寻月亮石 🔮';
+  }
+}
+function refreshProfileUI(){
+  document.getElementById('profile-avatar').textContent=profile.avatar;
+  document.getElementById('profile-nickname').textContent=profile.nickname;
+  document.getElementById('profile-explorer-id').textContent='探索号：'+profile.explorerId;
+  document.getElementById('profile-bio').textContent=profile.bio;
+  document.getElementById('profile-level').textContent='Lv.'+G.shared.level;
+  document.getElementById('profile-exp').textContent=G.shared.exp+'/'+expToNext();
+  document.getElementById('profile-level-bar').style.width=Math.min(100,(G.shared.exp/expToNext()*100))+'%';
+}
+function onClickExplore(){
+  if(mode==='text_explore'){
+    startTextExplore();
+    return;
+  }
+  // 经典模式 + 双人模式都不需要入场券
+  showPage('levelmap');
+}
+
+// ============================================================
+// 🗺️ LEVEL MAP
+// ============================================================
+function renderLevelMap(){
+  const grid=document.getElementById('level-grid');
+  grid.innerHTML='';
+  for(let i=1;i<=MAX_FLOOR;i++){
+    const isBoss = (i===5 || i===10);
+    const unlocked = i<=G.maxFloorReached;
+    const current = i===G.floor;
+    const card=document.createElement('div');
+    card.className='level-card'+(isBoss?' boss':'')+(current?' current':'')+(unlocked?'':' locked');
+    card.innerHTML=`
+      <div class="lvl-icon">${isBoss?'💀':(current?'📍':'🌲')}</div>
+      <div class="lvl-num">${i}</div>
+      <div class="lvl-status">${isBoss?'BOSS':(unlocked?(current?'当前':'解锁'):'🔒')}</div>
+    `;
+    if(unlocked){
+      card.onclick=()=>enterFloor(i);
+    }
+    grid.appendChild(card);
+  }
+}
+function enterFloor(n){
+  G.floor=n;
+  if(n>G.maxFloorReached) G.maxFloorReached=n;
+  newGame(); // start a fresh run on this floor
+  saveGame();
+  showPage('game');
+}
+function resetProgress(){
+  showConfirm('确定要重置进度吗？\n将清除当前存档与关卡进度。',()=>{
+    try{localStorage.removeItem(_dungeonSaveKey());}catch(e){}
+    G.floor=1; G.maxFloorReached=1;
+    G.shared={hp:30,maxHp:30,atk:5,exp:0,level:1,herbs:2,expHerbs:0,kills:0,fovBonus:0};
+    G.p1={x:0,y:0,hp:30,maxHp:30,alive:true};
+    G.p2={x:0,y:0,hp:30,maxHp:30,alive:true};
+    showToast('进度已重置 ✨');
+    renderLevelMap();
+    refreshHomeUI();
+  });
+}
+
+// ============================================================
+// 📖 TEXT EXPLORATION MODE
+// ============================================================
+const TX_LOCATIONS = [
+  {name:'高岩', icon:'⚡', desc:'雷族的领地。高高的岩石上闪电般的身影，空气中充满战争的回忆。'},
+  {name:'沼泽地', icon:'🌑', desc:'影族的领地。潮湿的草丛下藏着未知的危险。'},
+  {name:'高地平原', icon:'💨', desc:'风族的领地。荒原上的风带着猎物奔跑的脚步声。'},
+  {name:'河边', icon:'🌊', desc:'河族的领地。水边的鱼在闪着银光。'},
+  {name:'枝头', icon:'🌿', desc:'天族的领地。树枝上眺望远方，发现另一处荒野。'},
+  {name:'古树洞', icon:'🌳', desc:'一棵千年老树的空洞，里面隐约有低鸣声。'},
+  {name:'荆棘丛', icon:'🥀', desc:'利刺凛冽的荆棘丛。谨慎你会划伤。'},
+  {name:'鸦窝', icon:'🪶', desc:'悬崖上的鸦窝。鸦蛋是上好的补给。'},
+  {name:'原鼠山', icon:'⛰️', desc:'小山顶上的原鼠窝。果腹的好地方。'},
+  {name:'迷雾林', icon:'🌫️', desc:'会走丢的迷雾森林。战斗谨慎。'},
+  {name:'月亮石洞', icon:'🔮', desc:'传说中的月亮石洞。陰冷而神秘。'},
+  {name:'鹰巢', icon:'🦅', desc:'悬崖边上的鹰巢。那里可能镶着金器。'},
+  {name:'倒下的橡树', icon:'🪵', desc:'一棵倒塌的古橡树。树干下可能藏着草药。'},
+  {name:'小溪', icon:'💧', desc:'山间小溪。水声清亮，能听到生物的动静。'},
+  {name:'野苗圃', icon:'🌱', desc:'肥沃的土壤里生长着野苗。可能有惊喜。'},
+];
+
+const TX_EVENTS = [
+  {id:'hunt', desc:'看到一只肥美的田鼠！', choices:[
+    {label:'⚔️ 悄悄扑上去', prey:1, hpDelta:0, success:0.75},
+    {label:'💨 从草丛中迂回', prey:1, hpDelta:0, success:0.6},
+  ]},
+  {id:'hunt2', desc:'一只飞鸟低空掠过！', choices:[
+    {label:'🏹 跳起拍击', prey:1, hpDelta:0, success:0.55},
+    {label:'🌿 设置陷阱', prey:1, hpDelta:0, success:0.7},
+  ]},
+  {id:'fish', desc:'岸边有鱼在游动。', choices:[
+    {label:'🐟 静等咬钩', prey:1, hpDelta:0, success:0.8},
+    {label:'🦷 徒手抓鱼', prey:1, hpDelta:-1, success:0.5},
+  ]},
+  {id:'herb', desc:'发现了藥草！', choices:[
+    {label:'🌿 采集药草', prey:0, hpDelta:1, success:1},
+  ]},
+  {id:'trap', desc:'一个狐狸陷阱出现了！', choices:[
+    {label:'🛡️ 小心避开', prey:0, hpDelta:0, success:0.7},
+    {label:'💨 跳过陷阱', prey:0, hpDelta:-1, success:0.4},
+  ]},
+  {id:'rival', desc:'遇到另一只武士在巡逻。', choices:[
+    {label:'🐾 共享猎物', prey:1, hpDelta:0, success:0.7},
+    {label:'🤝 交谈', prey:0, hpDelta:0, success:0.9, special:'hint'},
+  ]},
+  {id:'strange', desc:'奇怪的脚步声从草丛中传来。', choices:[
+    {label:'🔍 仔细察看', prey:1, hpDelta:-1, success:0.5},
+    {label:'🏃 赶紧走开', prey:0, hpDelta:0, success:0.9},
+  ]},
+  {id:'cache', desc:'发现一个隐藏的猎物堆！', choices:[
+    {label:'📦 查看内容', prey:1, hpDelta:0, success:0.7},
+    {label:'🚫 不打扰走开', prey:0, hpDelta:0, success:1},
+  ]},
+];
+
+const TX_BOSSES = [
+  {name:'🐉 巨蛇', icon:'🐉', hp:5, dmg:1, atk:1, def:1},
+  {name:'🦅 黑鹰', icon:'🦅', hp:6, dmg:1, atk:2, def:1},
+  {name:'🐺 狼王', icon:'🐺', hp:7, dmg:2, atk:1, def:2},
+  {name:'👹 暗森林猫', icon:'👹', hp:8, dmg:2, atk:2, def:2},
+];
+
+let TX = {
+  state:'idle', // idle, station, boss, finished, dead
+  station:0,
+  hp:5, maxHp:5,
+  prey:0,
+  bossKills:0,
+  boss:null,
+  bossHp:0,
+  loc:null,
+  event:null,
+  log:[],
+  finished:false,
+};
+
+function txSave(){try{localStorage.setItem('text_explore_save_'+getUnifiedPlayerId(),JSON.stringify(TX));}catch(e){}}
+function txInit(){
+  const id = getUnifiedPlayerId();
+  let save = localStorage.getItem('text_explore_save_'+id);
+  if(!save){
+    // 迁移老存档
+    const old = localStorage.getItem('text_explore_save');
+    if(old){
+      localStorage.setItem('text_explore_save_'+id, old);
+      localStorage.removeItem('text_explore_save');
+      save = old;
+    }
+  }
+  if(save){
+    try{ TX=Object.assign(TX,JSON.parse(save)); }catch(e){ txReset(false); }
+  }else{
+    txReset(false);
+  }
+}
+function txReset(consumeTicket){
+  if(consumeTicket && homeData.tickets<1){
+    showToast('🎟️ 入场券不够！去商店买一个');
+    return false;
+  }
+  if(consumeTicket){
+    homeData.tickets-=1;
+    saveHome();
+    refreshHomeUI();
+  }
+  TX={
+    state:'station', station:0, hp:5, maxHp:5, prey:0,
+    bossKills:0, boss:null, bossHp:0,
+    loc:null, event:null, log:[], finished:false,
+  };
+  txSave();
+  return true;
+}
+function txLog(msg,cls){
+  const el=document.getElementById('textexp-log');
+  if(!el) return;
+  const time=new Date().toLocaleTimeString('zh-CN',{hour12:false,hour:'2-digit',minute:'2-digit'});
+  const span=document.createElement('div');
+  span.innerHTML=`<span style="color:#555">[${time}]</span> <span class="${cls||''}">${msg}</span>`;
+  el.appendChild(span);
+  el.scrollTop=el.scrollHeight;
+}
+function txRender(){
+  document.getElementById('tx-station').textContent=TX.station;
+  document.getElementById('tx-hp').textContent=Math.max(0,TX.hp);
+  document.getElementById('tx-prey').textContent=TX.prey;
+  document.getElementById('textexp-loc').textContent=TX.loc?`${TX.loc.icon} ${TX.loc.name}`:'—';
+}
+function txStartStation(){
+  TX.station+=1;
+  // BOSS 站: 5 和 10
+  if(TX.station===5 || TX.station===10){
+    TX.boss=TX_BOSSES[Math.floor(Math.random()*TX_BOSSES.length)];
+    TX.bossHp=TX.boss.hp;
+    TX.state='boss';
+    txSave();
+    txRender();
+    document.getElementById('textexp-desc').innerHTML=`<b>⚠️ BOSS 出现！</b><br>${TX.boss.name} 挡住了去路！<br>BOSS 生命：${'🔴'.repeat(TX.bossHp)}`;
+    txLog(`⚠️ BOSS 战！${TX.boss.name}（${TX.boss.hp} 血）`,'log-boss');
+    txShowBossChoices();
+    return;
+  }
+  // 普通站
+  TX.loc=TX_LOCATIONS[Math.floor(Math.random()*TX_LOCATIONS.length)];
+  TX.event=TX_EVENTS[Math.floor(Math.random()*TX_EVENTS.length)];
+  TX.state='station';
+  txSave();
+  txRender();
+  document.getElementById('textexp-desc').textContent=`${TX.loc.icon} ${TX.loc.name} — ${TX.loc.desc}\n\n${TX.event.desc}`;
+  txLog(`📍 第 ${TX.station} 站：${TX.loc.name} — ${TX.event.desc}`);
+  const choicesEl=document.getElementById('textexp-choices');
+  choicesEl.innerHTML='';
+  TX.event.choices.forEach((c,i)=>{
+    const btn=document.createElement('button');
+    btn.textContent=c.label;
+    btn.onclick=()=>txChooseStation(i);
+    choicesEl.appendChild(btn);
+  });
+}
+function txChooseStation(i){
+  const c=TX.event.choices[i];
+  const roll=Math.random();
+  const success=c.success>=1 || roll<c.success;
+  if(c.special==='hint'){
+    // 与其交互后的提示
+    if(success){
+      txLog('🐾 那位武士分享了一些猎物的位置！+1 🐾','log-prey');
+      TX.prey+=1;
+    }else{
+      txLog('他只是点了点头。','log-prey');
+    }
+  }else if(success){
+    if(c.prey>0){ txLog(`✅ 成功！+${c.prey} 🐾`,'log-prey'); TX.prey+=c.prey; }
+    if(c.hpDelta>0){ txLog(`💚 +${c.hpDelta} ❤️`,'log-heal'); TX.hp=Math.min(TX.maxHp,TX.hp+c.hpDelta); }
+  }else{
+    if(c.hpDelta<0){ txLog(`❌ 失败了… ${c.hpDelta} ❤️`,'log-hurt'); TX.hp+=c.hpDelta; }
+    else { txLog('❌ 这次没有收获。','log-hurt'); }
+  }
+  // 扣血判定
+  if(TX.hp<=0){
+    TX.state='dead';
+    txSave();
+    txRender();
+    setTimeout(()=>txEnd(false),400);
+    return;
+  }
+  txSave();
+  txRender();
+  // 下一站或结束
+  setTimeout(()=>{
+    if(TX.station>=10){ txEnd(true); }
+    else { txStartStation(); }
+  },800);
+}
+function txShowBossChoices(){
+  const choicesEl=document.getElementById('textexp-choices');
+  choicesEl.innerHTML='';
+  const opts=[
+    {label:'⚔️ 攻击', action:'attack'},
+    {label:'🛡️ 防御反击', action:'defend'},
+    {label:'💨 闪避', action:'dodge'},
+  ];
+  opts.forEach(o=>{
+    const btn=document.createElement('button');
+    btn.textContent=o.label;
+    btn.onclick=()=>txBossAction(o.action);
+    choicesEl.appendChild(btn);
+  });
+}
+function txBossAction(act){
+  const b=TX.boss;
+  let playerDmg=0;
+  if(act==='attack'){
+    playerDmg=Math.max(1, b.atk - 1 + Math.floor(Math.random()*2));
+    txLog(`⚔️ 你攻击！造成 ${playerDmg} 点伤害`,'log-boss');
+  }else if(act==='defend'){
+    if(Math.random()<0.6){
+      playerDmg=Math.max(1,b.atk-1);
+      txLog(`🛡️ 防御成功！反击 ${playerDmg} 点`,'log-boss');
+    }else{
+      txLog('🛡️ 防御被突破！','log-hurt');
+    }
+  }else if(act==='dodge'){
+    if(Math.random()<0.5){
+      playerDmg=Math.max(2,b.atk);
+      txLog(`💨 闪避成功！造成 ${playerDmg} 点伤害！`,'log-boss');
+    }else{
+      txLog('💨 闪避失败！','log-hurt');
+    }
+  }
+  TX.bossHp-=playerDmg;
+  // BOSS 攻击
+  if(TX.bossHp>0){
+    let bossDmg=Math.max(1,b.dmg - (act==='defend'&&Math.random()<0.6?1:0) + Math.floor(Math.random()*b.dmg));
+    if(act==='dodge'&&Math.random()<0.5) bossDmg=0;
+    if(bossDmg>0){
+      TX.hp-=bossDmg;
+      txLog(`💥 BOSS 反击！-${bossDmg} ❤️`,'log-hurt');
+    }
+  }
+  txSave(); txRender();
+  // 胜负判定
+  if(TX.bossHp<=0){
+    txLog(`🎉 击败 BOSS！+5 🔮`,'log-boss');
+    TX.bossKills+=1;
+    homeData.moonstones+=5;
+    saveHome();
+    refreshHomeUI();
+    if(TX.station>=10){ setTimeout(()=>txEnd(true),500); }
+    else { setTimeout(txStartStation,800); }
+    return;
+  }
+  if(TX.hp<=0){
+    TX.state='dead';
+    txSave(); txRender();
+    setTimeout(()=>txEnd(false),500);
+    return;
+  }
+  // 继续 BOSS 战
+  document.getElementById('textexp-desc').innerHTML=`<b>⚠️ ${b.name}</b> · 剩余 ${Math.max(0,TX.bossHp)} 血<br>你：${'★'.repeat(Math.max(0,TX.hp))}${'☆'.repeat(TX.maxHp-Math.max(0,TX.hp))}<br>BOSS：${'🔴'.repeat(Math.max(0,TX.bossHp))}`;
+}
+function txEnd(success){
+  TX.state=success?'finished':'dead';
+  TX.finished=true;
+  txSave();
+  txRender();
+  const choicesEl=document.getElementById('textexp-choices');
+  choicesEl.innerHTML='';
+  let title, msg, moonGained=TX.prey;
+  if(success){
+    title='🎉 巡逻成功！';
+    msg=`你完成了 10 站巡逻！<br>🐾 带回了 <b>${TX.prey}</b> 份猎物 → +${TX.prey} 🔮<br>💀 击败 BOSS ×${TX.bossKills} → +${TX.bossKills*5} 🔮<br>🔮 合计获得 <b>${moonGained+TX.bossKills*5}</b> 月亮石`;
+    homeData.moonstones+=TX.prey;
+  }else{
+    title='💀 巡逻失败…';
+    msg=`你在第 ${TX.station} 站倒下了…<br>🐾 带回了 <b>${TX.prey}</b> 份猎物 → +${TX.prey} 🔮<br>💀 击败 BOSS ×${TX.bossKills} → +${TX.bossKills*5} 🔮<br>🔮 合计获得 <b>${moonGained+TX.bossKills*5}</b> 月亮石`;
+    homeData.moonstones+=TX.prey;
+  }
+  saveHome(); refreshHomeUI();
+  document.getElementById('textexp-desc').innerHTML=`<b>${title}</b><br>${msg}`;
+  // 操作按钮
+  const btn1=document.createElement('button');
+  btn1.textContent='🔄 再来一次（消耗 1 🎟️）';
+  btn1.onclick=()=>{
+    if(!txReset(true)) return;
+    document.getElementById('textexp-log').innerHTML='';
+    txStartStation();
+  };
+  choicesEl.appendChild(btn1);
+  const btn2=document.createElement('button');
+  btn2.textContent='🏠 回到首页';
+  btn2.onclick=()=>{ exitTextExplore(); };
+  choicesEl.appendChild(btn2);
+}
+function startTextExplore(){
+  if(mode!=='text_explore'){ showToast('请先在更多模式中选择「文字探索模式」'); return; }
+  txInit();
+  txRender();
+  showPage('textexp');
+  document.getElementById('textexp-log').innerHTML='';
+  if(TX.station===0 || TX.finished){
+    // 还没开始或上次完成了
+    if(!txReset(true)) return; // 消耗入场券
+    document.getElementById('textexp-log').innerHTML='';
+    txLog('🌙 文字探索模式开始！','log-boss');
+    txStartStation();
+  }else{
+    // 继续（不消耗入场券）
+    document.getElementById('textexp-log').innerHTML='';
+    txLog('🌙 继续上次巡逻…','log-boss');
+    if(TX.state==='station' && TX.event){
+      // 重渲染当前站（不递增 station）
+      txRender();
+      document.getElementById('textexp-desc').textContent=`${TX.loc.icon} ${TX.loc.name} — ${TX.loc.desc}\n\n${TX.event.desc}`;
+      const choicesEl=document.getElementById('textexp-choices');
+      choicesEl.innerHTML='';
+      TX.event.choices.forEach((c,i)=>{
+        const btn=document.createElement('button');
+        btn.textContent=c.label;
+        btn.onclick=()=>txChooseStation(i);
+        choicesEl.appendChild(btn);
+      });
+    }else if(TX.state==='boss' && TX.boss){
+      txRender();
+      document.getElementById('textexp-desc').innerHTML=`<b>⚠️ BOSS 出现！</b><br>${TX.boss.name} 挡住了去路！<br>BOSS 生命：${'🔴'.repeat(Math.max(0,TX.bossHp))}`;
+      txShowBossChoices();
+    }else{
+      // 状态异常，重置
+      if(!txReset(true)) return;
+      txLog('🌙 文字探索模式开始！','log-boss');
+      txStartStation();
+    }
+  }
+}
+function exitTextExplore(){
+  showPage('home');
+}
+
+// ============================================================
+// 🏦 BANK
+// ============================================================
+function refreshBankUI(){
+  document.getElementById('bank-bal-moon').textContent=homeData.moonstones;
+  document.getElementById('bank-bal-rock').textContent=homeData.gravel;
+  const pawEl=document.getElementById('bank-bal-paw');
+  if(pawEl) pawEl.textContent=homeData.stoneCarvings;
+  updateBankPreview();
+}
+function updateBankPreview(){
+  const amt=Math.max(1,parseInt(document.getElementById('bank-amount').value)||1);
+  document.getElementById('bank-eq').textContent='= '+(amt*5)+' 🪨';
+}
+document.addEventListener('input',e=>{
+  if(e.target.id==='bank-amount') updateBankPreview();
+});
+function bankDecompose(){
+  const amt=Math.max(1,parseInt(document.getElementById('bank-amount').value)||1);
+  if(homeData.moonstones<amt){showToast('🔮 月亮石不够！');return;}
+  homeData.moonstones-=amt;
+  homeData.gravel+=amt*5;
+  saveHome();
+  refreshBankUI();
+  refreshHomeUI();
+  showToast('✅ 分解成功：-1 🔮 → +5 🪨');
+}
+function bankCompose(){
+  const amt=Math.max(1,parseInt(document.getElementById('bank-amount').value)||1);
+  const cost=amt*5;
+  if(homeData.gravel<cost){showToast('🪨 碎石不够！需要 '+cost);return;}
+  homeData.gravel-=cost;
+  homeData.moonstones+=amt;
+  saveHome();
+  refreshBankUI();
+  refreshHomeUI();
+  showToast('✅ 合成成功：-'+cost+' 🪨 → +'+amt+' 🔮');
+}
+function bankExchangeCarving(){
+  // 3 🔮 + 30 🪨 = 1 🐾
+  const needMoon=3, needRock=30;
+  if(homeData.moonstones<needMoon){showToast('🔮 月亮石不够！需要 '+needMoon);return;}
+  if(homeData.gravel<needRock){showToast('🪨 碎石不够！需要 '+needRock);return;}
+  homeData.moonstones-=needMoon;
+  homeData.gravel-=needRock;
+  homeData.stoneCarvings+=1;
+  saveHome();
+  refreshBankUI();
+  refreshHomeUI();
+  showToast('✅ 兑换成功：-3 🔮 -30 🪨 → +1 🐾');
+}
+
+function buyShopItem(it){
+  // 入坳券：2 🐾
+  if(it.name==='入场券' && it.currency==='🐾'){
+    if(homeData.stoneCarvings<it.price){showToast('🐾 石刻不够！需要 '+it.price);return;}
+    homeData.stoneCarvings-=it.price;
+    homeData.tickets=(homeData.tickets||0)+1;
+    saveHome();
+    refreshHomeUI();
+    if(typeof refreshBankUI==='function') refreshBankUI();
+    showToast('✅ 购买成功：-2 🐾 → +1 🎟️');
+    return;
+  }
+  // Future: other items
+  showToast('💡 这个商品暂未开售');
+}
+
+// ============================================================
+// 🛒 CATEGORY PAGES (Shop / Bag / Activities / Welfare)
+// ============================================================
+// Generic renderer: takes a config {cats, items, containerId, onClick}
+// items: array of {category, name, icon, desc, ...}
+function renderCatPage(which){
+  let dataArr, catsEl, itemsEl, withCount;
+  if(which==='shop'){dataArr=SHOP_ITEMS;catsEl='shop-cats';itemsEl='shop-items';withCount=false;}
+  else if(which==='bag'){dataArr=BAG_ITEMS;catsEl='bag-cats';itemsEl='bag-items';withCount=true;}
+  else if(which==='activities'){dataArr=ACTIVITIES;catsEl='act-cats';itemsEl='act-items';withCount=false;}
+  else if(which==='welfare'){dataArr=WELFARE;catsEl='wel-cats';itemsEl='wel-items';withCount=false;}
+  else return;
+
+  // Derive categories
+  const cats=[];
+  dataArr.forEach(it=>{if(it.category && !cats.includes(it.category)) cats.push(it.category);});
+  if(cats.length===0) cats.push('全部');
+
+  // Render categories sidebar
+  const cs=document.getElementById(catsEl);
+  cs.innerHTML='';
+  cats.forEach((c,i)=>{
+    const el=document.createElement('div');
+    el.className='cat'+(i===0?' active':'');
+    el.textContent=c;
+    el.onclick=()=>{
+      cs.querySelectorAll('.cat').forEach(x=>x.classList.remove('active'));
+      el.classList.add('active');
+      renderCatItems(which,c);
+    };
+    cs.appendChild(el);
+  });
+
+  renderCatItems(which, cats[0]);
+}
+function renderCatItems(which, cat){
+  let dataArr, itemsEl;
+  if(which==='shop'){dataArr=SHOP_ITEMS;itemsEl='shop-items';}
+  else if(which==='bag'){dataArr=BAG_ITEMS;itemsEl='bag-items';}
+  else if(which==='activities'){dataArr=ACTIVITIES;itemsEl='act-items';}
+  else if(which==='welfare'){dataArr=WELFARE;itemsEl='wel-items';}
+  else return;
+
+  const filtered=dataArr.filter(it=>!cat || cat==='全部' || it.category===cat);
+  const cont=document.getElementById(itemsEl);
+  cont.innerHTML='';
+  if(filtered.length===0){
+    cont.innerHTML='<div class="cat-empty">📭 还没有内容<br><small>等待 ThawPaw 添加</small></div>';
+    return;
+  }
+  filtered.forEach(it=>{
+    const el=document.createElement('div');
+    el.className='cat-item'+(it.price!=null?' clickable':'');
+    let priceLine='';
+    if(it.price!=null) priceLine=`<div class="item-price">${it.currency||'🔮'} ${it.price}</div>`;
+    else if(it.reward) priceLine=`<div class="item-price">${it.reward}</div>`;
+    else if(it.count!=null) priceLine=`<div class="item-price">x${it.count}</div>`;
+    el.innerHTML=`
+      <div class="item-icon">${it.icon||'📦'}</div>
+      <div class="item-name">${it.name||'?'}</div>
+      <div class="item-desc">${it.desc||''}</div>
+      ${priceLine}
+    `;
+    // 出售商品可点击购买（仅限 home 的 SHOP_ITEMS）
+    if(which==='shop' && it.price!=null){
+      el.onclick=()=>buyShopItem(it);
+    }
+    cont.appendChild(el);
+  });
+}
+
+// ============================================================
+// 🎮 MORE MODES
+// ============================================================
+function renderMoreModes(){
+  const list=document.getElementById('moremodes-list');
+  list.innerHTML='';
+  const modes=[
+    {key:'solo', icon:'🐾', name:'经典模式', desc:'踏入神秘地下，搜寻月亮石 🔮。免票！', needsTicket:false},
+    {key:'duo', icon:'🐾🐼', name:'双人模式', desc:'和伙伴一起冒险，轮流行动，共享资源。免票！', needsTicket:false},
+    {key:'text_explore', icon:'📖', name:'文字探索模式', desc:'探索 10 个地点，收集猎物换月亮石。需要 1 张入场券 🎟️。', needsTicket:true},
+  ];
+  modes.forEach(m=>{
+    const el=document.createElement('div');
+    el.className='moremodes-item'+(mode===m.key?' active':'');
+    const ticketBadge=m.needsTicket?'<span class="mm-ticket">🎟️×1</span>':'';
+    el.innerHTML=`
+      <div class="mm-icon">${m.icon}</div>
+      <div class="mm-name">${m.name}${mode===m.key?' ✓':''} ${ticketBadge}</div>
+      <div class="mm-desc">${m.desc}</div>
+    `;
+    el.onclick=()=>{
+      if(mode===m.key){
+        // already selected — just close
+        closeModal('modal-moremodes');
+        return;
+      }
+      // 不再清空存档——各模式独立保存
+      mode=m.key;
+      saveMode();
+      document.body.classList.toggle('duo-mode',isDuo());
+      // 尝试加载新模式的存档（不删除任何存档）
+      loadGame();
+      closeModal('modal-moremodes');
+      showToast('已切换到 '+m.name);
+      refreshHomeUI();
+    };
+    list.appendChild(el);
+  });
+}
+
+// ============================================================
+// 🐾 AVATAR PICKER
+// ============================================================
+function renderAvatarPicker(){
+  const el=document.getElementById('avatar-picker');
+  el.innerHTML='';
+  AVATAR_OPTIONS.forEach(a=>{
+    const opt=document.createElement('div');
+    opt.className='avatar-option'+(profile.avatar===a?' selected':'');
+    opt.textContent=a;
+    opt.onclick=()=>{
+      profile.avatar=a;
+      saveProfile();
+      refreshProfileUI();
+      refreshHomeUI();
+      closeModal('modal-avatar');
+    };
+    el.appendChild(opt);
+  });
+}
+function openAvatarPicker(){openModal('modal-avatar');}
+function editNickname(){
+  const n=prompt('给自己起个名字吧：',profile.nickname);
+  if(n && n.trim()){
+    const trimmed = n.trim().slice(0,12);
+    profile.nickname = trimmed;
+    setSharedNickname(trimmed); // 同步到 portal 共享 profile
+    saveProfile();
+    refreshProfileUI();
+    refreshHomeUI();
+  }
+}
+
+// ============================================================
+// 💾 PERSISTENCE
+// ============================================================
+function saveHome(){try{localStorage.setItem('moonstone_home',JSON.stringify(homeData));}catch(e){}}
+function loadHome(){try{const d=localStorage.getItem('moonstone_home');if(d){const o=JSON.parse(d);homeData.moonstones=o.moonstones||0;homeData.gravel=o.gravel||0;homeData.stoneCarvings=o.stoneCarvings||0;homeData.tickets=o.tickets||0;}}catch(e){}}
+function saveProfile(){try{localStorage.setItem('moonstone_profile_'+getUnifiedPlayerId(),JSON.stringify(profile));}catch(e){}}
+function loadProfile(){
+  try{
+    // 优先读 per-ID profile
+    let d = localStorage.getItem('moonstone_profile_'+getUnifiedPlayerId());
+    // 迁移老数据
+    if(!d){
+      const old = localStorage.getItem('moonstone_profile');
+      if(old){
+        d = old;
+        localStorage.setItem('moonstone_profile_'+getUnifiedPlayerId(), old);
+        localStorage.removeItem('moonstone_profile');
+      }
+    }
+    if(d){const o=JSON.parse(d);profile=Object.assign(profile,o);}
+  }catch(e){}
+  // 强制用统一 ID（覆盖旧的游戏内独立 ID）
+  profile.explorerId = getUnifiedPlayerId();
+  // 同步 portal 共享昵称
+  profile.nickname = getSharedNickname();
+}
+function saveMode(){try{localStorage.setItem('moonstone_mode',mode);}catch(e){}}
+function loadMode(){
+  try{
+    const m=localStorage.getItem('moonstone_mode');
+    if(m==='solo'||m==='duo'||m==='text_explore') mode=m;
+  }catch(e){}
+}
+// 各模式独立存档键（per-ID 防止多账号冲突）
+function _dungeonSaveKey(){
+  const id = getUnifiedPlayerId();
+  if(mode==='text_explore') return 'text_explore_save_' + id;
+  return 'moonstone_save_' + mode + '_' + id; // 'moonstone_save_solo_<id>' / 'moonstone_save_duo_<id>'
+}
+function saveGame(){
+  try{
+    const d=JSON.stringify({
+      floor:G.floor, maxFloorReached:G.maxFloorReached,
+      shared:G.shared,p1:G.p1,p2:G.p2,
+      p1Acted:G.p1Acted,p2Acted:G.p2Acted,
+      messages:G.messages.slice(-20),
+      state:G.state,totalSpent:G.totalSpent,
+      grid:G.grid,rooms:G.rooms,stairsPos:G.stairsPos,
+      enemies:G.enemies,items:G.items,seen:G.seen,
+      player:G.shared, mode:mode,
+    });
+    localStorage.setItem(_dungeonSaveKey(),d);
+  }catch(e){}
+}
+function loadGame(){
+  if(mode==='text_explore') return false; // 文字探索有自己的存档逻辑
+  // 先试新格式的 mode-specific key
+  let d=localStorage.getItem(_dungeonSaveKey());
+  const id = getUnifiedPlayerId();
+  // 迁移老存档：moonstone_save -> moonstone_save_solo -> moonstone_save_solo_<id>
+  if(!d){
+    const old=localStorage.getItem('moonstone_save');
+    if(old){
+      try{
+        localStorage.setItem('moonstone_save_solo_'+id, old);
+        localStorage.removeItem('moonstone_save');
+        d=old;
+      }catch(e){}
+    }
+  }
+  if(!d){
+    // 迁 moonstone_save_solo / moonstone_save_duo 到 per-ID
+    for(const m of ['solo','duo']){
+      const old = localStorage.getItem('moonstone_save_'+m);
+      if(old){
+        localStorage.setItem('moonstone_save_'+m+'_'+id, old);
+        localStorage.removeItem('moonstone_save_'+m);
+        if(m===mode) d = old;
+      }
+    }
+  }
+  if(!d)return false;
+  try{
+    const s=JSON.parse(d);
+    G.floor=s.floor||1;
+    G.maxFloorReached=s.maxFloorReached||G.floor;
+    G.shared=s.shared||s.player||{hp:30,maxHp:30,atk:5,exp:0,level:1,herbs:2,expHerbs:0,kills:0,fovBonus:0};
+    G.p1=s.p1||{x:0,y:0,hp:G.shared.maxHp,maxHp:G.shared.maxHp,alive:true};
+    G.p2=s.p2||{x:G.p1.x,y:G.p1.y,hp:G.shared.maxHp,maxHp:G.shared.maxHp,alive:true};
+    G.p1Acted=!!s.p1Acted;G.p2Acted=!!s.p2Acted;
+    G.messages=s.messages||[];
+    G.state=s.state||'playing';
+    G.totalSpent=s.totalSpent||0;
+    G.grid=s.grid;G.rooms=s.rooms;G.stairsPos=s.stairsPos;
+    G.enemies=s.enemies||[];G.items=s.items||[];G.seen=s.seen||[];
+    G.shopMsg='';
+    syncPlayerAlias();
+    document.body.classList.toggle('duo-mode',isDuo());
+    return true;
+  }catch(e){return false;}
+}
+
+// ============================================================
+// 🎮 GAME LOGIC (preserved from original moonstone-quest)
+// ============================================================
+
+// ─── Audio ───
+let audioCtx=null;
+function initAudio(){
+  if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+  if(audioCtx.state==='suspended')audioCtx.resume();
+}
+function playTone(freq,dur,type,vol){
+  if(!audioCtx)return;
+  if(!settings.sfx)return;
+  try{
+    const o=audioCtx.createOscillator(),g=audioCtx.createGain();
+    o.type=type||'square';o.frequency.value=freq;
+    g.gain.value=vol||0.08;
+    g.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+dur);
+    o.connect(g);g.connect(audioCtx.destination);
+    o.start();o.stop(audioCtx.currentTime+dur);
+  }catch(e){}
+}
+function sfxAttack(){playTone(200,0.12,'sawtooth',0.25);setTimeout(()=>playTone(120,0.1,'square',0.2),40);}
+function sfxPickup(){playTone(660,0.1,'sine',0.25);setTimeout(()=>playTone(990,0.12,'sine',0.25),60);}
+function sfxLevelUp(){playTone(440,0.12,'square',0.2);setTimeout(()=>playTone(550,0.12,'square',0.2),80);setTimeout(()=>playTone(770,0.18,'square',0.25),160);}
+function sfxHurt(){playTone(120,0.18,'sawtooth',0.25);}
+function sfxDeath(){playTone(300,0.18,'sawtooth',0.25);setTimeout(()=>playTone(200,0.18,'sawtooth',0.2),120);setTimeout(()=>playTone(100,0.35,'sawtooth',0.25),240);}
+function sfxDescend(){playTone(330,0.18,'sine',0.2);setTimeout(()=>playTone(220,0.22,'sine',0.2),100);}
+function sfxVictory(){[0,100,200,300,400,500].forEach((d,i)=>setTimeout(()=>playTone(440+i*88,0.18,'sine',0.25),d));}
+
+// ─── Particles ───
+let particles=[];
+function spawnParticles(x,y,color,count){
+  for(let i=0;i<count;i++){
+    particles.push({x:x*TILE+TILE/2, y:y*TILE+TILE/2,
+      vx:(Math.random()-0.5)*3, vy:(Math.random()-0.5)*3,
+      life:0.6+Math.random()*0.4, color, size:2+Math.random()*2});
+  }
+}
+function updateParticles(dt){
+  for(let i=particles.length-1;i>=0;i--){
+    const p=particles[i];
+    p.x+=p.vx;p.y+=p.vy;p.life-=dt;
+    if(p.life<=0)particles.splice(i,1);
+  }
+}
+function drawParticles(){
+  particles.forEach(p=>{
+    ctx.globalAlpha=Math.max(0,p.life);
+    ctx.fillStyle=p.color;
+    ctx.fillRect(p.x-p.size/2,p.y-p.size/2,p.size,p.size);
+  });
+  ctx.globalAlpha=1;
+}
+
+// ─── Screen shake & flash ───
+let shakeTime=0, flashColor=null, flashTime=0;
+function triggerShake(dur){shakeTime=dur;}
+function triggerFlash(col,dur){flashColor=col;flashTime=dur;}
+
+// ─── Map Generation ───
+function generateMap(floorNum){
+  const grid=[];
+  for(let y=0;y<MAP_H;y++){grid[y]=[];for(let x=0;x<MAP_W;x++)grid[y][x]='#';}
+  const rooms=[];
+  let numRooms=Math.floor(4+Math.random()*3)+floorNum;
+  for(let attempt=0;attempt<numRooms*10&&rooms.length<numRooms;attempt++){
+    const w=4+Math.floor(Math.random()*6);
+    const h=3+Math.floor(Math.random()*5);
+    const rx=1+Math.floor(Math.random()*(MAP_W-w-1));
+    const ry=1+Math.floor(Math.random()*(MAP_H-h-1));
+    let overlap=false;
+    for(let cy=ry-1;cy<=ry+h&&!overlap;cy++)
+      for(let cx=rx-1;cx<=rx+w&&!overlap;cx++)
+        if(cy>=0&&cy<MAP_H&&cx>=0&&cx<MAP_W&&grid[cy][cx]==='.')overlap=true;
+    if(overlap)continue;
+    for(let cy=ry;cy<ry+h;cy++)for(let cx=rx;cx<rx+w;cx++)grid[cy][cx]='.';
+    rooms.push({x:rx,y:ry,w,h});
+  }
+  for(let i=0;i<rooms.length-1;i++){
+    const x1=rooms[i].x+Math.floor(rooms[i].w/2);
+    const y1=rooms[i].y+Math.floor(rooms[i].h/2);
+    const x2=rooms[i+1].x+Math.floor(rooms[i+1].w/2);
+    const y2=rooms[i+1].y+Math.floor(rooms[i+1].h/2);
+    if(Math.random()<0.5){
+      for(let cx=Math.min(x1,x2);cx<=Math.max(x1,x2);cx++)grid[y1][cx]='.';
+      for(let cy=Math.min(y1,y2);cy<=Math.max(y1,y2);cy++)grid[cy][x2]='.';
+    }else{
+      for(let cy=Math.min(y1,y2);cy<=Math.max(y1,y2);cy++)grid[cy][x1]='.';
+      for(let cx=Math.min(x1,x2);cx<=Math.max(x1,x2);cx++)grid[y2][cx]='.';
+    }
+  }
+  return {grid,rooms};
+}
+function placeStairs(grid,rooms,floorNum){
+  const r=rooms[rooms.length-1];
+  const sx=r.x+Math.floor(r.w/2), sy=r.y+Math.floor(r.h/2);
+  grid[sy][sx]=floorNum===MAX_FLOOR?'M':'>';
+  return {x:sx,y:sy};
+}
+function placeEnemies(grid,rooms,floorNum){
+  const types=FLOOR_ENEMIES[floorNum]||['tigerstar_spirit','badger_lord'];
+  const count=3+floorNum*2;
+  const enemies=[];
+  for(let i=0;i<count;i++){
+    const ri=1+Math.floor(Math.random()*(rooms.length-1));
+    const r=rooms[ri];
+    const ex=r.x+1+Math.floor(Math.random()*(r.w-2));
+    const ey=r.y+1+Math.floor(Math.random()*(r.h-2));
+    if(grid[ey][ex]!=='.')continue;
+    const etype=types[Math.floor(Math.random()*types.length)];
+    const d=EDATA[etype];
+    enemies.push({x:ex,y:ey,type:etype,hp:d.hp+floorNum*2,maxHp:d.hp+floorNum*2,atk:d.atk+floorNum,exp:d.exp,stunned:false});
+  }
+  return enemies;
+}
+function placeItems(grid,rooms,floorNum){
+  const items=[];
+  const count=3+floorNum;
+  for(let i=0;i<count;i++){
+    const r=rooms[Math.floor(Math.random()*rooms.length)];
+    const ix=r.x+1+Math.floor(Math.random()*(r.w-2));
+    const iy=r.y+1+Math.floor(Math.random()*(r.h-2));
+    if(grid[iy][ix]!=='.')continue;
+    const r2=Math.random();
+    const itype=r2<0.4?'healing_herb':r2<0.7?'exp_herb':'attack_claw';
+    items.push({x:ix,y:iy,type:itype});
+  }
+  return items;
+}
+function updateFov(){
+  const rad=fovRadius();
+  for(let y=0;y<MAP_H;y++){
+    for(let x=0;x<MAP_W;x++){
+      const d1=Math.abs(x-G.p1.x)+Math.abs(y-G.p1.y);
+      if(d1<=rad){G.seen[y][x]=true;continue;}
+      if(isDuo() && G.p2.alive){
+        const d2=Math.abs(x-G.p2.x)+Math.abs(y-G.p2.y);
+        if(d2<=rad) G.seen[y][x]=true;
+      }
+    }
+  }
+}
+function visible(x,y){
+  const rad=fovRadius();
+  if(Math.abs(x-G.p1.x)+Math.abs(y-G.p1.y)<=rad) return true;
+  if(isDuo() && G.p2.alive && Math.abs(x-G.p2.x)+Math.abs(y-G.p2.y)<=rad) return true;
+  return false;
+}
+function enemyAt(x,y){return G.enemies.find(e=>e.x===x&&e.y===y)||null;}
+function itemAt(x,y){return G.items.find(i=>i.x===x&&i.y===y)||null;}
+
+// ─── Floor generation ───
+function generateFloor(){
+  const res=generateMap(G.floor);
+  G.grid=res.grid; G.rooms=res.rooms;
+  G.stairsPos=placeStairs(G.grid,G.rooms,G.floor);
+  const r=G.rooms[0];
+  G.p1.x=r.x+Math.floor(r.w/2);
+  G.p1.y=r.y+Math.floor(r.h/2);
+  G.p2.x=G.p1.x; G.p2.y=G.p1.y;
+  if(isDuo()){
+    const tries=[[1,0],[-1,0],[0,1],[0,-1]];
+    for(const[dx,dy]of tries){
+      const nx=G.p1.x+dx, ny=G.p1.y+dy;
+      if(nx>=0&&nx<MAP_W&&ny>=0&&ny<MAP_H&&G.grid[ny][nx]==='.'){
+        G.p2.x=nx;G.p2.y=ny;break;
+      }
+    }
+    G.p2.hp=G.shared.maxHp;G.p2.alive=true;
+  }
+  G.p1.hp=G.shared.maxHp;G.p1.alive=true;
+  G.p1Acted=false;G.p2Acted=false;
+  G.enemies=placeEnemies(G.grid,G.rooms,G.floor);
+  G.items=placeItems(G.grid,G.rooms,G.floor);
+  G.seen=[];
+  for(let y=0;y<MAP_H;y++){G.seen[y]=[];for(let x=0;x<MAP_W;x++)G.seen[y][x]=false;}
+  updateFov();
+  addMsg(`  ~ Floor ${G.floor} of ${MAX_FLOOR} ~`,'info');
+}
+
+// ─── New game ───
+function revivePlayer(){
+  if(isDuo()){
+    let dead=null,survivor=null,idx=0;
+    if(!G.p1.alive && G.p2.alive){dead=G.p1;survivor=G.p2;idx=1;}
+    else if(!G.p2.alive && G.p1.alive){dead=G.p2;survivor=G.p1;idx=2;}
+    else if(!G.p1.alive && !G.p2.alive){return;}
+    else{addMsg('No one needs reviving!','info');return;}
+    if(G.shared.herbs<5){addMsg('Need 5 herbs to revive your partner! You have '+G.shared.herbs+'.','hurt');return;}
+    G.shared.herbs-=5;
+    dead.alive=true;dead.hp=dead.maxHp;
+    G.state='playing';
+    sfxLevelUp();
+    addMsg('✨ StarClan restores P'+idx+'! -5 herbs, HP fully restored!','gold');
+    spawnParticles(dead.x,dead.y,'#ffcc44',20);
+    for(var i=0;i<G.enemies.length;i++) G.enemies[i].stunned=true;
+    return;
+  }
+  var p=G.shared;
+  if(p.herbs<5){addMsg('Need 5 herbs to revive! You have '+p.herbs+'.','hurt');return;}
+  p.herbs-=5;
+  p.hp=p.maxHp;
+  G.p1.hp=p.maxHp;G.p1.alive=true;
+  G.state='playing';
+  sfxLevelUp();
+  addMsg('StarClan grants you another chance! -5 herbs, HP fully restored!','gold');
+  spawnParticles(G.p1.x,G.p1.y,'#ffcc44',20);
+  for(var i=0;i<G.enemies.length;i++) G.enemies[i].stunned=true;
+}
+function newGame(){
+  G.state='playing'; G.floor=G.floor||1;
+  G.shared={hp:30,maxHp:30,atk:5,exp:0,level:1,herbs:2,expHerbs:0,kills:0,fovBonus:0};
+  G.p1={x:0,y:0,hp:30,maxHp:30,alive:true};
+  G.p2={x:0,y:0,hp:30,maxHp:30,alive:true};
+  G.p1Acted=false;G.p2Acted=false;
+  syncPlayerAlias();
+  G.messages=[];G.totalSpent=0;G.turnCount=0;
+  G.shopMsg='';
+  particles=[];
+  if(isDuo()) addMsg('🐾🐼 Two cats descend together, seeking the Moonstone...','info');
+  else addMsg('🐾 You descend into the caves seeking the Moonstone...','info');
+  addMsg('   May StarClan light your path, apprentice!','info');
+  addMsg('   💡 Press P anytime to open the Shop!','info');
+  generateFloor();
+}
+
+// ─── Gain EXP ───
+function gainExp(amount){
+  const p=G.shared;
+  p.exp+=amount;
+  // Check if a level-up is available (don't auto-level — show prompt)
+  if(p.exp>=expToNext() && G.state==='playing'){
+    showLevelUpPrompt();
+  }
+  return false;
+}
+function showLevelUpPrompt(){
+  if(document.getElementById('modal-levelup').classList.contains('active')) return;
+  const p=G.shared;
+  document.getElementById('levelup-text').innerHTML='Lv.'+p.level+' → <b style="color:var(--gold)">Lv.'+(p.level+1)+'</b><br>经验已满！是否现在升级？';
+  document.getElementById('modal-levelup').classList.add('active');
+}
+function acceptLevelUp(){
+  closeModal('modal-levelup');
+  const p=G.shared;
+  p.exp-=expToNext();
+  p.level++;p.maxHp+=5;
+  G.p1.maxHp=G.shared.maxHp;G.p2.maxHp=G.shared.maxHp;
+  G.p1.hp=Math.min(G.p1.hp+10,G.p1.maxHp);
+  if(G.p2.alive) G.p2.hp=Math.min(G.p2.hp+10,G.p2.maxHp);
+  p.atk+=2;
+  sfxLevelUp();
+  addMsg(`⭐ LEVEL UP! Now level ${p.level}! HP+5 ATK+2`,'gold');
+  spawnParticles(G.p1.x,G.p1.y,'#ffcc44',12);
+  updateSidebar();
+  // Chain: if still enough exp for another level, show again
+  if(p.exp>=expToNext()){
+    setTimeout(()=>showLevelUpPrompt(),300);
+  }
+}
+function deferLevelUp(){
+  closeModal('modal-levelup');
+  addMsg('💡 经验已满，可以随时升级！','info');
+}
+function spendExp(amount){
+  if(G.shared.exp>=amount){G.shared.exp-=amount;return true;}
+  return false;
+}
+
+// ─── Player actions ───
+function movePlayer(dx,dy,who){
+  if(G.state!=='playing')return;
+  initAudio();
+  who=who||1;
+  if(isSolo()) who=1;
+  const p=getPlayer(who);
+  if(!p.alive){
+    addMsg(`💀 P${who} is a ghost and cannot move.`,'hurt');
+    return;
+  }
+  const nx=p.x+dx, ny=p.y+dy;
+  if(nx<0||nx>=MAP_W||ny<0||ny>=MAP_H||G.grid[ny][nx]==='#'){
+    return;
+  }
+  if(enemyAt(nx,ny))return;
+  const other=who===1?G.p2:G.p1;
+  if(isDuo() && other.alive && other.x===nx && other.y===ny) return;
+  p.x=nx; p.y=ny;
+  const it=itemAt(nx,ny);
+  if(it){
+    G.items=G.items.filter(i=>i!==it);
+    sfxPickup();
+    if(it.type==='healing_herb'){
+      G.shared.herbs++;
+      addMsg(`♥ P${who} found a healing herb! (🌿${G.shared.herbs} total)`,'good');
+      spawnParticles(nx,ny,'#44cc44',6);
+      // Home gravel reward
+      homeData.gravel+=1;
+      saveHome();
+      updateSidebar();
+    }else if(it.type==='exp_herb'){
+      G.shared.expHerbs++;
+      addMsg(`✦ P${who} found an experience herb! (${G.shared.expHerbs} total)`,'good');
+      spawnParticles(nx,ny,'#aa44ff',6);
+    }else if(it.type==='attack_claw'){
+      G.shared.atk++;
+      addMsg(`† P${who} found a sharp claw! ATK +1 → ${G.shared.atk}`,'good');
+      spawnParticles(nx,ny,'#44bbcc',6);
+    }
+  }
+  if(G.grid[ny][nx]==='>'){
+    addMsg('▼ You see stairs! Press > to descend.','info');
+  }else if(G.grid[ny][nx]==='M'){
+    G.state='won';
+    addMsg(`◆◆◆ P${who} found the MOONSTONE! StarClan honors you! ◆◆◆`,'gold');
+    sfxVictory();
+    // Award moonstones
+    homeData.moonstones+=30;
+    saveHome();
+    updateSidebar();
+    showToast('🎉 胜利！+30 🔮 月亮石');
+    return;
+  }
+  updateFov();
+  if(who===1) G.p1Acted=true; else G.p2Acted=true;
+  if(isSolo()){
+    enemyTurn();
+  }else{
+    if(G.p1Acted && G.p2Acted){
+      G.p1Acted=false;G.p2Acted=false;
+      enemyTurn();
+    }else{
+      addMsg(who===1?'🐾 Waiting for 🐼...':'🐼 Waiting for 🐾...','info');
+    }
+  }
+}
+function attackAdjacent(who){
+  if(G.state!=='playing')return;
+  initAudio();
+  who=who||1;
+  if(isSolo()) who=1;
+  const p=getPlayer(who);
+  if(!p.alive){
+    addMsg(`💀 P${who} is a ghost and cannot attack.`,'hurt');
+    return;
+  }
+  const dirs=[[0,-1],[0,1],[-1,0],[1,0],[-1,-1],[1,-1],[-1,1],[1,1]];
+  for(const[dx,dy]of dirs){
+    const e=enemyAt(p.x+dx,p.y+dy);
+    if(e){
+      const dmg=G.shared.atk+Math.floor(Math.random()*4)-1;
+      e.hp-=dmg;
+      sfxAttack();
+      addMsg(`⚔️ P${who} scratches the ${e.type.replace(/_/g,' ')} for ${dmg} damage!`,'good');
+      spawnParticles(e.x,e.y,'#ffffff',4);
+      if(e.hp<=0){
+        G.enemies=G.enemies.filter(en=>en!==e);
+        G.shared.kills++;
+        const leveled=gainExp(e.exp);
+        // Award gravel for kills (boss kills = moonstones)
+        const isBoss=e.type.includes('boss')||e.type==='tigerstar_spirit';
+        if(isBoss){
+          homeData.moonstones+=e.exp/2|0;
+          addMsg(`💀 Boss defeated! +${e.exp} EXP, +${(e.exp/2|0)} 🔮`,'gold');
+        }else{
+          homeData.gravel+=1;
+        }
+        saveHome();
+        updateSidebar();
+        addMsg(`💀 ${e.type.replace(/_/g,' ')} defeated! +${e.exp} EXP`,'good');
+        spawnParticles(e.x,e.y,EDATA[e.type].col,8);
+      }
+      if(who===1) G.p1Acted=true; else G.p2Acted=true;
+      if(isSolo()){
+        enemyTurn();
+      }else{
+        if(G.p1Acted && G.p2Acted){
+          G.p1Acted=false;G.p2Acted=false;
+          enemyTurn();
+        }else{
+          addMsg(who===1?'🐾 Waiting for 🐼...':'🐼 Waiting for 🐾...','info');
+        }
+      }
+      return;
+    }
+  }
+  addMsg('Nothing to attack nearby!','');
+}
+function useHealHerb(){
+  if(G.state!=='playing')return;
+  initAudio();
+  const s=G.shared;
+  if(s.herbs>0){
+    s.herbs--;
+    if(isDuo()){
+      let totalHealed=0;
+      const targets=[];
+      if(G.p1.alive) targets.push(G.p1);
+      if(G.p2.alive) targets.push(G.p2);
+      for(const t of targets){
+        const old=t.hp;
+        t.hp=Math.min(t.hp+15,t.maxHp);
+        totalHealed+=(t.hp-old);
+        spawnParticles(t.x,t.y,'#44cc44',5);
+      }
+      addMsg(`🌿 Healing herb! +${totalHealed} HP for the team (🌿${s.herbs} left)`,'good');
+    }else{
+      const old=G.p1.hp;
+      G.p1.hp=Math.min(G.p1.hp+15,G.p1.maxHp);
+      addMsg(`🌿 Used healing herb! +${G.p1.hp-old} HP (${G.p1.hp}/${G.p1.maxHp})`,'good');
+      spawnParticles(G.p1.x,G.p1.y,'#44cc44',5);
+    }
+    if(isDuo()){G.p1Acted=true;G.p2Acted=true;}
+    enemyTurn();
+  }else{
+    addMsg('No healing herbs! Press P to buy some.','hurt');
+  }
+}
+function useExpHerb(){
+  if(G.state!=='playing')return;
+  initAudio();
+  const p=G.shared;
+  if(p.expHerbs>0){
+    p.expHerbs--;
+    gainExp(10);
+    addMsg('✦ Used experience herb! +10 EXP','good');
+    if(isDuo()){G.p1Acted=true;G.p2Acted=true;}
+    enemyTurn();
+  }else{
+    addMsg('No experience herbs! Press P to buy some.','hurt');
+  }
+}
+function tryDescend(){
+  if(G.state!=='playing')return;
+  initAudio();
+  if(isDuo()){
+    const p1onStairs = G.grid[G.p1.y] && G.grid[G.p1.y][G.p1.x]==='>';
+    const p2onStairs = G.grid[G.p2.y] && G.grid[G.p2.y][G.p2.x]==='>';
+    if(!G.p1.alive && !G.p2.alive) return;
+    if(!p1onStairs && !p2onStairs){
+      addMsg('No stairs here! Look for ▼ on the map.','');
+      return;
+    }
+    if(!p1onStairs){addMsg('▼ Waiting for 🐾 to step on the stairs...','info');return;}
+    if(!p2onStairs){addMsg('▼ Waiting for 🐼 to step on the stairs...','info');return;}
+    // Award moonstone for completing a floor
+    homeData.moonstones+=2;
+    saveHome();
+    updateSidebar();
+    G.floor++;
+    if(G.floor>G.maxFloorReached) G.maxFloorReached=G.floor;
+    sfxDescend();
+    addMsg(`▼ Descending to floor ${G.floor}... +2 🔮`,'info');
+    generateFloor();
+  }else{
+    const p=G.p1;
+    if(G.grid[p.y][p.x]==='>'){
+      homeData.moonstones+=2;
+      saveHome();
+      updateSidebar();
+      G.floor++;
+      if(G.floor>G.maxFloorReached) G.maxFloorReached=G.floor;
+      sfxDescend();
+      addMsg(`▼ Descending to floor ${G.floor}... +2 🔮`,'info');
+      generateFloor();
+    }else{
+      addMsg('No stairs here! Look for ▼ on the map.','');
+    }
+  }
+}
+
+// ─── Enemy turn ───
+function nearestPlayer(x,y){
+  if(isSolo()) return G.p1;
+  const cands=[];
+  if(G.p1.alive) cands.push(G.p1);
+  if(G.p2.alive) cands.push(G.p2);
+  if(!cands.length) return G.p1;
+  let best=cands[0],bd=Math.abs(best.x-x)+Math.abs(best.y-y);
+  for(let i=1;i<cands.length;i++){
+    const d=Math.abs(cands[i].x-x)+Math.abs(cands[i].y-y);
+    if(d<bd){best=cands[i];bd=d;}
+  }
+  return best;
+}
+function enemyTurn(){
+  if(G.state!=='playing')return;
+  for(const e of G.enemies){
+    if(e.stunned){e.stunned=false;continue;}
+    const target=nearestPlayer(e.x,e.y);
+    if(!target.alive) continue;
+    const dx=target.x-e.x, dy=target.y-e.y;
+    const dist=Math.abs(dx)+Math.abs(dy);
+    if(dist<=1){
+      const dmg=Math.max(1,e.atk+Math.floor(Math.random()*3)-1);
+      target.hp-=dmg;
+      sfxHurt();
+      triggerShake(0.15);triggerFlash('#ff0000',0.15);
+      const isP1=target===G.p1;
+      const who=isP1?1:2;
+      addMsg(`🩸 ${e.type.replace(/_/g,' ')} attacks P${who} for ${dmg} damage!`,'hurt');
+      if(target.hp<=0){
+        target.hp=0;
+        target.alive=false;
+        sfxDeath();
+        addMsg(`💀 P${who} has fallen!`,'hurt');
+        if(isDuo()){
+          if(!G.p1.alive && !G.p2.alive){
+            G.state='dead';
+            addMsg('💀 The team is defeated...','hurt');
+            if(G.shared.herbs>=5){addMsg('You have 5+ herbs! Press V to revive.','info');}
+          }else if(G.shared.herbs>=5){
+            addMsg('Press V to revive your partner (-5 herbs).','info');
+          }
+        }else{
+          G.state='dead';
+          addMsg('You were defeated by a '+e.type.replace(/_/g,' ')+'...','hurt');
+          if(G.shared.herbs>=5){addMsg('You have 5+ herbs! Press V to revive.','info');}
+        }
+        return;
+      }
+    }else if(dist<=7&&visible(e.x,e.y)){
+      if(Math.random()<0.7){
+        let mx=dx>0?1:dx<0?-1:0;
+        let my=dy>0?1:dy<0?-1:0;
+        let nx,ny;
+        if(Math.abs(dx)>=Math.abs(dy)){nx=e.x+mx;ny=e.y;}
+        else{nx=e.x;ny=e.y+my;}
+        let onPlayer=(G.p1.alive && nx===G.p1.x && ny===G.p1.y);
+        if(isDuo()) onPlayer = onPlayer || (G.p2.alive && nx===G.p2.x && ny===G.p2.y);
+        if(nx>=0&&nx<MAP_W&&ny>=0&&ny<MAP_H&&G.grid[ny][nx]!=='#'&&!enemyAt(nx,ny)&&!onPlayer){
+          e.x=nx;e.y=ny;
+        }
+      }
+    }
+  }
+}
+
+// ─── Shop ───
+function openShop(){
+  if(G.state!=='playing')return;
+  G.state='shop';G.shopMsg='';
+  document.getElementById('shopOverlay').style.display='flex';
+  renderShop();
+}
+function closeShop(){
+  G.state='playing';G.shopMsg='';
+  document.getElementById('shopOverlay').style.display='none';
+}
+function buyItem(idx){
+  const item=SHOP[idx];
+  const p=G.player;
+  if(!spendExp(item.cost)){
+    G.shopMsg=`❌ Not enough EXP! Need ${item.cost}, have ${p.exp}`;
+    renderShop();return;
+  }
+  G.totalSpent+=item.cost;
+  const it=item.type;
+  if(it==='heal_herb'){p.herbs++;addMsg(`🛒 Bought ${item.name}! (herbs: ${p.herbs})`,'good');}
+  else if(it==='exp_herb'){p.expHerbs++;addMsg(`🛒 Bought ${item.name}! (exp herbs: ${p.expHerbs})`,'good');}
+  else if(it==='atk_up'){p.atk++;addMsg(`🛒 Bought ${item.name}! ATK → ${p.atk}`,'good');}
+  else if(it==='max_hp_up'){p.maxHp+=5;p.hp=p.maxHp;addMsg(`🛒 Bought ${item.name}! MaxHP → ${p.maxHp}, fully healed!`,'good');}
+  else if(it==='full_heal'){p.hp=p.maxHp;addMsg(`🛒 Bought ${item.name}! HP fully restored!`,'good');}
+  else if(it==='fov_up'){p.fovBonus++;updateFov();addMsg(`🛒 Bought ${item.name}! FOV → ${fovRadius()}`,'good');}
+  else if(it==='stun'){G.enemies.forEach(e=>e.stunned=true);addMsg(`🛒 Bought ${item.name}! All enemies stunned!`,'good');}
+  G.shopMsg=`✅ Bought ${item.icon} ${item.name}! (-${item.cost} EXP, ${p.exp} left)`;
+  sfxPickup();
+  renderShop();
+}
+function renderShop(){
+  const el=document.getElementById('shopItems');
+  document.getElementById('shopExp').textContent=G.player.exp;
+  let html='';
+  SHOP.forEach((item,i)=>{
+    const can=G.player.exp>=item.cost;
+    html+=`<div class="shopItem" onclick="buyItem(${i})" style="opacity:${can?1:0.5}">
+      <div class="siIcon">${item.icon}</div>
+      <div class="siName">${item.name}<br><small style="color:#777">${item.desc}</small></div>
+      <div class="siCost">${item.cost} EXP</div>
+    </div>`;
+  });
+  el.innerHTML=html;
+  document.getElementById('shopMsg').textContent=G.shopMsg;
+}
+
+// ─── Mobile/desktop actions ───
+function doMove(dx,dy,who){initAudio();who=who||1;movePlayer(dx,dy,who);}
+function doAttack(who){initAudio();who=who||1;attackAdjacent(who);}
+function doHeal(){initAudio();useHealHerb();}
+function doExpHerb(){initAudio();useExpHerb();}
+function doShop(){initAudio();if(G.state==='shop')closeShop();else if(G.state==='playing')openShop();}
+function doDescend(){initAudio();tryDescend();}
+function doRevive(){initAudio();revivePlayer();}
+
+// ─── Speed toggle ───
+var gameSpeed=1;
+function toggleSpeed(){
+  gameSpeed=gameSpeed===1?2:1;
+  var btn=document.getElementById('btnSpeed');
+  if(btn){
+    btn.querySelector('.icon').textContent=gameSpeed===1?'⏩':'⏭️';
+    btn.querySelector('.label').textContent=gameSpeed===1?'Speed':'x2';
+    btn.style.background=gameSpeed===2?'rgba(255,200,0,.15)':'';
+  }
+}
+
+// ─── Confirm exit game ───
+function confirmExitGame(){
+  if(G.state==='dead'||G.state==='won'){
+    // Just leave — state is preserved in save
+    saveGame();
+    showPage('home');
+    refreshHomeUI();
+    return;
+  }
+  showConfirm('退出当前游戏？\n进度会自动保存。',()=>{
+    saveGame();
+    showPage('home');
+    refreshHomeUI();
+  });
+}
+
+// ─── Touch detection + joystick ───
+var touchSupported=false; // Will be set in detectTouch IIFE
+(function detectTouch(){
+  // Just detect capability; don't show controls until game page
+  function detect(){
+    if('ontouchstart' in window || navigator.maxTouchPoints>0){
+      touchSupported=true;
+    }
+    window.removeEventListener('touchstart',detect);
+    window.removeEventListener('touchmove',detect);
+  }
+  window.addEventListener('touchstart',detect,{passive:true});
+  window.addEventListener('touchmove',detect,{passive:true});
+  if('ontouchstart' in window || navigator.maxTouchPoints>0) detect();
+
+  var deadZone=15;
+  function createJoystick(knobId,baseId,who){
+    var knob=document.getElementById(knobId);
+    var base=document.getElementById(baseId);
+    if(!knob||!base) return null;
+    var active=false, touchId=null;
+    var lastDir={dx:0,dy:0};
+    var moveInterval=null;
+
+    function getCenter(){
+      var r=base.getBoundingClientRect();
+      return {x:r.left+r.width/2, y:r.top+r.height/2, maxR:r.width/2 - 10};
+    }
+    function setKnob(dx,dy,maxR){
+      var dist=Math.sqrt(dx*dx+dy*dy);
+      if(dist>maxR){dx=dx/dist*maxR; dy=dy/dist*maxR;}
+      knob.style.transform='translate(calc(-50% + '+dx+'px), calc(-50% + '+dy+'px))';
+    }
+    function resetKnob(){knob.style.transform='translate(-50%,-50%)';}
+    function calcDir(dx,dy){
+      var dist=Math.sqrt(dx*dx+dy*dy);
+      if(dist<deadZone) return {dx:0,dy:0};
+      var angle=Math.atan2(dy,dx)*180/Math.PI;
+      if(angle>=-45 && angle<45) return {dx:1,dy:0};
+      if(angle>=45 && angle<135) return {dx:0,dy:1};
+      if(angle>=-135 && angle<-45) return {dx:0,dy:-1};
+      return {dx:-1,dy:0};
+    }
+    function startMove(dir){
+      if(dir.dx===lastDir.dx && dir.dy===lastDir.dy) return;
+      stopMove();
+      lastDir=dir;
+      if(dir.dx===0 && dir.dy===0) return;
+      doMove(dir.dx,dir.dy,who);
+      function tick(){
+        if(lastDir.dx!==0||lastDir.dy!==0) doMove(lastDir.dx,lastDir.dy,who);
+        var delay=gameSpeed===2?160:320;
+        moveInterval=setTimeout(tick,delay);
+      }
+      moveInterval=setTimeout(tick,gameSpeed===2?160:320);
+    }
+    function stopMove(){
+      if(moveInterval){clearTimeout(moveInterval);moveInterval=null;}
+      lastDir={dx:0,dy:0};
+    }
+
+    base.addEventListener('touchstart',function(e){
+      e.preventDefault(); initAudio();
+      if(G.state!=='playing')return;
+      active=true;
+      touchId=e.changedTouches[0].identifier;
+      var c=getCenter(), t=e.changedTouches[0];
+      var dx=t.clientX-c.x, dy=t.clientY-c.y;
+      setKnob(dx,dy,c.maxR);
+      startMove(calcDir(dx,dy));
+    },{passive:false});
+
+    document.addEventListener('touchmove',function(e){
+      if(!active) return;
+      for(var i=0;i<e.changedTouches.length;i++){
+        if(e.changedTouches[i].identifier===touchId){
+          var c=getCenter(), t=e.changedTouches[i];
+          var dx=t.clientX-c.x, dy=t.clientY-c.y;
+          setKnob(dx,dy,c.maxR);
+          startMove(calcDir(dx,dy));
+          break;
+        }
+      }
+    },{passive:true});
+
+    document.addEventListener('touchend',function(e){
+      if(!active) return;
+      for(var i=0;i<e.changedTouches.length;i++){
+        if(e.changedTouches[i].identifier===touchId){
+          active=false; touchId=null;
+          resetKnob();
+          stopMove();
+          break;
+        }
+      }
+    });
+    document.addEventListener('touchcancel',function(e){
+      for(var i=0;i<e.changedTouches.length;i++){
+        if(e.changedTouches[i].identifier===touchId){
+          active=false; touchId=null;
+          resetKnob();
+          stopMove();
+          break;
+        }
+      }
+    });
+    return {stop:stopMove};
+  }
+
+  createJoystick('joystickKnob','joystickBase',1);
+})();
+
+// ─── Keyboard input ───
+document.addEventListener('keydown',e=>{
+  // Modal Escape
+  if(e.key==='Escape'){
+    document.querySelectorAll('.modal-overlay.active').forEach(m=>m.classList.remove('active'));
+    if(G.state==='shop')closeShop();
+    return;
+  }
+  // Don't intercept global keys when modal open (except escape)
+  if(document.querySelector('.modal-overlay.active')) return;
+
+  initAudio();
+  const k=e.key;
+  if(G.state==='shop'){
+    if(k==='p'||k==='P')closeShop();
+    else if(k>='1'&&k<='7')buyItem(parseInt(k)-1);
+    e.preventDefault();return;
+  }
+  if(G.state==='playing'){
+    if(isDuo()){
+      if(k==='w'||k==='W'){movePlayer(0,-1,1);e.preventDefault();return;}
+      else if(k==='s'||k==='S'){movePlayer(0,1,1);e.preventDefault();return;}
+      else if(k==='a'||k==='A'){movePlayer(-1,0,1);e.preventDefault();return;}
+      else if(k==='d'||k==='D'){movePlayer(1,0,1);e.preventDefault();return;}
+      else if(k==='ArrowUp'){movePlayer(0,-1,2);e.preventDefault();return;}
+      else if(k==='ArrowDown'){movePlayer(0,1,2);e.preventDefault();return;}
+      else if(k==='ArrowLeft'){movePlayer(-1,0,2);e.preventDefault();return;}
+      else if(k==='ArrowRight'){movePlayer(1,0,2);e.preventDefault();return;}
+      else if(k===' '){attackAdjacent(1);e.preventDefault();return;}
+      else if(k==='Enter'){attackAdjacent(2);e.preventDefault();return;}
+    }else{
+      if(k==='w'||k==='W'||k==='ArrowUp'){movePlayer(0,-1,1);e.preventDefault();return;}
+      else if(k==='s'||k==='S'||k==='ArrowDown'){movePlayer(0,1,1);e.preventDefault();return;}
+      else if(k==='a'||k==='A'||k==='ArrowLeft'){movePlayer(-1,0,1);e.preventDefault();return;}
+      else if(k==='d'||k==='D'||k==='ArrowRight'){movePlayer(1,0,1);e.preventDefault();return;}
+      else if(k===' '){attackAdjacent(1);e.preventDefault();return;}
+    }
+    if(k==='h'||k==='H')useHealHerb();
+    else if(k==='e'||k==='E')useExpHerb();
+    else if(k==='p'||k==='P')openShop();
+    else if(k==='.'||k==='>'||k==='/'||k==='Shift')tryDescend();
+    else if(k==='f'||k==='F')toggleSpeed();
+  }
+  if(G.state==='dead'||G.state==='won'){
+    if(k==='r'||k==='R')newGame();
+    if((k==='v'||k==='V')&&G.state==='dead')revivePlayer();
+  }
+});
+
+// ─── Rendering ───
+let animTime=0;
+function resizeCanvas(){
+  const wrap=document.getElementById('canvasWrap');
+  if(!wrap) return;
+  const cw=wrap.clientWidth, ch=wrap.clientHeight;
+  var tc=document.getElementById('touchControls');
+  const cssW=MAP_W*TILE, cssH=MAP_H*TILE;
+  const scale=Math.min(cw/cssW,ch/cssH);
+  const dispW=Math.floor(cssW*scale), dispH=Math.floor(cssH*scale);
+  const dpr=Math.min(window.devicePixelRatio||1,2);
+  canvas.style.width=dispW+'px';
+  canvas.style.height=dispH+'px';
+  canvas.width=Math.floor(dispW*dpr);
+  canvas.height=Math.floor(dispH*dpr);
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+}
+function drawTile(x,y,ch,bg,fg){
+  const px=x*TILE, py=y*TILE;
+  ctx.fillStyle=bg;
+  ctx.fillRect(px,py,TILE,TILE);
+  if(ch){
+    ctx.fillStyle=fg||'#ccc';
+    const isEmoji=ch.length>1||/\p{Emoji}/u.test(ch);
+    ctx.font=`${isEmoji?TILE-8:TILE-6}px ${isEmoji?'sans-serif':'monospace'}`;
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(ch,px+TILE/2,py+TILE/2+1);
+  }
+}
+function render(dt){
+  animTime+=dt;
+  updateParticles(dt);
+  if(shakeTime>0)shakeTime-=dt;
+  if(flashTime>0)flashTime-=dt;
+  ctx.save();
+  if(shakeTime>0) ctx.translate((Math.random()-0.5)*4,(Math.random()-0.5)*4);
+
+  // Only render if game page is visible (canvas may not exist/be hidden otherwise)
+  const gamePage=document.getElementById('page-game');
+  if(gamePage && gamePage.classList.contains('active')){
+    if(G.state==='dead'){renderMap();renderDeath();}
+    else if(G.state==='won'){renderMap();renderVictory();}
+    else{renderMap();}
+    drawParticles();
+    if(flashTime>0&&flashColor){
+      ctx.fillStyle=flashColor;
+      ctx.globalAlpha=flashTime*2;
+      ctx.fillRect(0,0,canvas.width,canvas.height);
+      ctx.globalAlpha=1;
+    }
+  }else{
+    // Clear canvas when not visible
+    ctx.fillStyle='#0a0a14';
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+  }
+  ctx.restore();
+  updateSidebar();
+}
+function renderMap(){
+  ctx.fillStyle='#0a0a14';ctx.fillRect(0,0,canvas.width,canvas.height);
+  const p1=G.p1, p2=G.p2, rad=fovRadius();
+  for(let y=0;y<MAP_H;y++){
+    for(let x=0;x<MAP_W;x++){
+      const vis=visible(x,y);
+      const seen=G.seen[y]&&G.seen[y][x];
+      const tile=G.grid[y]?G.grid[y][x]:'#';
+      if(vis){
+        if(x===p1.x&&y===p1.y){
+          drawTile(x,y,null,'#1a1a2e');
+          ctx.globalAlpha=p1.alive?1:0.35;
+          ctx.fillStyle='#ddeeff';ctx.font=`bold ${TILE-4}px monospace`;ctx.textAlign='center';ctx.textBaseline='middle';
+          ctx.fillText(p1.alive?'🐾':'👻',x*TILE+TILE/2,y*TILE+TILE/2+1);
+          ctx.globalAlpha=1;
+          continue;
+        }
+        if(isDuo() && x===p2.x && y===p2.y && !(x===p1.x && y===p1.y)){
+          drawTile(x,y,null,'#1a1a2e');
+          ctx.globalAlpha=p2.alive?1:0.35;
+          ctx.fillStyle='#f0e0d0';ctx.font=`bold ${TILE-4}px monospace`;ctx.textAlign='center';ctx.textBaseline='middle';
+          ctx.fillText(p2.alive?'🐼':'👻',x*TILE+TILE/2,y*TILE+TILE/2+1);
+          ctx.globalAlpha=1;
+          continue;
+        }
+        const en=enemyAt(x,y);
+        if(en){
+          drawTile(x,y,null,'#1a1a2e');
+          const d=EDATA[en.type];
+          const isBoss=en.type.includes('boss')||en.type==='tigerstar_spirit';
+          ctx.fillStyle=en.stunned?'#666':d.col;
+          ctx.font=`${TILE-8}px sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';
+          ctx.fillText(en.stunned?'💤':d.ch,x*TILE+TILE/2,y*TILE+TILE/2+1);
+          if(en.hp<en.maxHp){
+            const bw=TILE-4, bh=3;
+            const bx=x*TILE+2, by=y*TILE+1;
+            ctx.fillStyle='#440000';ctx.fillRect(bx,by,bw,bh);
+            ctx.fillStyle=isBoss?'#ff44aa':'#ff4444';ctx.fillRect(bx,by,bw*(en.hp/en.maxHp),bh);
+          }
+          continue;
+        }
+        const it=itemAt(x,y);
+        if(it){
+          const bg2='#1a1a2e';
+          const col=it.type==='healing_herb'?'#44cc44':it.type==='exp_herb'?'#aa44ff':'#44bbcc';
+          const ch2=it.type==='healing_herb'?'♥':it.type==='exp_herb'?'✦':'†';
+          drawTile(x,y,null,bg2);
+          ctx.fillStyle=col;ctx.font=`bold ${TILE-6}px monospace`;ctx.textAlign='center';ctx.textBaseline='middle';
+          ctx.fillText(ch2,x*TILE+TILE/2,y*TILE+TILE/2+1);
+          continue;
+        }
+        if(tile==='>'){
+          const glow=0.3+0.15*Math.sin(animTime*3);
+          drawTile(x,y,null,'#1a1a2e');
+          ctx.fillStyle=`rgba(68,136,255,${glow})`;ctx.fillRect(x*TILE,y*TILE,TILE,TILE);
+          ctx.fillStyle='#4488ff';ctx.font=`bold ${TILE-6}px monospace`;ctx.textAlign='center';ctx.textBaseline='middle';
+          ctx.fillText('▼',x*TILE+TILE/2,y*TILE+TILE/2+1);
+        }else if(tile==='M'){
+          const pulse=0.4+0.3*Math.sin(animTime*4);
+          drawTile(x,y,null,'#1a1a2e');
+          ctx.fillStyle=`rgba(170,221,255,${pulse})`;ctx.fillRect(x*TILE,y*TILE,TILE,TILE);
+          ctx.fillStyle='#aaddff';ctx.font=`bold ${TILE-4}px monospace`;ctx.textAlign='center';ctx.textBaseline='middle';
+          ctx.fillText('◆',x*TILE+TILE/2,y*TILE+TILE/2+1);
+        }else if(tile==='#'){
+          drawTile(x,y,null,'#2a2a3a');
+        }else{
+          drawTile(x,y,null,'#3a2a1a');
+        }
+      }else if(seen){
+        if(tile==='#'){
+          drawTile(x,y,null,'#1a1a28');
+        }else{
+          drawTile(x,y,null,'#1a1408');
+          ctx.fillStyle='rgba(100,100,120,0.3)';ctx.font=`${TILE-8}px monospace`;ctx.textAlign='center';ctx.textBaseline='middle';
+          ctx.fillText('·',x*TILE+TILE/2,y*TILE+TILE/2+1);
+        }
+      }
+    }
+  }
+  if(isDuo()){
+    drawPlayerHpOverlay(p1,1);
+    drawPlayerHpOverlay(p2,2);
+  }
+}
+function drawPlayerHpOverlay(p,who){
+  if(!p.alive) return;
+  const w=TILE-4, h=3;
+  const bx=p.x*TILE+2, by=p.y*TILE+TILE-h-2;
+  ctx.fillStyle='rgba(0,0,0,.6)';ctx.fillRect(bx,by,w,h);
+  const frac=p.hp/p.maxHp;
+  const col=frac>0.5?'#44cc44':frac>0.25?'#ccaa33':'#cc4444';
+  ctx.fillStyle=col;ctx.fillRect(bx,by,w*frac,h);
+}
+function renderDeath(){
+  ctx.fillStyle='rgba(20,0,0,0.75)';ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.fillStyle='#ff4444';ctx.font='bold 28px monospace';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText('💀 GAME OVER',canvas.width/2,canvas.height*0.28);
+  ctx.fillStyle='#cc8888';ctx.font='14px monospace';
+  ctx.fillText('Level '+G.shared.level+' · '+G.shared.kills+' enemies defeated · Floor '+G.floor,canvas.width/2,canvas.height*0.37);
+  ctx.fillStyle='#888';ctx.font='13px monospace';
+  ctx.fillText('StarClan weeps for you...',canvas.width/2,canvas.height*0.44);
+  if(G.shared.herbs>=5){
+    ctx.fillStyle='rgba(255,204,68,'+(0.6+0.4*Math.sin(animTime*3))+')';
+    ctx.font='15px monospace';
+    var revText = isDuo() ? 'Press V to revive your partner (-5 herbs)' : 'Press V to revive (-5 herbs)';
+    ctx.fillText(revText,canvas.width/2,canvas.height*0.54);
+  } else {
+    ctx.fillStyle='#664444';ctx.font='12px monospace';
+    ctx.fillText('Need 5 herbs to revive (have '+G.shared.herbs+')',canvas.width/2,canvas.height*0.54);
+  }
+  ctx.fillStyle='rgba(200,200,200,'+(0.5+0.5*Math.sin(animTime*3))+')';
+  ctx.font='16px monospace';
+  ctx.fillText('Press R to retry',canvas.width/2,canvas.height*0.68);
+}
+function renderVictory(){
+  ctx.fillStyle='rgba(0,0,20,0.75)';ctx.fillRect(0,0,canvas.width,canvas.height);
+  const glow=0.3+0.2*Math.sin(animTime*2);
+  ctx.fillStyle=`rgba(255,204,68,${glow*0.15})`;
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.fillStyle='#ffcc44';ctx.font='bold 28px monospace';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText('🎉 VICTORY!',canvas.width/2,canvas.height*0.3);
+  ctx.fillStyle='#aaddff';ctx.font='bold 18px monospace';
+  ctx.fillText('🌙 You found the Moonstone!',canvas.width/2,canvas.height*0.4);
+  ctx.fillStyle='#ccc';ctx.font='14px monospace';
+  ctx.fillText(`Level ${G.shared.level} · ${G.shared.kills} enemies defeated · ${G.totalSpent} EXP spent in shop`,canvas.width/2,canvas.height*0.5);
+  ctx.fillStyle='#88aaff';ctx.font='13px monospace';
+  ctx.fillText('StarClan honors you, warrior!',canvas.width/2,canvas.height*0.58);
+  ctx.fillStyle=`rgba(200,200,200,${0.5+0.5*Math.sin(animTime*3)})`;
+  ctx.font='16px monospace';
+  ctx.fillText('Press R to play again',canvas.width/2,canvas.height*0.72);
+}
+function updateSidebar(){
+  const s=G.shared;
+  var sHp=document.getElementById('sHp');
+  var hpFill=document.getElementById('hpFill');
+  if(!sHp) return;
+  if(isDuo()){
+    var p1txt = `🐾 P1: HP ${G.p1.hp}/${G.p1.maxHp} | ATK ${s.atk}` + (G.p1.alive?'':' (GHOST)');
+    var p2txt = `🐼 P2: HP ${G.p2.hp}/${G.p2.maxHp} | ATK ${s.atk}` + (G.p2.alive?'':' (GHOST)');
+    var sidebar=document.getElementById('game-sidebar');
+    if(sidebar && !document.getElementById('sP1')){
+      var div1=document.createElement('div');div1.className='stat';div1.id='sP1';
+      var div2=document.createElement('div');div2.className='stat';div2.id='sP2';
+      var ref=document.getElementById('sHp');
+      ref.parentNode.insertBefore(div1,ref);
+      ref.parentNode.insertBefore(div2,ref);
+    }
+    if(document.getElementById('sP1')){
+      document.getElementById('sP1').innerHTML='<span class="val">'+p1txt+'</span>';
+      document.getElementById('sP2').innerHTML='<span class="val">'+p2txt+'</span>';
+    }
+    var totH=0,totM=0;
+    if(G.p1.alive){totH+=G.p1.hp;totM+=G.p1.maxHp;}
+    if(G.p2.alive){totH+=G.p2.hp;totM+=G.p2.maxHp;}
+    if(!totM){totH=0;totM=1;}
+    sHp.textContent=`${totH}/${totM}`;
+    hpFill.style.width=(totH/totM*100)+'%';
+    hpFill.style.background=totH>totM*0.5?'#44cc44':totH>totM*0.25?'#ccaa33':'#cc4444';
+  }else{
+    var p=G.p1;
+    var sP1=document.getElementById('sP1'),sP2=document.getElementById('sP2');
+    if(sP1)sP1.remove();if(sP2)sP2.remove();
+    sHp.textContent=`${p.hp}/${p.maxHp}`;
+    hpFill.style.width=(p.hp/p.maxHp*100)+'%';
+    hpFill.style.background=p.hp>p.maxHp*0.5?'#44cc44':p.hp>p.maxHp*0.25?'#ccaa33':'#cc4444';
+  }
+  document.getElementById('sLv').textContent=s.level;
+  document.getElementById('sAtk').textContent=s.atk;
+  document.getElementById('sExp').textContent=`${s.exp}/${expToNext()}`;
+  document.getElementById('expFill').style.width=(s.exp/expToNext()*100)+'%';
+  // Show level-up button if exp is enough
+  var sExpUp=document.getElementById('sExpUp');
+  if(sExpUp) sExpUp.style.display = (s.exp>=expToNext()) ? 'inline' : 'none';
+  document.getElementById('sHerb').textContent=s.herbs;
+  document.getElementById('sExpH').textContent=s.expHerbs;
+  document.getElementById('sFloor').textContent=`${G.floor}/${MAX_FLOOR}`;
+  // 🔮 Currency: refresh in-game sidebar counters
+  var sMoon=document.getElementById('sMoon');
+  if(sMoon) sMoon.textContent=formatNum(homeData.moonstones);
+  var sGravel=document.getElementById('sGravel');
+  if(sGravel) sGravel.textContent=formatNum(homeData.gravel);
+  var hhp=document.getElementById('hudHp');
+  if(hhp){
+    if(isDuo()){
+      var p1Row=document.getElementById('hudP1Row');
+      var p2Row=document.getElementById('hudP2Row');
+      if(p2Row) p2Row.style.display='';
+      document.getElementById('hudHp').textContent=G.p1.hp+'/'+G.p1.maxHp;
+      document.getElementById('hudHpFill').style.width=(G.p1.hp/G.p1.maxHp*100)+'%';
+      document.getElementById('hudHpFill').style.background=G.p1.hp>G.p1.maxHp*0.5?'#44cc44':G.p1.hp>G.p1.maxHp*0.25?'#ccaa33':'#cc4444';
+      document.getElementById('hudHp2').textContent=G.p2.hp+'/'+G.p2.maxHp;
+      document.getElementById('hudHpFill2').style.width=(G.p2.hp/G.p2.maxHp*100)+'%';
+      document.getElementById('hudHpFill2').style.background=G.p2.hp>G.p2.maxHp*0.5?'#44cc44':G.p2.hp>G.p2.maxHp*0.25?'#ccaa33':'#cc4444';
+    }else{
+      var p2Row=document.getElementById('hudP2Row');
+      if(p2Row) p2Row.style.display='none';
+      document.getElementById('hudHp').textContent=G.p1.hp+'/'+G.p1.maxHp;
+      document.getElementById('hudHpFill').style.width=(G.p1.hp/G.p1.maxHp*100)+'%';
+      document.getElementById('hudHpFill').style.background=G.p1.hp>G.p1.maxHp*0.5?'#44cc44':G.p1.hp>G.p1.maxHp*0.25?'#ccaa33':'#cc4444';
+    }
+    document.getElementById('hudLv').textContent=s.level;
+    document.getElementById('hudAtk').textContent=s.atk;
+    document.getElementById('hudExp').textContent=s.exp+'/'+expToNext();
+    document.getElementById('hudExpFill').style.width=(s.exp/expToNext()*100)+'%';
+    document.getElementById('hudHerbs').textContent='🌿'+s.herbs;
+    document.getElementById('hudFloor').textContent='🏠'+G.floor+'/'+MAX_FLOOR;
+    var lastMsg=G.messages.length?G.messages[G.messages.length-1].txt:'';
+    document.getElementById('hudMsg').textContent=lastMsg;
+  }
+  var ba=document.getElementById('btnAttack');
+  var bh=document.getElementById('btnHeal');
+  var be=document.getElementById('btnExp');
+  var bd=document.getElementById('btnDown');
+  var bs=document.getElementById('btnShop');
+  var br=document.getElementById('btnRestart');
+  var bv=document.getElementById('btnRevive');
+  var canRevive = (G.state==='dead') && G.shared.herbs>=5;
+  if(bv) bv.style.display = canRevive ? '' : 'none';
+  if(ba && (G.state==='dead' || G.state==='won')){
+    ba.style.display='none';bh.style.display='none';be.style.display='none';
+    bd.style.display='none';bs.style.display='none';br.style.display='';
+    var bs2=document.getElementById('btnSpeed');if(bs2)bs2.style.display='none';
+  } else if(ba){
+    ba.innerHTML='<span class="icon">⚔️</span><span class="label">Attack</span>';
+    ba.setAttribute('ontouchstart','event.preventDefault();doAttack(1)');
+    ba.style.display='';bh.style.display='';be.style.display='';
+    bd.style.display='';bs.style.display='';br.style.display='';
+    var bs3=document.getElementById('btnSpeed');if(bs3)bs3.style.display='';
+  }
+  const log=document.getElementById('msgLog');
+  if(log){
+    const recent=G.messages.slice(-6);
+    log.innerHTML=recent.map(m=>`<div class="msg ${m.cls}">${m.txt}</div>`).join('');
+    log.scrollTop=log.scrollHeight;
+  }
+}
+
+// ─── Game loop ───
+let lastTime=0;
+function loop(ts){
+  const dt=Math.min((ts-lastTime)/1000,0.1);
+  lastTime=ts;
+  render(dt);
+  requestAnimationFrame(loop);
+}
+
+// ============================================================
+// 🚀 INIT
+// ============================================================
+window.addEventListener('resize',resizeCanvas);
+resizeCanvas();
+
+loadMode();
+loadHome();
+loadProfile();
+loadSettings();
+syncPlayerAlias();
+document.body.classList.toggle('duo-mode',isDuo());
+txInit();
+
+// Try load saved game
+if(loadGame()){
+  // Save loaded — game state preserved
+  console.log('Save loaded. Floor:',G.floor,'Mode:',mode);
+  refreshHomeUI();
+}else{
+  // No save — fresh start
+  G.floor=1;G.maxFloorReached=1;
+  refreshHomeUI();
+}
+
+// Auto-save
+setInterval(()=>{
+  if(G.state==='playing'||G.state==='dead'||G.state==='won') saveGame();
+},5000);
+
+// Start game loop
+requestAnimationFrame(loop);
+
+// ─── Ice button (draggable) ───
+(function(){
+var b=document.getElementById('iceBtn');if(!b)return;
+var drag=false,moved=false,sx,sy,ox,oy;
+b.addEventListener('pointerdown',function(e){
+  drag=true;moved=false;
+  sx=e.clientX;sy=e.clientY;
+  var r=b.getBoundingClientRect();ox=e.clientX-r.left;oy=e.clientY-r.top;
+  b.setPointerCapture(e.pointerId);e.preventDefault();
+});
+b.addEventListener('pointermove',function(e){
+  if(!drag)return;
+  var dx=e.clientX-sx,dy=e.clientY-sy;
+  if(Math.abs(dx)>4||Math.abs(dy)>4)moved=true;
+  var x=e.clientX-ox,y=e.clientY-oy;
+  b.style.left=x+'px';b.style.top=y+'px';b.style.right='auto';b.style.bottom='auto';
+});
+b.addEventListener('pointerup',function(e){
+  if(!drag)return;drag=false;
+  if(!moved){location.href='../index.html';return;}
+  var r=b.getBoundingClientRect();
+  if(r.left+r.width/2<window.innerWidth/2){b.style.left='6px';b.style.right='auto';}
+  else{b.style.left='auto';b.style.right='6px';}
+  var maxY=window.innerHeight-r.height-6;
+  var fy=Math.max(6,Math.min(parseInt(b.style.top)||r.top,maxY));
+  b.style.top=fy+'px';b.style.bottom='auto';
+});
+})();
+
+// ===== AUTO FULLSCREEN =====
+function tryFullscreen(){
+  const el=document.documentElement;
+  const rfs=el.requestFullscreen||el.webkitRequestFullscreen||el.msRequestFullscreen;
+  if(rfs) rfs.call(el).catch(()=>{});
+}
+let fullscreenDone=false;
+document.addEventListener('click',()=>{if(!fullscreenDone){fullscreenDone=true;tryFullscreen();}},{once:true});
+document.addEventListener('touchstart',()=>{if(!fullscreenDone){fullscreenDone=true;tryFullscreen();}},{once:true});
+
+// Update home UI on load
+refreshHomeUI();
+console.log('🐾 猫武士大冒险 loaded');
+</script>
+<script src="tutorial.js"></script>
+<script src="friends.js"></script>
+<script>
+tpgFriends && tpgFriends.setGame && tpgFriends.setGame('moonstone');
+// Called by friends.js when accepting a duo invite
+function enterDuoMode(roomCode){
+  if(typeof mode!=='undefined') mode='duo';
+  if(typeof showToast==='function') showToast('🎮 好友已加入！房间码: '+roomCode);
+  if(typeof onClickExplore==='function') onClickExplore();
+}
+// Check for pending invite on load
+(function(){
+  var pi=localStorage.getItem('tpg_pending_invite');
+  if(pi){
+    try{
+      var inv=JSON.parse(pi);
+      if(inv.game==='moonstone'){
+        localStorage.removeItem('tpg_pending_invite');
+        setTimeout(function(){ enterDuoMode(inv.roomCode); }, 1500);
+      }
+    }catch(e){}
+  }
+})();
+<script>
+// 🐾 新手教程 第一步：猫武士大冒险
+(function(){
+  if(isNewPlayer() && !tutorialCheck('moonstone','step1')){
+    setTimeout(function(){
+      var zone = document.getElementById('zone-start');
+      if(!zone) return;
+      showTutorialStep(zone, '🐱', '点击经典模式开始冒险！', function(){
+        tutorialDone('moonstone','step1');
+      });
+    }, 600);
+  }
+})();
+// 🐾 新手教程 第二步：游戏内操作说明
+(function(){
+  if(!tutorialCheck('moonstone','step2')){
+    var origEnter = window.enterFloor;
+    window.enterFloor = function(n){
+      origEnter && origEnter.apply(this, arguments);
+      setTimeout(function(){ showTutorialHowTo('moonstone'); }, 500);
+    };
+  }
+})();
+</script>
+</body>
+</html>

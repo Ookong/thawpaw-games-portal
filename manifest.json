@@ -4,7 +4,7 @@
     {
       "id": "moonstone-quest",
       "name": "猫武士大冒险",
-      "file": "games/moonstone-quest.html",
+      "file": "moonstone-quest.html",
       "icon": "moonstone",
       "description": "猫咪学徒深入地下10层，寻找传说中的月亮石 🔮",
       "color": "#4488ff"
@@ -12,7 +12,7 @@
     {
       "id": "dungeon",
       "name": "Dungeon Explore",
-      "file": "games/dungeon.html",
+      "file": "dungeon.html",
       "icon": "dungeon",
       "description": "Crawl through endless dungeons! Slay monsters, collect gold, go deeper!",
       "color": "#aa44ff"
@@ -20,7 +20,7 @@
     {
       "id": "snake",
       "name": "Snake Game",
-      "file": "games/snake.html",
+      "file": "snake.html",
       "icon": "snake",
       "description": "Classic snake with shops, banks, and backpacks!",
       "color": "#4caf50"
@@ -28,7 +28,7 @@
     {
       "id": "sword-master",
       "name": "少年剑客闯江湖",
-      "file": "games/sword-master.html",
+      "file": "sword-master.html",
       "icon": "sword",
       "description": "少年剑客林风闯庙宇，六波Boss挑战·无限关卡·买武器·变身Boss！⚔️",
       "color": "#b43228"

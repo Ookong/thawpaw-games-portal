@@ -1,0 +1,2802 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
+<meta name="description" content="贪吃蛇商店版 - 经典贪吃蛇加了商店、银行、背包系统！吃苹果赚钱买道具，越玩越上瘾！" />
+<meta property="og:title" content="贪吃蛇商店 🐍" />
+<meta property="og:description" content="经典贪吃蛇 + 商店 + 银行 + 背包，全新玩法！" />
+<meta property="og:url" content="https://games.thawflow.com/games/snake.html" />
+<meta property="og:type" content="website" />
+<link rel="canonical" href="https://games.thawflow.com/games/snake.html" />
+<title>贪吃蛇商店 - ThawPaw Games</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#1a1a2e;--card:#16213e;--card2:#0f3460;--accent:#e94560;
+  --gold:#ffd700;--apple:#4caf50;--text:#eee;--text2:#aaa;
+  --radius:12px;
+}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden;min-height:100vh;}
+
+/* ===== PAGES ===== */
+.page{display:none;width:100%;min-height:100vh;}
+.page.active{display:flex;flex-direction:column;}
+
+/* ===== TOP BAR ===== */
+.top-bar{display:flex;align-items:center;padding:10px 16px;background:var(--card);gap:12px;cursor:pointer;min-height:56px;}
+.profile-bubble{display:flex;align-items:center;gap:10px;flex:1;}
+.home-currency-bubble{background:var(--card2);border-radius:20px;padding:6px 12px;font-size:13px;font-weight:600;white-space:nowrap;}
+.avatar{width:40px;height:40px;border-radius:50%;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:20px;border:2px solid var(--accent);}
+.profile-info{display:flex;flex-direction:column;gap:2px;}
+.profile-info .name-row{display:flex;align-items:center;gap:6px;}
+.profile-info .nickname{font-weight:600;font-size:15px;}
+.level-badge{font-size:11px;background:var(--accent);padding:1px 8px;border-radius:10px;white-space:nowrap;}
+.level-bar-wrap{height:4px;background:#333;border-radius:2px;width:80px;margin-top:2px;}
+.level-bar{height:100%;background:var(--gold);border-radius:2px;width:30%;transition:width .3s;}
+
+/* ===== BOTTOM BAR (功能区) ===== */
+.bottom-bar{position:fixed;bottom:0;left:0;right:0;height:56px;background:var(--card);display:flex;align-items:center;justify-content:space-around;border-top:1px solid #333;z-index:100;}
+.bottom-bar .tab{display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:6px 16px;border-radius:8px;transition:background .2s;font-size:12px;}
+.bottom-bar .tab:hover,.bottom-bar .tab.active{background:var(--card2);}
+.bottom-bar .tab .icon{font-size:20px;}
+
+/* ===== HOME PAGE LAYOUT ===== */
+.home-content{flex:1;display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;padding:12px;padding-bottom:64px;min-height:calc(100vh - 56px);}
+.home-content .col{display:flex;flex-direction:column;gap:8px;}
+
+/* Left 1/4 */
+.col-left{justify-content:center;align-items:center;color:var(--text2);font-size:13px;}
+/* Practice card */
+.practice-card{background:var(--card2);border-radius:var(--radius);padding:18px 12px;text-align:center;cursor:pointer;transition:transform .15s,box-shadow .15s;width:100%;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;}
+.practice-card:hover{transform:scale(1.03);box-shadow:0 0 12px rgba(76,175,80,.3);}
+.practice-card .practice-icon{font-size:36px;}
+.practice-card .practice-title{font-weight:700;font-size:15px;}
+.practice-card .practice-sub{font-size:10px;color:var(--text2);line-height:1.4;}
+
+/* Left-center 1/4 - Skin */
+.col-lc{justify-content:center;align-items:center;}
+.skin-display{background:var(--card2);border-radius:var(--radius);padding:20px;text-align:center;width:100%;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;}
+.skin-display .skin-preview{width:80px;height:80px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:40px;}
+.skin-label{font-size:13px;color:var(--text2);}
+
+/* Right-center 1/4 - Modes */
+.col-rc{gap:8px;}
+.mode-card{background:var(--card2);border-radius:var(--radius);padding:16px;text-align:center;cursor:pointer;transition:transform .15s,box-shadow .15s;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;}
+.mode-card:hover{transform:scale(1.03);box-shadow:0 0 12px rgba(233,69,96,.3);}
+.mode-card .mode-icon{font-size:32px;}
+.mode-card .mode-name{font-weight:600;font-size:14px;}
+.mode-card .mode-desc{font-size:11px;color:var(--text2);}
+
+/* Right 1/4 - Activities */
+.col-right{gap:8px;}
+.col-right .top-row{display:flex;gap:6px;}
+.col-right .top-row .mini-card{flex:1;background:var(--card2);border-radius:var(--radius);padding:10px;text-align:center;cursor:pointer;font-size:13px;font-weight:600;transition:transform .15s;}
+.col-right .top-row .mini-card:hover{transform:scale(1.05);}
+.col-right .top-row .mini-card .icon{font-size:22px;display:block;margin-bottom:4px;}
+.hot-events{background:var(--card2);border-radius:var(--radius);padding:14px;flex:1;overflow-y:auto;}
+.hot-events h3{font-size:13px;margin-bottom:8px;color:var(--gold);}
+.hot-events .event-item{padding:8px;border-bottom:1px solid #333;font-size:12px;color:var(--text2);}
+.hot-events .event-item:last-child{border-bottom:none;}
+
+/* ===== PROFILE PAGE ===== */
+.profile-page{align-items:center;padding:20px;padding-bottom:72px;gap:16px;}
+.profile-page .big-avatar{width:90px;height:90px;border-radius:50%;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:48px;border:3px solid var(--accent);cursor:pointer;transition:transform .2s;position:relative;}
+.profile-page .big-avatar:hover{transform:scale(1.05);}
+.profile-page .big-avatar::after{content:'📷';position:absolute;bottom:0;right:0;font-size:16px;}
+.profile-page .name-section{text-align:center;}
+.profile-page .name-section .name-line{display:flex;align-items:center;justify-content:center;gap:8px;}
+.profile-page .name-section .nickname{font-size:20px;font-weight:700;}
+.profile-page .name-section .edit-btn{cursor:pointer;font-size:16px;}
+.profile-page .snake-id{color:var(--text2);font-size:13px;margin-top:4px;}
+.profile-page .bio{color:var(--text2);font-size:13px;margin-top:2px;min-height:18px;}
+.profile-page .level-section{width:100%;max-width:300px;}
+.profile-page .level-info{display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;}
+.profile-page .level-bar-wrap{height:8px;background:#333;border-radius:4px;}
+.profile-page .level-bar{height:100%;background:linear-gradient(90deg,var(--accent),var(--gold));border-radius:4px;width:30%;}
+.back-btn{position:absolute;top:12px;left:12px;cursor:pointer;font-size:24px;z-index:10;}
+
+/* ===== SETTINGS PAGE (调试界面) ===== */
+.settings-page{padding:20px;padding-bottom:72px;gap:20px;}
+.settings-page h2{text-align:center;font-size:18px;}
+.setting-group{background:var(--card2);border-radius:var(--radius);padding:16px;}
+.setting-group label{display:block;font-size:14px;margin-bottom:8px;font-weight:600;}
+.setting-group .slider-row{display:flex;align-items:center;gap:12px;}
+.setting-group input[type=range]{flex:1;accent-color:var(--accent);}
+.setting-group .slider-labels{display:flex;justify-content:space-between;font-size:11px;color:var(--text2);margin-top:4px;}
+.start-btn{background:var(--accent);color:#fff;border:none;padding:14px;border-radius:var(--radius);font-size:16px;font-weight:700;cursor:pointer;width:100%;max-width:300px;margin:0 auto;display:block;transition:transform .15s;}
+.start-btn:hover{transform:scale(1.03);}
+
+/* ===== GAME PAGE ===== */
+.game-page{align-items:center;justify-content:center;position:relative;}
+.game-page canvas{border:2px solid var(--card2);border-radius:8px;background:#0a0a1a;margin:auto;display:block;}
+.game-page .score-bar{position:absolute;top:10px;left:50%;transform:translateX(-50%);display:flex;gap:20px;font-size:14px;font-weight:600;}
+.game-page .score-bar span{background:var(--card);padding:4px 12px;border-radius:20px;}
+.game-back{position:absolute;top:10px;left:10px;cursor:pointer;font-size:26px;z-index:10;opacity:.85;transition:opacity .2s;}
+.game-back:hover{opacity:1;}
+.practice-hint{position:absolute;top:48px;left:50%;transform:translateX(-50%);font-size:12px;color:var(--text2);background:var(--card);padding:4px 14px;border-radius:16px;white-space:nowrap;}
+
+/* ===== JOYSTICK ===== */
+.joystick-zone{display:none;position:fixed;bottom:30px;left:30px;z-index:300;}
+.joystick-zone.visible{display:block;}
+.joystick-base{width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,0.1);border:2px solid rgba(255,255,255,0.25);position:relative;}
+.joystick-knob{width:50px;height:50px;border-radius:50%;background:rgba(233,69,96,0.7);border:2px solid rgba(255,255,255,0.3);position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;transition:none;}
+
+/* ===== MODAL / OVERLAY ===== */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;align-items:center;justify-content:center;}
+.modal-overlay.active{display:flex;}
+.modal{background:var(--card);border-radius:var(--radius);padding:20px;width:90%;max-width:400px;max-height:80vh;overflow-y:auto;position:relative;}
+.modal .modal-close{position:absolute;top:10px;right:14px;cursor:pointer;font-size:20px;}
+.modal h3{margin-bottom:12px;font-size:16px;}
+
+/* ===== SETTINGS (gear) ===== */
+.settings-btn{font-size:22px;cursor:pointer;padding:6px 8px;border-radius:8px;transition:background .2s;margin-left:6px;line-height:1;user-select:none;}
+.settings-btn:hover{background:rgba(255,255,255,.08);}
+.settings-row{display:flex;align-items:center;justify-content:space-between;padding:12px 4px;border-bottom:1px solid #333;}
+.settings-row:last-child{border-bottom:none;}
+.settings-label{display:flex;align-items:center;gap:10px;font-size:14px;color:var(--text);}
+.settings-label .lbl-icon{font-size:22px;}
+.settings-label small{color:var(--text2);font-size:11px;display:block;margin-top:2px;}
+.settings-toggle{position:relative;width:48px;height:26px;background:#444;border-radius:13px;cursor:pointer;transition:background .2s;flex-shrink:0;}
+.settings-toggle::after{content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;background:#fff;border-radius:50%;transition:transform .2s;}
+.settings-toggle.on{background:var(--accent);}
+.settings-toggle.on::after{transform:translateX(22px);}
+.settings-hint{font-size:11px;color:var(--text2);text-align:center;margin-top:14px;line-height:1.5;}
+
+/* ===== BANK ===== */
+.bank-content .exchange-item{background:var(--card2);border-radius:var(--radius);padding:14px;margin-bottom:10px;}
+.bank-content .exchange-header{display:flex;align-items:center;gap:8px;margin-bottom:10px;font-weight:600;}
+.bank-content .exchange-header .rate{color:var(--text2);font-size:12px;}
+.bank-content .exchange-controls{display:flex;flex-direction:column;gap:8px;}
+.bank-content .exchange-controls input[type=number]{background:#1a1a2e;border:1px solid #444;color:var(--text);padding:6px 10px;border-radius:8px;width:100%;font-size:14px;}
+.bank-content .exchange-controls input[type=range]{width:100%;accent-color:var(--gold);}
+.bank-content .exchange-btns{display:flex;gap:8px;}
+.bank-content .exchange-btns button{flex:1;padding:6px;border:none;border-radius:8px;cursor:pointer;font-size:12px;background:#333;color:var(--text);}
+.bank-content .exchange-btns button:hover{background:#444;}
+.exchange-confirm{background:var(--accent);color:#fff;border:none;padding:8px 16px;border-radius:8px;cursor:pointer;width:100%;margin-top:8px;font-weight:600;}
+
+/* ===== SHOP ===== */
+.shop-content{display:flex;height:60vh;gap:0;}
+.shop-sidebar{width:80px;background:var(--card2);border-radius:var(--radius) 0 0 var(--radius);overflow-y:auto;}
+.shop-sidebar .cat{padding:10px;text-align:center;cursor:pointer;font-size:12px;border-bottom:1px solid #333;transition:background .2s;}
+.shop-sidebar .cat.active{background:var(--accent);}
+.shop-main{flex:1;background:var(--bg);border-radius:0 var(--radius) var(--radius) 0;padding:12px;overflow-y:auto;display:grid;grid-template-columns:1fr 1fr;gap:8px;align-content:start;}
+.shop-right{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.shop-subcats{display:flex;gap:6px;padding:8px 12px;background:var(--card2);overflow-x:auto;}
+.shop-subcats .subcat{padding:4px 12px;border-radius:16px;font-size:12px;cursor:pointer;white-space:nowrap;transition:background .2s;background:#333;color:var(--text);}
+.shop-subcats .subcat.active{background:var(--accent);color:#fff;}
+.shop-main{flex:1;overflow-y:auto;}
+.shop-item{background:var(--card2);border-radius:8px;padding:10px;text-align:center;cursor:pointer;transition:transform .15s;}
+.shop-item:hover{transform:scale(1.05);}
+.shop-item .item-icon{font-size:28px;margin-bottom:4px;}
+.shop-item .item-name{font-size:12px;font-weight:600;}
+.shop-item .item-price{font-size:11px;color:var(--gold);}
+
+/* ===== BAG ===== */
+.bag-content{display:flex;height:60vh;gap:0;}
+.bag-sidebar{width:80px;background:var(--card2);border-radius:var(--radius) 0 0 var(--radius);overflow-y:auto;}
+.bag-sidebar .cat{padding:10px;text-align:center;cursor:pointer;font-size:12px;border-bottom:1px solid #333;transition:background .2s;}
+.bag-sidebar .cat.active{background:var(--apple);}
+.bag-main{flex:1;background:var(--bg);border-radius:0 var(--radius) var(--radius) 0;padding:12px;overflow-y:auto;display:grid;grid-template-columns:1fr 1fr;gap:8px;align-content:start;}
+.bag-item{background:var(--card2);border-radius:8px;padding:10px;text-align:center;cursor:pointer;transition:transform .15s;}
+.bag-item:hover{transform:scale(1.05);}
+.bag-item .item-icon{font-size:28px;margin-bottom:4px;}
+.bag-item .item-name{font-size:12px;font-weight:600;}
+.bag-item .item-count{font-size:11px;color:var(--text2);}
+
+/* Confirm dialog */
+.confirm-dialog{text-align:center;}
+.confirm-dialog .confirm-text{margin:16px 0;font-size:15px;}
+.confirm-dialog .confirm-btns{display:flex;gap:10px;justify-content:center;}
+.confirm-dialog .confirm-btns button{padding:8px 24px;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600;}
+.confirm-dialog .btn-yes{background:var(--accent);color:#fff;}
+.confirm-dialog .btn-no{background:#444;color:var(--text);}
+
+/* Item detail */
+.item-detail{text-align:center;}
+.item-detail .detail-icon{font-size:48px;margin:10px 0;}
+.item-detail .detail-name{font-size:18px;font-weight:700;margin-bottom:6px;}
+.item-detail .detail-desc{font-size:13px;color:var(--text2);margin-bottom:12px;}
+.item-detail .detail-stats{font-size:13px;color:var(--gold);}
+
+/* ===== AVATAR PICKER ===== */
+.avatar-picker{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:10px;}
+.avatar-option{width:50px;height:50px;border-radius:50%;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:28px;cursor:pointer;border:2px solid transparent;transition:border .2s;}
+.avatar-option:hover,.avatar-option.selected{border-color:var(--accent);}
+
+/* ===== RESPONSIVE — 屏幕形状自适应 ===== */
+
+/* 平板竖屏 / 大手机横屏：4列→仍保持但收紧 */
+@media(max-width:1024px){
+  .home-content{gap:6px;padding:8px;padding-bottom:64px;}
+  .practice-card{padding:14px 8px;}
+  .practice-card .practice-icon{font-size:28px;}
+  .skin-display{padding:14px;}
+  .skin-display .skin-preview{width:60px;height:60px;font-size:30px;}
+  .mode-card{padding:12px 8px;}
+  .mode-card .mode-icon{font-size:26px;}
+  .hot-events{padding:10px;}
+  .hot-events .event-item{font-size:11px;padding:6px 4px;}
+}
+
+/* 手机：4列→2列 */
+@media(max-width:768px){
+  .home-content{
+    grid-template-columns:1fr 1fr;
+    gap:6px;padding:8px;padding-bottom:64px;
+  }
+  /* 重新编排：左列=练习+皮肤，右列=模式+活动 */
+  .col-left{justify-content:flex-start;}
+  .col-lc{justify-content:flex-start;}
+  .col-rc{gap:6px;}
+  .col-right{gap:6px;}
+  .practice-card{padding:12px 6px;min-height:100px;}
+  .practice-card .practice-icon{font-size:24px;}
+  .practice-card .practice-title{font-size:13px;}
+  .practice-card .practice-sub{font-size:9px;}
+  .skin-display{padding:12px;min-height:100px;}
+  .skin-display .skin-preview{width:50px;height:50px;font-size:26px;}
+  .skin-label{font-size:11px;}
+  .mode-card{padding:10px 6px;min-height:80px;}
+  .mode-card .mode-icon{font-size:22px;}
+  .mode-card .mode-name{font-size:12px;}
+  .mode-card .mode-desc{font-size:10px;}
+  .col-right .top-row .mini-card{padding:8px 4px;font-size:11px;}
+  .col-right .top-row .mini-card .icon{font-size:18px;}
+  .hot-events{padding:10px;}
+  .hot-events h3{font-size:11px;}
+  .hot-events .event-item{font-size:10px;padding:5px 4px;}
+  .top-bar{padding:8px 10px;min-height:48px;gap:8px;}
+  .avatar{width:34px;height:34px;font-size:18px;}
+  .home-currency-bubble{font-size:11px;padding:4px 8px;}
+  .profile-info .nickname{font-size:13px;}
+  .level-badge{font-size:10px;padding:1px 6px;}
+  .bottom-bar{height:48px;}
+  .bottom-bar .tab{font-size:11px;padding:4px 10px;}
+  .bottom-bar .tab .icon{font-size:18px;}
+  .game-page .score-bar{font-size:12px;gap:12px;}
+  .game-page .score-bar span{padding:3px 10px;}
+  .joystick-zone{bottom:60px;left:15px;}
+  .joystick-base{width:100px;height:100px;}
+  .joystick-knob{width:42px;height:42px;}
+}
+
+/* 小屏手机：2列更紧凑 */
+@media(max-width:480px){
+  .home-content{
+    grid-template-columns:1fr 1fr;
+    gap:4px;padding:4px;padding-bottom:60px;
+  }
+  .practice-card{padding:10px 4px;min-height:84px;}
+  .practice-card .practice-icon{font-size:20px;}
+  .practice-card .practice-title{font-size:12px;}
+  .practice-card .practice-sub{font-size:8px;}
+  .skin-display{padding:8px;min-height:84px;}
+  .skin-display .skin-preview{width:42px;height:42px;font-size:22px;}
+  .skin-label{font-size:10px;}
+  .mode-card{padding:8px 4px;min-height:70px;}
+  .mode-card .mode-icon{font-size:18px;}
+  .mode-card .mode-name{font-size:11px;}
+  .mode-card .mode-desc{font-size:9px;}
+  .col-right .top-row{gap:4px;}
+  .col-right .top-row .mini-card{padding:6px 2px;font-size:10px;}
+  .col-right .top-row .mini-card .icon{font-size:16px;}
+  .hot-events{padding:8px;}
+  .hot-events h3{font-size:10px;margin-bottom:4px;}
+  .hot-events .event-item{font-size:9px;padding:4px 2px;}
+  .top-bar{padding:6px 8px;min-height:44px;gap:6px;}
+  .avatar{width:30px;height:30px;font-size:16px;}
+  .home-currency-bubble{font-size:10px;padding:3px 6px;}
+  .profile-info .nickname{font-size:12px;}
+  .profile-info .level-badge{font-size:9px;}
+  .level-bar-wrap{width:60px;}
+  .bottom-bar{height:44px;}
+  .bottom-bar .tab{font-size:10px;padding:4px 8px;}
+  .bottom-bar .tab .icon{font-size:16px;}
+  .profile-page{padding:12px;padding-bottom:60px;gap:12px;}
+  .profile-page .big-avatar{width:70px;height:70px;font-size:36px;}
+  .profile-page .name-section .nickname{font-size:17px;}
+  .settings-page{padding:12px;padding-bottom:60px;gap:14px;}
+  .game-page .score-bar{font-size:11px;gap:8px;}
+  .game-page .score-bar span{padding:2px 8px;}
+  .game-back{font-size:22px;top:6px;left:6px;}
+}
+
+/* 超小屏：2列→单列纵向滚动 */
+@media(max-width:360px){
+  .home-content{
+    grid-template-columns:1fr 1fr;
+    gap:3px;padding:3px;padding-bottom:56px;
+  }
+  .practice-card{padding:8px 3px;min-height:72px;}
+  .practice-card .practice-icon{font-size:18px;}
+  .practice-card .practice-title{font-size:11px;}
+  .skin-display{padding:6px;min-height:72px;}
+  .skin-display .skin-preview{width:36px;height:36px;font-size:18px;}
+  .mode-card{padding:6px 3px;min-height:60px;}
+  .mode-card .mode-icon{font-size:16px;}
+  .mode-card .mode-name{font-size:10px;}
+  .hot-events{padding:6px;}
+  .hot-events .event-item{font-size:8px;padding:3px 2px;}
+  .bottom-bar{height:40px;}
+  .bottom-bar .tab{font-size:9px;padding:3px 6px;}
+  .bottom-bar .tab .icon{font-size:14px;}
+}
+
+/* 超宽屏：内容居中限宽 */
+@media(min-width:1600px){
+  .home-content{max-width:1200px;margin:0 auto;}
+  .top-bar{max-width:1200px;margin:0 auto;width:100%;}
+}
+</style>
+</head>
+<body>
+
+<!-- ===== HOME PAGE ===== -->
+<div id="page-home" class="page active">
+  <div class="top-bar">
+    <div class="profile-bubble" onclick="showPage('profile')">
+      <div class="avatar" id="home-avatar">🐍</div>
+      <div class="profile-info">
+        <div class="name-row">
+          <span class="nickname" id="home-nickname">未命名</span>
+          <span class="level-badge" id="home-level">Lv.1</span>
+        </div>
+        <div class="level-bar-wrap"><div class="level-bar" id="home-level-bar"></div></div>
+      </div>
+    </div>
+    <div class="home-currency-bubble">💰 <span id="home-gold">0</span></div>
+    <div class="home-currency-bubble">🍎 <span id="home-apples">0</span></div>
+    <div class="settings-btn" onclick="event.stopPropagation();openSettings()" title="设置">⚙️</div>
+  </div>
+  <div class="home-content">
+    <!-- 左1/4 — 练习区 -->
+    <div class="col col-left">
+      <div class="practice-card" id="practice-entry" onclick="startPractice()">
+        <div class="practice-icon">🎓</div>
+        <div class="practice-title">练习区</div>
+        <div class="practice-sub" id="practice-sub">不会死，练技术赚苹果</div>
+      </div>
+    </div>
+    <!-- 左中1/4 皮肤 -->
+    <div class="col col-lc">
+      <div class="skin-display">
+        <div class="skin-preview" id="skin-preview">🐍</div>
+        <div class="skin-label">当前皮肤</div>
+        <div style="font-size:12px;color:var(--text2);" id="skin-name">经典蛇</div>
+      </div>
+    </div>
+    <!-- 右中1/4 模式 -->
+    <div class="col col-rc">
+      <div class="mode-card" onclick="showPage('settings')">
+        <div class="mode-icon">🎮</div>
+        <div class="mode-name">经典模式</div>
+        <div class="mode-desc">经典贪吃蛇</div>
+      </div>
+      <div class="mode-card" onclick="showPage('modes')">
+        <div class="mode-icon">🔮</div>
+        <div class="mode-name">更多模式</div>
+        <div class="mode-desc">双人PK · 双人合作</div>
+      </div>
+    </div>
+    <!-- 右1/4 活动 -->
+    <div class="col col-right">
+      <div class="top-row">
+        <div class="mini-card"><span class="icon">🎊</span>活动</div>
+        <div class="mini-card"><span class="icon">🎁</span>福利</div>
+      </div>
+      <div class="hot-events">
+        <h3>🔥 热门活动</h3>
+        <div class="event-item">🎉 新游戏上线！贪吃蛇来啦</div>
+        <div class="event-item">💰 每日登录领金币</div>
+        <div class="event-item">🐍 吃到10个苹果有惊喜</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PROFILE PAGE ===== -->
+<div id="page-profile" class="page">
+  <div class="back-btn" onclick="showPage('home')">←</div>
+  <div class="profile-page">
+    <div class="big-avatar" id="profile-avatar" onclick="openAvatarPicker()">🐍</div>
+    <div class="name-section">
+      <div class="name-line">
+        <span class="nickname" id="profile-nickname">未命名</span>
+        <span class="edit-btn" onclick="editNickname()">📝</span>
+      </div>
+      <div class="snake-id" id="profile-snake-id">贪吃号：--------</div>
+      <div class="bio" id="profile-bio">点击设置简介</div>
+    </div>
+    <div class="level-section">
+      <div class="level-info"><span id="profile-level">Lv.1</span><span id="profile-exp">30/100</span></div>
+      <div class="level-bar-wrap"><div class="level-bar" id="profile-level-bar"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SETTINGS PAGE (调试) ===== -->
+<div id="page-settings" class="page">
+  <div class="back-btn" onclick="showPage('home')">←</div>
+  <div class="settings-page">
+    <h2>🎮 经典模式设置</h2>
+    <div class="setting-group">
+      <label>📏 棋盘大小</label>
+      <div class="slider-row">
+        <span style="font-size:12px;">小</span>
+        <input type="range" id="board-size" min="1" max="3" value="2">
+        <span style="font-size:12px;">大</span>
+      </div>
+      <div class="slider-labels"><span>15×15</span><span>20×20</span><span>25×25</span></div>
+    </div>
+    <div class="setting-group">
+      <label>⚡ 速度</label>
+      <div class="slider-row">
+        <span style="font-size:12px;">慢</span>
+        <input type="range" id="game-speed" min="1" max="3" value="2">
+        <span style="font-size:12px;">快</span>
+      </div>
+      <div class="slider-labels"><span>慢速</span><span>中速</span><span>快速</span></div>
+    </div>
+    <button class="start-btn" onclick="startGame()">🐍 开始游戏！</button>
+  </div>
+</div>
+
+<!-- ===== MODES PAGE ===== -->
+<div id="page-modes" class="page">
+  <div class="back-btn" onclick="showPage('home')">←</div>
+  <div class="settings-page">
+    <h2>🔮 更多模式</h2>
+
+    <!-- 线上模式 -->
+    <h3 style="font-size:14px;color:var(--accent);margin:8px 0 4px;">🌐 线上对战</h3>
+    <div class="mode-card" onclick="onlineStart('pk','random')" style="margin-bottom:8px;flex-direction:row;gap:12px;padding:14px;text-align:left;">
+      <div style="font-size:28px;">⚔️🎲</div>
+      <div><div class="mode-name" style="font-size:14px;">PK 随机匹配</div><div class="mode-desc" style="font-size:11px;">线上随机对手 · 赢 +10🍎</div></div>
+    </div>
+    <div class="mode-card" onclick="onlineStart('pk','invite')" style="margin-bottom:8px;flex-direction:row;gap:12px;padding:14px;text-align:left;">
+      <div style="font-size:28px;">⚔️👥</div>
+      <div><div class="mode-name" style="font-size:14px;">PK 邀请好友</div><div class="mode-desc" style="font-size:11px;">创建房间发给好友</div></div>
+    </div>
+    <div class="mode-card" onclick="onlineStart('duo','random')" style="margin-bottom:8px;flex-direction:row;gap:12px;padding:14px;text-align:left;">
+      <div style="font-size:28px;">🤝🎲</div>
+      <div><div class="mode-name" style="font-size:14px;">合作随机匹配</div><div class="mode-desc" style="font-size:11px;">和陌生人合作霸屏</div></div>
+    </div>
+    <div class="mode-card" onclick="onlineStart('duo','invite')" style="margin-bottom:8px;flex-direction:row;gap:12px;padding:14px;text-align:left;">
+      <div style="font-size:28px;">🤝👥</div>
+      <div><div class="mode-name" style="font-size:14px;">合作邀请好友</div><div class="mode-desc" style="font-size:11px;">和好友一起霸屏</div></div>
+    </div>
+    <div class="mode-card" onclick="showPage('join-room')" style="margin-bottom:8px;flex-direction:row;gap:12px;padding:14px;text-align:left;border:1.5px solid var(--accent);">
+      <div style="font-size:28px;">🔑</div>
+      <div><div class="mode-name" style="font-size:14px;">输入房间码加入</div><div class="mode-desc" style="font-size:11px;">有房间码？直接加入好友的房间</div></div>
+    </div>
+
+    <!-- 线下模式 -->
+    <h3 style="font-size:14px;color:var(--text2);margin:12px 0 4px;">📱 线下（同设备）</h3>
+    <div class="mode-card" onclick="showPage('pk-setup')" style="margin-bottom:8px;flex-direction:row;gap:12px;padding:14px;text-align:left;">
+      <div style="font-size:28px;">⚔️</div>
+      <div><div class="mode-name" style="font-size:14px;">双人 PK</div><div class="mode-desc" style="font-size:11px;">同设备对战</div></div>
+    </div>
+    <div class="mode-card" onclick="showPage('duo-setup')" style="margin-bottom:8px;flex-direction:row;gap:12px;padding:14px;text-align:left;">
+      <div style="font-size:28px;">🤝</div>
+      <div><div class="mode-name" style="font-size:14px;">双人合作</div><div class="mode-desc" style="font-size:11px;">同设备合作霸屏</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PK SETUP PAGE ===== -->
+<div id="page-pk-setup" class="page">
+  <div class="back-btn" onclick="showPage('modes')">←</div>
+  <div class="settings-page">
+    <h2>⚔️ 双人 PK 设置</h2>
+    <div class="setting-group">
+      <label>📏 棋盘大小</label>
+      <div class="slider-row">
+        <span style="font-size:12px;">小</span>
+        <input type="range" id="pk-board" min="1" max="3" value="2">
+        <span style="font-size:12px;">大</span>
+      </div>
+      <div class="slider-labels"><span>15×15</span><span>20×20</span><span>25×25</span></div>
+    </div>
+    <div class="setting-group">
+      <label>⚡ 速度</label>
+      <div class="slider-row">
+        <span style="font-size:12px;">慢</span>
+        <input type="range" id="pk-speed" min="1" max="3" value="2">
+        <span style="font-size:12px;">快</span>
+      </div>
+      <div class="slider-labels"><span>慢速</span><span>中速</span><span>快速</span></div>
+    </div>
+    <div class="setting-group">
+      <label>👤 玩家 1</label>
+      <input id="pk-p1name" placeholder="玩家1名字" style="width:100%;padding:8px;background:var(--card2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;" value="玩家1" />
+    </div>
+    <div class="setting-group">
+      <label>🐼 玩家 2</label>
+      <input id="pk-p2name" placeholder="玩家2名字" style="width:100%;padding:8px;background:var(--card2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;" value="玩家2" />
+    </div>
+    <button class="start-btn" onclick="startPK()">⚔️ 开始 PK！</button>
+  </div>
+</div>
+
+<!-- ===== DUO SETUP PAGE ===== -->
+<div id="page-duo-setup" class="page">
+  <div class="back-btn" onclick="showPage('modes')">←</div>
+  <div class="settings-page">
+    <h2>🤝 双人合作设置</h2>
+    <div class="setting-group">
+      <label>📏 棋盘大小</label>
+      <div class="slider-row">
+        <span style="font-size:12px;">小</span>
+        <input type="range" id="duo-board" min="1" max="3" value="2">
+        <span style="font-size:12px;">大</span>
+      </div>
+      <div class="slider-labels"><span>15×15</span><span>20×20</span><span>25×25</span></div>
+    </div>
+    <div class="setting-group">
+      <label>⚡ 速度</label>
+      <div class="slider-row">
+        <span style="font-size:12px;">慢</span>
+        <input type="range" id="duo-speed" min="1" max="3" value="2">
+        <span style="font-size:12px;">快</span>
+      </div>
+      <div class="slider-labels"><span>慢速</span><span>中速</span><span>快速</span></div>
+    </div>
+    <div class="setting-group">
+      <label>🟢 玩家 1 (WASD)</label>
+      <input id="duo-p1name" placeholder="玩家1名字" style="width:100%;padding:8px;background:var(--card2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;" value="玩家1" />
+    </div>
+    <div class="setting-group">
+      <label>🟠 玩家 2 (方向键)</label>
+      <input id="duo-p2name" placeholder="玩家2名字" style="width:100%;padding:8px;background:var(--card2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;" value="玩家2" />
+    </div>
+    <button class="start-btn" onclick="startDuo()">🤝 开始合作！</button>
+  </div>
+</div>
+
+<!-- ===== PK GAME PAGE ===== -->
+<div id="page-pk" class="page game-page">
+  <div class="top-bar">
+    <div class="back-btn" onclick="pkQuit()">←</div>
+    <div style="flex:1;text-align:center;">
+      <span id="pk-status">⚔️ PK 进行中！</span>
+    </div>
+  </div>
+  <div style="display:flex;gap:8px;justify-content:center;padding:8px;flex-wrap:wrap;">
+    <div style="text-align:center;">
+      <div style="font-size:12px;color:var(--green);font-weight:700;" id="pk-p1label">🟢 玩家1</div>
+      <div style="font-size:20px;font-weight:700;color:var(--gold);" id="pk-p1score">0</div>
+      <div style="font-size:11px;color:var(--text2);">长度：<span id="pk-p1len">3</span></div>
+      <canvas id="pk-canvas1" style="margin-top:4px;border:2px solid #4caf50;border-radius:6px;"></canvas>
+    </div>
+    <div style="font-size:28px;align-self:center;font-weight:900;color:var(--accent);">VS</div>
+    <div style="text-align:center;">
+      <div style="font-size:12px;color:#ff9800;font-weight:700;" id="pk-p2label">🟠 玩家2</div>
+      <div style="font-size:20px;font-weight:700;color:var(--gold);" id="pk-p2score">0</div>
+      <div style="font-size:11px;color:var(--text2);">长度：<span id="pk-p2len">3</span></div>
+      <canvas id="pk-canvas2" style="margin-top:4px;border:2px solid #ff9800;border-radius:6px;"></canvas>
+    </div>
+  </div>
+  <div style="text-align:center;padding:8px;font-size:12px;color:var(--text2);">
+    📱 触屏：左半屏控制玩家1，右半屏控制玩家2 · 💻 键盘：WASD / 方向键
+  </div>
+</div>
+
+<!-- ===== DUO GAME PAGE ===== -->
+<div id="page-duo" class="page game-page">
+  <div class="top-bar">
+    <div class="back-btn" onclick="duoQuit()">←</div>
+    <div style="flex:1;text-align:center;">
+      <span id="duo-status">🤝 合作进行中！</span>
+    </div>
+  </div>
+  <div style="display:flex;gap:12px;justify-content:center;padding:8px;font-size:14px;font-weight:700;">
+    <span style="color:#4caf50;">🟢 <span id="duo-p1name-disp">P1</span>：<span id="duo-p1score">0</span></span>
+    <span style="color:#ff9800;">🟠 <span id="duo-p2name-disp">P2</span>：<span id="duo-p2score">0</span></span>
+    <span style="color:var(--gold);">覆盖：<span id="duo-coverage">0%</span></span>
+  </div>
+  <canvas id="duo-canvas" style="display:block;margin:0 auto;"></canvas>
+  <div style="text-align:center;padding:8px;font-size:12px;color:var(--text2);">
+    📱 触屏：左半屏控制玩家1，右半屏控制玩家2 · 💻 键盘：WASD / 方向键<br>
+    撞自己=死！撞对方=安全。一方死后拿走自己的分数离场
+  </div>
+</div>
+
+<!-- ===== JOIN ROOM PAGE ===== -->
+<div id="page-join-room" class="page">
+  <div class="back-btn" onclick="showPage('modes')">←</div>
+  <div class="settings-page">
+    <h2>🔑 加入房间</h2>
+    <div class="setting-group">
+      <label>输入好友给你的房间码</label>
+      <input id="join-code-input" placeholder="如：AB3XK9" maxlength="8" style="width:100%;padding:14px;background:var(--card2);border:2px solid var(--border);border-radius:10px;color:var(--gold);font-size:24px;font-weight:900;font-family:monospace;text-align:center;letter-spacing:6px;text-transform:uppercase;" />
+    </div>
+    <button class="start-btn" onclick="joinRoomByCode()">🔑 加入！</button>
+    <div style="text-align:center;margin-top:12px;font-size:12px;color:var(--dim);">房间码由好友创建房间后获得</div>
+  </div>
+</div>
+
+<!-- ===== ONLINE MATCH PAGE ===== -->
+<div id="page-online-match" class="page">
+  <div class="back-btn" onclick="onlineCancel()">←</div>
+  <div class="settings-page" style="text-align:center;">
+    <h2 id="online-title">🌐 线上匹配</h2>
+    <div id="online-status" style="font-size:18px;color:var(--text2);padding:40px 20px;">
+      <div style="font-size:48px;margin-bottom:12px;">🔍</div>
+      <div>搜索对手中…</div>
+      <div style="font-size:12px;color:var(--dim);margin-top:8px;" id="online-sub">等待另一位玩家加入</div>
+    </div>
+    <div id="online-room-info" style="display:none;padding:20px;">
+      <div style="font-size:14px;color:var(--text2);margin-bottom:8px;">把房间码发给好友：</div>
+      <div id="online-room-code" style="font-size:32px;font-weight:900;color:var(--gold);font-family:monospace;letter-spacing:4px;background:var(--card2);padding:12px 24px;border-radius:12px;display:inline-block;margin-bottom:12px;">------</div>
+      <div style="font-size:12px;color:var(--dim);">等待好友加入…</div>
+    </div>
+    <button class="start-btn" onclick="onlineCancel()" style="margin-top:20px;opacity:.7;">取消</button>
+  </div>
+</div>
+
+<!-- ===== ONLINE PK GAME PAGE ===== -->
+<div id="page-online-pk" class="page game-page">
+  <div class="top-bar">
+    <div class="back-btn" onclick="onlineQuit()">←</div>
+    <div style="flex:1;text-align:center;">
+      <span id="opk-status">⚔️ 在线 PK！</span>
+    </div>
+  </div>
+  <div style="display:flex;gap:8px;justify-content:center;padding:8px;flex-wrap:wrap;">
+    <div style="text-align:center;">
+      <div style="font-size:12px;font-weight:700;" id="opk-me-label">🟢 你</div>
+      <div style="font-size:20px;font-weight:700;color:var(--gold);" id="opk-me-score">0</div>
+      <canvas id="opk-canvas" style="margin-top:4px;border:2px solid #4caf50;border-radius:6px;"></canvas>
+    </div>
+    <div style="font-size:28px;align-self:center;font-weight:900;color:var(--accent);">VS</div>
+    <div style="text-align:center;">
+      <div style="font-size:12px;font-weight:700;" id="opk-opp-label">🟠 对手</div>
+      <div style="font-size:20px;font-weight:700;color:var(--gold);" id="opk-opp-score">0</div>
+      <div style="margin-top:4px;border:2px solid #ff9800;border-radius:6px;padding:8px 4px;" id="opk-opp-panel">
+        <div style="font-size:11px;color:var(--text2);" id="opk-opp-info">等待数据…</div>
+      </div>
+    </div>
+  </div>
+  <div style="text-align:center;padding:8px;font-size:12px;color:var(--text2);">
+    📱 触屏滑动控制方向 · 💻 WASD 或方向键
+  </div>
+</div>
+
+<!-- ===== ONLINE DUO GAME PAGE ===== -->
+<div id="page-online-duo" class="page game-page">
+  <div class="top-bar">
+    <div class="back-btn" onclick="onlineQuit()">←</div>
+    <div style="flex:1;text-align:center;">
+      <span id="oduo-status">🤝 在线合作！</span>
+    </div>
+  </div>
+  <div style="display:flex;gap:12px;justify-content:center;padding:8px;font-size:14px;font-weight:700;">
+    <span style="color:#4caf50;" id="oduo-me-disp">🟢 你：0</span>
+    <span style="color:#ff9800;" id="oduo-opp-disp">🟠 对手：0</span>
+    <span style="color:var(--gold);" id="oduo-coverage">覆盖：0%</span>
+  </div>
+  <canvas id="oduo-canvas" style="display:block;margin:0 auto;"></canvas>
+  <div style="text-align:center;padding:8px;font-size:12px;color:var(--text2);">
+    撞自己=死！撞对方=安全。📱滑动 / 💻 WASD 或方向键
+  </div>
+</div>
+
+<!-- ===== PRACTICE PAGE ===== -->
+<div id="page-practice" class="page game-page">
+  <div class="score-bar">
+    <span>💀 <span id="prac-deaths">0</span></span>
+    <span>⏱️ <span id="prac-timer">60</span>s</span>
+    <span>🍎 <span id="prac-apples">0</span></span>
+  </div>
+  <div class="practice-hint" id="practice-hint">练习模式 · 不会死！撞到了就重新开始</div>
+  <canvas id="practice-canvas"></canvas>
+</div>
+
+<!-- ===== GAME PAGE ===== -->
+<div id="page-game" class="page game-page">
+  <div class="score-bar">
+    <span>💰 <span id="game-score">0</span></span>
+    <span>🍎 <span id="game-apples">0</span></span>
+    <span>📏 <span id="game-length">3</span></span>
+  </div>
+  <canvas id="game-canvas"></canvas>
+</div>
+
+<!-- ===== JOYSTICK (touch devices only) ===== -->
+<div class="joystick-zone" id="joystick-zone">
+  <div class="joystick-base" id="joystick-base">
+    <div class="joystick-knob" id="joystick-knob"></div>
+  </div>
+</div>
+
+<!-- ===== BOTTOM BAR ===== -->
+<div class="bottom-bar" id="bottom-bar">
+  <div class="tab" onclick="openModal('bank')"><span class="icon">🏦</span>银行</div>
+  <div class="tab" onclick="openModal('shop')"><span class="icon">🏪</span>商店</div>
+  <div class="tab" onclick="openModal('bag')"><span class="icon">🎒</span>背包</div>
+</div>
+
+<!-- ===== MODALS ===== -->
+<div class="modal-overlay" id="modal-bank">
+  <div class="modal">
+    <span class="modal-close" onclick="closeModal('bank')">✕</span>
+    <h3>🏦 银行</h3>
+    <div class="bank-content">
+      <div style="margin-bottom:10px;font-size:13px;">💰 金币：<span id="bank-gold">0</span> | 🍎 苹果：<span id="bank-apples">0</span></div>
+      <div class="exchange-item">
+        <div class="exchange-header">💰 → 🍎 <span class="rate">（5💰 = 1🍎）</span></div>
+        <div class="exchange-controls">
+          <input type="number" id="exchange-input" min="0" max="0" value="0" placeholder="输入数量" oninput="syncSliderFromInput()">
+          <input type="range" id="exchange-slider" min="0" max="0" value="0" oninput="syncInputFromSlider()">
+          <div class="exchange-btns">
+            <button onclick="setExchangeMin()">最小</button>
+            <button onclick="setExchangeMax()">最大</button>
+          </div>
+          <button class="exchange-confirm" onclick="doExchange()">确认兑换</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-shop">
+  <div class="modal">
+    <span class="modal-close" onclick="closeModal('shop')">✕</span>
+    <h3>🏪 商店</h3>
+    <div style="margin-bottom:10px;font-size:13px;text-align:center;">💰 <span id="shop-bal-gold">0</span> &nbsp;|&nbsp; 🍎 <span id="shop-bal-apples">0</span></div>
+    <div class="shop-content">
+      <div class="shop-sidebar" id="shop-cats"></div>
+      <div class="shop-right">
+        <div class="shop-subcats" id="shop-subcats"></div>
+        <div class="shop-main" id="shop-items"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-bag">
+  <div class="modal">
+    <span class="modal-close" onclick="closeModal('bag')">✕</span>
+    <h3>🎒 背包</h3>
+    <div class="bag-content">
+      <div class="bag-sidebar" id="bag-cats"></div>
+      <div class="bag-main" id="bag-items"></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-confirm">
+  <div class="modal confirm-dialog">
+    <span class="modal-close" onclick="closeModal('confirm')">✕</span>
+    <h3>确认兑换</h3>
+    <div class="confirm-text" id="confirm-text"></div>
+    <div class="confirm-btns">
+      <button class="btn-yes" id="confirm-yes">确认</button>
+      <button class="btn-no" onclick="closeModal('confirm')">取消</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-detail">
+  <div class="modal item-detail">
+    <span class="modal-close" onclick="closeModal('detail')">✕</span>
+    <div class="detail-icon" id="detail-icon"></div>
+    <div class="detail-name" id="detail-name"></div>
+    <div class="detail-desc" id="detail-desc"></div>
+    <div class="detail-stats" id="detail-stats"></div>
+    <div id="detail-equip" style="margin-top:12px;text-align:center;"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-avatar">
+  <div class="modal">
+    <span class="modal-close" onclick="closeModal('avatar')">✕</span>
+    <h3>选择头像</h3>
+    <div class="avatar-picker" id="avatar-picker"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-settings">
+  <div class="modal" style="max-width:360px;">
+    <span class="modal-close" onclick="closeModal('settings')">✕</span>
+    <h3>⚙️ 设置</h3>
+    <div class="settings-row">
+      <div class="settings-label">
+        <span class="lbl-icon">🎵</span>
+        <div>音乐<small>背景音乐（暂无）</small></div>
+      </div>
+      <div class="settings-toggle" id="toggle-music" onclick="toggleSetting('music')"></div>
+    </div>
+    <div class="settings-row">
+      <div class="settings-label">
+        <span class="lbl-icon">🔊</span>
+        <div>音效<small>吃苹果、打斗、升级等</small></div>
+      </div>
+      <div class="settings-toggle" id="toggle-sfx" onclick="toggleSetting('sfx')"></div>
+    </div>
+    <div class="settings-hint">⚙️ 设置会自动保存到本地<br>在所有 Thawpaw 游戏间共享</div>
+  </div>
+</div>
+
+<script>
+// ===== FORMAT NUMBER (k/m) =====
+function formatNum(n){n=Number(n)||0;if(n>=1e6)return(n/1e6).toFixed(1).replace(/\.0$/,'')+'m';if(n>=1e3)return(n/1e3).toFixed(1).replace(/\.0$/,'')+'k';return n;}
+// ===== DATA =====
+const AVATARS = ['🐍','🐱','🐶','🐸','🦊','🐼','🐰','🦁','🐯','🐻','🐨','🐵','🦄','🐲','🦋','🐢'];
+// 两级分类：大分类 → 小分类 → 商品
+const SHOP_DATA = {
+  '皮肤': {
+    '蛇皮': [
+      {id:'skin_fire',    icon:'🔥', name:'火蛇',   desc:'红色的蛇皮',      price:15, currency:'apple'},
+      {id:'skin_water',   icon:'💧', name:'水蛇',   desc:'蓝色的蛇皮',      price:15, currency:'apple'},
+      {id:'skin_rainbow', icon:'🌈', name:'彩虹蛇', desc:'7种颜色的蛇皮',   price:19, currency:'apple'},
+    ],
+    '套装': [
+      {id:'set_ice', icon:'❄️', name:'冰蛇', desc:'蓝色蛇皮+雪花❄️拖尾', price:25, currency:'apple'},
+    ],
+  },
+  '棋盘': {
+    '格线': [
+      {id:'grid_web',    icon:'🕸️', name:'蛛丝', desc:'白色格线', price:9, currency:'apple'},
+      {id:'grid_branch', icon:'🌿', name:'树枝', desc:'棕色格线', price:9, currency:'apple'},
+    ],
+    '格子': [
+      {id:'cell_sky',   icon:'🌤️', name:'天空', desc:'淡蓝色格子', price:11, currency:'apple'},
+      {id:'cell_cloud', icon:'☁️', name:'白云', desc:'白色格子', price:11, currency:'apple'},
+    ],
+    '套装': [
+      {id:'set_sunny', icon:'☀️', name:'烈日炎炎', desc:'红色格线+橙色格子', price:19, currency:'apple'},
+    ],
+  },
+};
+
+// 大分类图标
+const SHOP_CAT_ICONS = {'皮肤':'🐍','棋盘':'🎮'};
+const CURRENCY_NAMES = {gold:'💰',apple:'🍎'};
+const BAG_CATEGORIES = ['全部','皮肤','棋盘'];
+
+// ===== SNAKE SKIN DEFINITIONS =====
+const SNAKE_SKINS = {
+  skin_classic: { name:'经典蛇', color:'#4caf50',                          icon:'🐍' },
+  skin_fire:    { name:'火蛇',   color:'#ef4444',                          icon:'🔥' },
+  skin_water:   { name:'水蛇',   color:'#3b82f6',                          icon:'💧' },
+  skin_rainbow: { name:'彩虹蛇', rainbow:true,                             icon:'🌈' },
+  set_ice:      { name:'冰蛇',   color:'#3b82f6', trail:'snow',            icon:'❄️' },
+};
+const RAINBOW_COLORS = ['#ef4444','#ff9800','#ffeb3b','#4caf50','#3b82f6','#9c27b0','#e91e63'];
+
+// ===== BOARD SKIN DEFINITIONS =====
+const BOARD_SKINS = {
+  board_classic: { name:'经典棋盘', gridColor:'#1a1a2e', cellColor:null,                          icon:'⬛' },
+  grid_web:      { name:'蛛丝',    gridColor:'#cccccc', cellColor:null,                          icon:'🕸️' },
+  grid_branch:   { name:'树枝',    gridColor:'#8b5a2b', cellColor:null,                          icon:'🌿' },
+  cell_sky:      { name:'天空',    gridColor:'#1a1a2e', cellColor:'rgba(135,206,235,0.25)',       icon:'🌤️' },
+  cell_cloud:    { name:'白云',    gridColor:'#1a1a2e', cellColor:'rgba(255,255,255,0.15)',       icon:'☁️' },
+  set_sunny:     { name:'烈日炎炎', gridColor:'#ef4444', cellColor:'rgba(255,165,0,0.25)',        icon:'☀️' },
+};
+
+function isSnakeSkin(id){ return SNAKE_SKINS.hasOwnProperty(id); }
+function isBoardSkin(id){ return BOARD_SKINS.hasOwnProperty(id); }
+
+function hexToRgba(hex, alpha){
+  const r=parseInt(hex.slice(1,3),16), g=parseInt(hex.slice(3,5),16), b=parseInt(hex.slice(5,7),16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+function getSnakeSegmentColor(skinId, segIndex, alpha){
+  const skin = SNAKE_SKINS[skinId] || SNAKE_SKINS.skin_classic;
+  if(skin.rainbow){ return hexToRgba(RAINBOW_COLORS[segIndex % RAINBOW_COLORS.length], alpha); }
+  return hexToRgba(skin.color, alpha);
+}
+
+// ===== SNAKE TITLES (称号系统) =====
+const SNAKE_TITLES = [
+  {minLv:1,  name:'爬虫',   emoji:'🐛'},
+  {minLv:3,  name:'长虫',   emoji:'🪱'},
+  {minLv:5,  name:'初级蛇', emoji:'🐍'},
+  {minLv:7,  name:'普通蛇', emoji:'🐍'},
+  {minLv:9,  name:'超级蛇', emoji:'🐲'},
+  {minLv:10, name:'蛇中王', emoji:'🐉'},
+];
+function getSnakeTitle(lv){
+  let t = SNAKE_TITLES[0];
+  for(const s of SNAKE_TITLES){ if(lv>=s.minLv) t=s; }
+  return t;
+}
+function getSnakeTitleText(lv){
+  const t=getSnakeTitle(lv);
+  return t.emoji+' '+t.name;
+}
+const MAX_LEVEL = 10;
+function checkLevelUp(){
+  while(player.level < MAX_LEVEL && player.exp >= 100){
+    player.exp -= 100;
+    player.level++;
+  }
+  if(player.level >= MAX_LEVEL) player.exp = 0;
+}
+function expInLevel(){
+  if(player.level>=MAX_LEVEL) return 0;
+  return player.exp;
+}
+function expForNextLevel(){
+  if(player.level>=MAX_LEVEL) return 1;
+  return 100;
+}
+
+let player = {
+  nickname: '',
+  avatar: '🐍',
+  snakeId: '',
+  bio: '',
+  level: 1,
+  exp: 0,
+  gold: 100,
+  apples: 5,
+  skin: 'skin_classic',
+  boardSkin: 'board_classic',
+  inventory: {},
+};
+
+// ===== SETTINGS (音乐/音效，与所有 Thawpaw 游戏共享) =====
+let settings = { music: true, sfx: true };
+function loadSettings(){
+  try{ const s=localStorage.getItem('thawpaw_settings'); if(s) settings=Object.assign(settings,JSON.parse(s)); }catch(e){}
+}
+function saveSettings(){
+  try{ localStorage.setItem('thawpaw_settings',JSON.stringify(settings)); }catch(e){}
+}
+function openSettings(){
+  refreshSettingsUI();
+  openModal('settings');
+}
+function refreshSettingsUI(){
+  const m=document.getElementById('toggle-music');
+  const s=document.getElementById('toggle-sfx');
+  if(m) m.classList.toggle('on', !!settings.music);
+  if(s) s.classList.toggle('on', !!settings.sfx);
+}
+function toggleSetting(key){
+  settings[key]=!settings[key];
+  saveSettings();
+  refreshSettingsUI();
+  if(key==='sfx' && settings.sfx && typeof sfxPickup==='function') sfxPickup();
+}
+
+// 统一 ID：优先用 portal 的 8 位数字 ID
+function getUnifiedPlayerId(){
+  // 优先用 portal 的活动 ID（多账号系统）
+  const activeId = localStorage.getItem('thawpawActiveId');
+  if(activeId) return activeId;
+  // 兼容老格式
+  let id = localStorage.getItem('thawpawPlayerId');
+  if(!id){
+    id = String(Math.floor(10000000 + Math.random() * 90000000));
+    localStorage.setItem('thawpawPlayerId', id);
+  }
+  return id;
+}
+
+// 统一昵称：从 thawpawPlayers[id].nickname 读
+function getSharedNickname(){
+  const id = getUnifiedPlayerId();
+  try{
+    const players = JSON.parse(localStorage.getItem('thawpawPlayers') || '{}');
+    if(players[id] && players[id].nickname) return players[id].nickname;
+  }catch(e){}
+  // 兼容老格式
+  try{
+    const old = JSON.parse(localStorage.getItem('thawpawPlayer') || '{}');
+    if(old.nickname) return old.nickname;
+  }catch(e){}
+  return '未命名';
+}
+function setSharedNickname(nickname){
+  const id = getUnifiedPlayerId();
+  let players;
+  try{ players = JSON.parse(localStorage.getItem('thawpawPlayers') || '{}'); }
+  catch(e){ players = {}; }
+  if(!players[id]){
+    players[id] = {nickname, avatar:'🐾', bio:'', firstSeen:Date.now(), lastSeen:Date.now()};
+  } else {
+    players[id].nickname = nickname;
+    players[id].lastSeen = Date.now();
+  }
+  localStorage.setItem('thawpawPlayers', JSON.stringify(players));
+  // 同时设为活动 ID（首次设昵称时）
+  if(!localStorage.getItem('thawpawActiveId')){
+    localStorage.setItem('thawpawActiveId', id);
+  }
+}
+
+// 存档 key 加 ID 后缀，防止多账号冲突
+function getSaveKey(){
+  return 'snake_save_' + getUnifiedPlayerId();
+}
+
+function loadPlayer(){
+  // 优先从共享 profile 读昵称
+  player.nickname = getSharedNickname();
+  // 存档按 ID 分开
+  try{
+    const s = localStorage.getItem(getSaveKey());
+    if(s){
+      const saved = JSON.parse(s);
+      player = {...player, ...saved, nickname: getSharedNickname(), snakeId: getUnifiedPlayerId()};
+    }
+  }catch(e){}
+  // 迁移老存档
+  try{
+    const old = localStorage.getItem('snake_save');
+    if(old && !localStorage.getItem(getSaveKey())){
+      localStorage.setItem(getSaveKey(), old);
+      localStorage.removeItem('snake_save');
+    }
+  }catch(e){}
+  player.snakeId = getUnifiedPlayerId();
+  savePlayer();
+}
+function savePlayer(){
+  // 存档按 ID 分开保存
+  const toSave = {...player};
+  localStorage.setItem(getSaveKey(), JSON.stringify(toSave));
+}
+
+// Auto-fit: re-size canvas on window resize (classic mode)
+window.addEventListener('resize', function(){
+  if (typeof canvas !== 'undefined' && canvas && typeof cellSize !== 'undefined' && typeof gridSize !== 'undefined' && gameActive) {
+    var maxW = window.innerWidth - 40;
+    var maxH = window.innerHeight - 180;
+    var maxPx = Math.min(maxW, maxH);
+    var newCell = Math.max(8, Math.floor(maxPx / gridSize));
+    if (newCell !== cellSize) {
+      cellSize = newCell;
+      canvas.width = cellSize * gridSize;
+      canvas.height = cellSize * gridSize;
+      canvas.style.width = (cellSize * gridSize) + 'px';
+      canvas.style.height = (cellSize * gridSize) + 'px';
+    }
+  }
+});
+
+// ===== PAGES =====
+let currentPage = 'home';
+function showPage(name){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  currentPage = name;
+  const bb = document.getElementById('bottom-bar');
+  bb.style.display = (name==='home') ? 'flex' : 'none';
+  if(name==='home') refreshHome();
+  if(name==='profile') refreshProfile();
+  // Show joystick on game + practice pages for touch devices
+  if(isTouchDevice){
+    joystickZone.classList.toggle('visible', name==='game' || name==='practice');
+  }
+}
+
+function refreshHome(){
+  document.getElementById('home-avatar').textContent = player.avatar;
+  document.getElementById('home-nickname').textContent = player.nickname || '未命名';
+  document.getElementById('home-level').textContent = getSnakeTitleText(player.level);
+  document.getElementById('home-level-bar').style.width = Math.min(100,(expInLevel()/expForNextLevel())*100)+'%';
+  document.getElementById('home-gold').textContent = formatNum(player.gold);
+  document.getElementById('home-apples').textContent = formatNum(player.apples);
+  // Update skin display
+  var skinEl = document.getElementById('skin-preview');
+  var skinNameEl = document.getElementById('skin-name');
+  if(skinEl && skinNameEl){
+    var sk = SNAKE_SKINS[player.skin] || SNAKE_SKINS.skin_classic;
+    skinEl.textContent = sk.icon;
+    skinNameEl.textContent = sk.name;
+  }
+  // Practice entry: hide for L10+
+  var pe = document.getElementById('practice-entry');
+  if(pe){
+    if(player.level>=10){
+      pe.style.display='none';
+    }else{
+      pe.style.display='flex';
+      var sub = document.getElementById('practice-sub');
+      var threshold = player.level<=3 ? 5 : 3;
+      if(sub) sub.textContent = '每分钟死<'+threshold+'次赚苹果！';
+    }
+  }
+}
+
+function refreshProfile(){
+  document.getElementById('profile-avatar').textContent = player.avatar;
+  document.getElementById('profile-nickname').textContent = player.nickname || '未命名';
+  document.getElementById('profile-snake-id').textContent = '贪吃号：'+player.snakeId;
+  document.getElementById('profile-bio').textContent = player.bio || '点击设置简介';
+  document.getElementById('profile-level').textContent = getSnakeTitleText(player.level);
+  document.getElementById('profile-exp').textContent = player.level>=MAX_LEVEL ? 'MAX' : (expInLevel()+'/'+expForNextLevel());
+  document.getElementById('profile-level-bar').style.width = Math.min(100,(expInLevel()/expForNextLevel())*100)+'%';
+}
+
+// ===== NICKNAME =====
+function editNickname(){
+  const name = prompt('输入昵称：', player.nickname);
+  if(name !== null && name.trim()){
+    const trimmed = name.trim().slice(0, 12);
+    player.nickname = trimmed;
+    setSharedNickname(trimmed); // 同步到 portal 共享 profile
+    savePlayer();
+    refreshProfile();
+    refreshHome();
+  }
+}
+
+// ===== BIO =====
+document.getElementById('profile-bio').addEventListener('click', function(){
+  const b = prompt('输入简介：', player.bio||'');
+  if(b !== null){
+    player.bio = b;
+    savePlayer();
+    refreshProfile();
+  }
+});
+
+// ===== AVATAR =====
+function openAvatarPicker(){
+  const picker = document.getElementById('avatar-picker');
+  picker.innerHTML = '';
+  // Photo album option first
+  const photoDiv = document.createElement('div');
+  photoDiv.className = 'avatar-option';
+  photoDiv.style.cssText = 'background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;font-size:14px;font-weight:700;';
+  photoDiv.textContent = '📷\n相册';
+  photoDiv.onclick = ()=>{
+    var input=document.createElement('input');
+    input.type='file';
+    input.accept='image/*';
+    input.onchange=function(e){
+      var file=e.target.files[0]; if(!file) return;
+      if(file.size>500000){ alert('图片太大了，请选小于 500KB 的图片'); return; }
+      var reader=new FileReader();
+      reader.onload=function(ev){
+        // Resize to 80x80 via canvas
+        var img=new Image();
+        img.onload=function(){
+          var c=document.createElement('canvas');
+          c.width=80;c.height=80;
+          c.getContext('2d').drawImage(img,0,0,80,80);
+          player.avatar=c.toDataURL('image/jpeg',0.7);
+          savePlayer();
+          syncAvatar(player.avatar);
+          refreshProfile();
+          refreshHome();
+          closeModal('avatar');
+        };
+        img.src=ev.target.result;
+      };
+      reader.readAsDataURL(file);
+    };
+    input.click();
+  };
+  picker.appendChild(photoDiv);
+  AVATARS.forEach(a=>{
+    const d = document.createElement('div');
+    d.className = 'avatar-option'+(player.avatar===a?' selected':'');
+    d.textContent = a;
+    d.onclick = ()=>{
+      player.avatar = a;
+      savePlayer();
+      syncAvatar(a);
+      refreshProfile();
+      refreshHome();
+      closeModal('avatar');
+    };
+    picker.appendChild(d);
+  });
+  // If current avatar is a data URL (photo), show it as selected
+  if(typeof player.avatar==='string' && player.avatar.startsWith('data:')){
+    var photo=document.createElement('div');
+    photo.className='avatar-option selected';
+    photo.style.cssText='background-image:url('+player.avatar+');background-size:cover;';
+    picker.insertBefore(photo,picker.children[1]);
+  }
+  openModal('avatar');
+}
+
+// Sync avatar to all players + cloud
+function syncAvatar(avatar){
+  try{
+    var id=localStorage.getItem('thawpawActiveId');
+    if(!id) return;
+    var players=JSON.parse(localStorage.getItem('thawpawPlayers')||'{}');
+    if(players[id]){ players[id].avatar=avatar; localStorage.setItem('thawpawPlayers',JSON.stringify(players)); }
+  }catch(e){}
+}
+
+// ===== MODALS =====
+function openModal(name){
+  document.getElementById('modal-'+name).classList.add('active');
+  if(name==='bank') refreshBank();
+  if(name==='shop') refreshShop();
+  if(name==='bag') refreshBag();
+}
+function closeModal(name){
+  document.getElementById('modal-'+name).classList.remove('active');
+}
+
+// ===== BANK =====
+function refreshBank(){
+  document.getElementById('bank-gold').textContent = player.gold;
+  document.getElementById('bank-apples').textContent = player.apples;
+  const maxExchange = Math.floor(player.gold / 5);
+  const slider = document.getElementById('exchange-slider');
+  const input = document.getElementById('exchange-input');
+  slider.max = maxExchange;
+  input.max = maxExchange;
+  if(parseInt(slider.value) > maxExchange){slider.value=maxExchange; input.value=maxExchange;}
+}
+function syncSliderFromInput(){
+  const v = parseInt(document.getElementById('exchange-input').value)||0;
+  document.getElementById('exchange-slider').value = v;
+}
+function syncInputFromSlider(){
+  const v = document.getElementById('exchange-slider').value;
+  document.getElementById('exchange-input').value = v;
+}
+function setExchangeMin(){
+  document.getElementById('exchange-slider').value=0;
+  document.getElementById('exchange-input').value=0;
+}
+function setExchangeMax(){
+  const max = Math.floor(player.gold/5);
+  document.getElementById('exchange-slider').value=max;
+  document.getElementById('exchange-input').value=max;
+}
+function doExchange(){
+  const amount = parseInt(document.getElementById('exchange-input').value)||0;
+  if(amount<=0) return;
+  const cost = amount * 5;
+  if(player.gold < cost){alert('金币不足！');return;}
+  player.gold -= cost;
+  player.apples += amount;
+  savePlayer();
+  refreshBank();
+  refreshHome();
+  document.getElementById('exchange-slider').value=0;
+  document.getElementById('exchange-input').value=0;
+}
+
+// ===== SHOP =====
+let shopCat = '';
+let shopSubCat = '';
+function refreshShop(){
+  // Update balance display
+  var balGold=document.getElementById('shop-bal-gold');
+  if(balGold) balGold.textContent=formatNum(player.gold);
+  var balApples=document.getElementById('shop-bal-apples');
+  if(balApples) balApples.textContent=formatNum(player.apples);
+  // Left sidebar: 大分类
+  const cats = document.getElementById('shop-cats');
+  cats.innerHTML = '';
+  const catNames = Object.keys(SHOP_DATA);
+  if(!shopCat) shopCat = catNames[0];
+  catNames.forEach(c=>{
+    const d = document.createElement('div');
+    d.className = 'cat'+(shopCat===c?' active':'');
+    d.textContent = (SHOP_CAT_ICONS[c]||'')+' '+c;
+    d.onclick = ()=>{shopCat=c; shopSubCat=''; refreshShop();};
+    cats.appendChild(d);
+  });
+  // Right top: 小分类
+  const subCats = document.getElementById('shop-subcats');
+  const subData = SHOP_DATA[shopCat] || {};
+  const subNames = Object.keys(subData);
+  if(!shopSubCat || !subData[shopSubCat]) shopSubCat = subNames[0];
+  subCats.innerHTML = '';
+  subNames.forEach(sc=>{
+    const d = document.createElement('div');
+    d.className = 'subcat'+(shopSubCat===sc?' active':'');
+    d.textContent = sc;
+    d.onclick = ()=>{shopSubCat=sc; refreshShop();};
+    subCats.appendChild(d);
+  });
+  // Right bottom: 商品
+  const items = document.getElementById('shop-items');
+  items.innerHTML = '';
+  (subData[shopSubCat]||[]).forEach(item=>{
+    const d = document.createElement('div');
+    d.className = 'shop-item';
+    d.innerHTML = `<div class="item-icon">${item.icon}</div><div class="item-name">${item.name}</div><div class="item-price">${item.price} ${CURRENCY_NAMES[item.currency]}</div>`;
+    d.onclick = ()=>showConfirm(item);
+    items.appendChild(d);
+  });
+}
+function showConfirm(item){
+  const t = `是否用 ${item.price}${CURRENCY_NAMES[item.currency]} 兑换 ${item.icon} ${item.name}？`;
+  document.getElementById('confirm-text').textContent = t;
+  const yes = document.getElementById('confirm-yes');
+  yes.onclick = ()=>buyItem(item);
+  openModal('confirm');
+}
+function buyItem(item){
+  const cur = item.currency;
+  const has = cur==='gold'?player.gold:player.apples;
+  if(has < item.price){alert('余额不足！');closeModal('confirm');closeModal('shop');return;}
+  if(cur==='gold') player.gold -= item.price;
+  else player.apples -= item.price;
+  if(!player.inventory[item.id]) player.inventory[item.id] = {count:0,...item};
+  player.inventory[item.id].count++;
+  savePlayer();
+  closeModal('confirm');
+  refreshShop();
+  refreshHome();
+}
+
+// ===== BAG =====
+let bagCat = '全部';
+function refreshBag(){
+  const cats = document.getElementById('bag-cats');
+  cats.innerHTML = '';
+  BAG_CATEGORIES.forEach(c=>{
+    const d = document.createElement('div');
+    d.className = 'cat'+(bagCat===c?' active':'');
+    d.textContent = c;
+    d.onclick = ()=>{bagCat=c;refreshBag();};
+    cats.appendChild(d);
+  });
+  const items = document.getElementById('bag-items');
+  items.innerHTML = '';
+  var inv = Object.values(player.inventory).filter(function(i){return i.count>0;});
+  // Filter by bag category
+  if(bagCat !== '全部'){
+    inv = inv.filter(function(i){
+      if(bagCat === '皮肤') return isSnakeSkin(i.id);
+      if(bagCat === '棋盘') return isBoardSkin(i.id);
+      return true;
+    });
+  }
+  if(inv.length===0){
+    items.innerHTML='<div style="grid-column:1/-1;text-align:center;color:#555;padding:20px;">背包空空如也~</div>';
+    return;
+  }
+  inv.forEach(item=>{
+    const d = document.createElement('div');
+    d.className = 'bag-item';
+    d.innerHTML = `<div class="item-icon">${item.icon}</div><div class="item-name">${item.name}</div><div class="item-count">×${item.count}</div>`;
+    d.onclick = ()=>showDetail(item);
+    items.appendChild(d);
+  });
+}
+function showDetail(item){
+  document.getElementById('detail-icon').textContent = item.icon;
+  document.getElementById('detail-name').textContent = item.name;
+  document.getElementById('detail-desc').textContent = item.desc||'';
+  document.getElementById('detail-stats').textContent = '数量：×'+item.count;
+  // Equip button
+  const equipDiv = document.getElementById('detail-equip');
+  if(equipDiv) equipDiv.innerHTML = '';
+  if(equipDiv && (isSnakeSkin(item.id) || isBoardSkin(item.id))){
+    const equipped = (isSnakeSkin(item.id) && player.skin === item.id) ||
+                     (isBoardSkin(item.id) && player.boardSkin === item.id);
+    if(equipped){
+      equipDiv.innerHTML = '<div style="color:var(--gold);font-weight:600;">✅ 已装备</div>';
+    } else {
+      const btn = document.createElement('button');
+      btn.textContent = '装备';
+      btn.style.cssText = 'background:var(--accent);color:#fff;border:none;padding:8px 24px;border-radius:8px;cursor:pointer;font-weight:600;';
+      btn.onclick = function(){ equipItem(item); };
+      equipDiv.appendChild(btn);
+    }
+  }
+  openModal('detail');
+}
+function equipItem(item){
+  if(isSnakeSkin(item.id)){ player.skin = item.id; }
+  else if(isBoardSkin(item.id)){ player.boardSkin = item.id; }
+  savePlayer();
+  closeModal('detail');
+  refreshHome();
+}
+
+// ===== GAME =====
+let canvas, ctx;
+let snake, food, direction, pendingDir, gameLoop, gameActive;
+let gridSize, cellSize, speed, speedIndex;
+const BOARD_SIZES = [15,20,25];
+const SPEEDS = [200,130,80];
+const GOLD_PER_FOOD = [1,2,4];
+
+function startGame(){
+  const bs = parseInt(document.getElementById('board-size').value)-1;
+  const sp = parseInt(document.getElementById('game-speed').value)-1;
+  gridSize = BOARD_SIZES[bs];
+  speed = SPEEDS[sp];
+  speedIndex = sp;
+  canvas = document.getElementById('game-canvas');
+  ctx = canvas.getContext('2d');
+  // Fit screen — auto-adapt cell size, no hard cap
+  const maxW = window.innerWidth - 40;
+  const maxH = window.innerHeight - 180;
+  const maxPx = Math.min(maxW, maxH);
+  cellSize = Math.max(8, Math.floor(maxPx / gridSize));
+  canvas.width = cellSize * gridSize;
+  canvas.height = cellSize * gridSize;
+  canvas.style.width = (cellSize * gridSize) + 'px';
+  canvas.style.height = (cellSize * gridSize) + 'px';
+  snake = [{x:Math.floor(gridSize/2),y:Math.floor(gridSize/2)}];
+  for(let i=1;i<3;i++) snake.push({x:snake[0].x-i,y:snake[0].y});
+  direction = {x:1,y:0};
+  pendingDir = null;
+  placeFood();
+  gameActive = true;
+  document.getElementById('game-score').textContent='0';
+  document.getElementById('game-apples').textContent='0';
+  document.getElementById('game-length').textContent='3';
+  showPage('game');
+  if(gameLoop) clearInterval(gameLoop);
+  gameLoop = setInterval(gameTick, speed);
+}
+
+function placeFood(){
+  do{
+    food = {x:Math.floor(Math.random()*gridSize), y:Math.floor(Math.random()*gridSize)};
+  }while(snake.some(s=>s.x===food.x&&s.y===food.y));
+}
+
+function gameTick(){
+  if(!gameActive) return;
+  // Apply queued direction change (only one per tick)
+  if(pendingDir){
+    direction = pendingDir;
+    pendingDir = null;
+  }
+  const head = {x:snake[0].x+direction.x, y:snake[0].y+direction.y};
+  // Wall wrap
+  if(head.x<0) head.x=gridSize-1;
+  if(head.x>=gridSize) head.x=0;
+  if(head.y<0) head.y=gridSize-1;
+  if(head.y>=gridSize) head.y=0;
+  // Self collision check — exclude tail (it will move away unless we eat food)
+  const willEat = (head.x===food.x&&head.y===food.y);
+  const bodyToCheck = willEat ? snake : snake.slice(0, -1);
+  if(bodyToCheck.some(s=>s.x===head.x&&s.y===head.y)){gameOver();return;}
+  snake.unshift(head);
+  if(head.x===food.x&&head.y===food.y){
+    const goldEarned = GOLD_PER_FOOD[speedIndex];
+    player.gold += goldEarned;
+    player.apples += 1;
+    player.exp += 5;
+    checkLevelUp();
+    document.getElementById('game-score').textContent = parseInt(document.getElementById('game-score').textContent)+goldEarned;
+    document.getElementById('game-apples').textContent = parseInt(document.getElementById('game-apples').textContent)+1;
+    document.getElementById('game-length').textContent = snake.length;
+    placeFood();
+  }else{
+    snake.pop();
+  }
+  drawGame();
+}
+
+function drawGame(){
+  var board = BOARD_SKINS[player.boardSkin] || BOARD_SKINS.board_classic;
+  var skin = SNAKE_SKINS[player.skin] || SNAKE_SKINS.skin_classic;
+  // Background
+  ctx.fillStyle = board.cellColor || '#0a0a1a';
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+  // Grid
+  ctx.strokeStyle = board.gridColor;
+  for(let i=0;i<=gridSize;i++){
+    ctx.beginPath();ctx.moveTo(i*cellSize,0);ctx.lineTo(i*cellSize,canvas.height);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(0,i*cellSize);ctx.lineTo(canvas.width,i*cellSize);ctx.stroke();
+  }
+  // Food
+  ctx.font = cellSize*0.7+'px serif';
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText('🍎', food.x*cellSize+cellSize/2, food.y*cellSize+cellSize/2);
+  // Ice trail — snowflakes behind tail
+  if(skin.trail === 'snow'){
+    var trailCount = Math.min(4, snake.length-1);
+    for(var j=0; j<trailCount; j++){
+      var idx = snake.length-1-j;
+      if(idx < 1) break;
+      var ts = snake[idx];
+      var fade = 1 - j/4;
+      ctx.font = (cellSize*0.3*fade)+'px serif';
+      ctx.fillStyle = 'rgba(200,230,255,'+(fade*0.5)+')';
+      ctx.fillText('❄', ts.x*cellSize+cellSize*0.3, ts.y*cellSize+cellSize*0.7);
+    }
+  }
+  // Snake
+  snake.forEach((s,i)=>{
+    const alpha = 1 - (i/snake.length)*0.5;
+    ctx.fillStyle = getSnakeSegmentColor(player.skin, i, alpha);
+    ctx.beginPath();
+    ctx.roundRect(s.x*cellSize+1, s.y*cellSize+1, cellSize-2, cellSize-2, 4);
+    ctx.fill();
+    if(i===0){
+      ctx.font=(cellSize*0.5)+'px serif';
+      ctx.fillStyle='#fff';
+      // eyes
+      const ex = direction.x*3, ey = direction.y*3;
+      ctx.beginPath();
+      ctx.arc(s.x*cellSize+cellSize*0.35+ex, s.y*cellSize+cellSize*0.35+ey, 2, 0, Math.PI*2);
+      ctx.arc(s.x*cellSize+cellSize*0.65+ex, s.y*cellSize+cellSize*0.35+ey, 2, 0, Math.PI*2);
+      ctx.fill();
+    }
+  });
+}
+
+function gameOver(){
+  gameActive = false;
+  clearInterval(gameLoop);
+  const score = document.getElementById('game-score').textContent;
+  const apples = document.getElementById('game-apples').textContent;
+  savePlayer();
+  setTimeout(()=>{
+    alert(`游戏结束！\n💰 ${score} 金币 | 🍎 ${apples} 苹果\n蛇长：${snake.length}\n当前称号：${getSnakeTitleText(player.level)}`);
+    showPage('home');
+  },100);
+}
+
+function endGame(){
+  gameActive = false;
+  clearInterval(gameLoop);
+  savePlayer();
+  showPage('home');
+}
+function goPortal(){
+  if(gameActive){ gameActive=false; clearInterval(gameLoop); savePlayer(); }
+  location.href = '../index.html';
+}
+
+// ===== ONLINE MULTIPLAYER LOGIC =====
+var onlineState = {
+  mode: null, matchType: null, roomCode: null, playerNum: 1,
+  opponent: null, matchTimer: null, syncTimer: null,
+  mySnake: null, myDir: null, myPending: null, myScore: 0, myAlive: true,
+  oppData: null, oppLastTs: 0,
+  gameLoop: null, active: false,
+  canvas: null, ctx: null, cell: 0, grid: 20, speed: 130, speedIdx: 1,
+  food: null, oppSnake: null
+};
+var BACKEND_URL = 'https://tpg-hq.thawflow.com';
+
+function onlineApi(path, method, data) {
+  var url = BACKEND_URL + '/' + path;
+  var opts = { method: method || 'GET', headers: { 'Content-Type': 'application/json' } };
+  if (data) opts.body = JSON.stringify(data);
+  var ctrl = new AbortController();
+  opts.signal = ctrl.signal;
+  setTimeout(function() { ctrl.abort(); }, 8000);
+  return fetch(url, opts).then(function(r) { return r.json(); }).catch(function(e) { return { ok: false, error: e.message }; });
+}
+
+function getMyId() {
+  var id = localStorage.getItem('thawpawActiveId');
+  if (!id) return null;
+  var players = JSON.parse(localStorage.getItem('thawpawPlayers') || '{}');
+  return players[id] ? { id: id, nickname: players[id].nickname } : null;
+}
+
+async function onlineStart(mode, matchType) {
+  var me = getMyId();
+  if (!me) { alert('请先登录！'); return; }
+  onlineState.mode = mode;
+  onlineState.matchType = matchType;
+  onlineState.opponent = null;
+  onlineState.roomCode = null;
+
+  if (matchType === 'random') {
+    // Join matchmaking queue
+    var res = await onlineApi('online/match', 'POST', { id: me.id, nickname: me.nickname, mode: mode });
+    if (!res.ok) { alert('❌ ' + (res.error || '匹配失败')); return; }
+    if (res.status === 'matched') {
+      onlineState.roomCode = res.roomCode;
+      onlineState.playerNum = res.playerNum;
+      onlineState.opponent = res.opponent;
+      onlineEnterGame();
+    } else {
+      // Waiting — show search page
+      document.getElementById('online-title').textContent = mode === 'pk' ? '⚔️ PK 随机匹配' : '🤝 合作随机匹配';
+      document.getElementById('online-status').innerHTML = '<div style="font-size:48px;margin-bottom:12px;">🔍</div><div>搜索对手中…</div><div style="font-size:12px;color:var(--dim);margin-top:8px;">等待另一位玩家加入</div>';
+      document.getElementById('online-room-info').style.display = 'none';
+      showPage('online-match');
+      // Poll for match
+      onlineState.matchTimer = setInterval(onlineCheckMatch, 2000);
+    }
+  } else if (matchType === 'invite') {
+    // Create room
+    var res = await onlineApi('online/room/create', 'POST', { id: me.id, nickname: me.nickname, mode: mode });
+    if (!res.ok) { alert('❌ ' + (res.error || '创建房间失败')); return; }
+    onlineState.roomCode = res.roomCode;
+    onlineState.playerNum = 1;
+    document.getElementById('online-title').textContent = mode === 'pk' ? '⚔️ PK 邀请好友' : '🤝 合作邀请好友';
+    document.getElementById('online-status').style.display = 'none';
+    document.getElementById('online-room-info').style.display = 'block';
+    document.getElementById('online-room-code').textContent = res.roomCode;
+    showPage('online-match');
+    // Wait for friend to join
+    onlineState.matchTimer = setInterval(onlineCheckMatch, 2000);
+  }
+}
+
+async function onlineCheckMatch() {
+  var me = getMyId(); if (!me) return;
+  var res = await onlineApi('online/match?id=' + me.id + '&nickname=' + encodeURIComponent(me.nickname) + '&mode=' + onlineState.mode, 'GET');
+  if (res.ok && res.status === 'matched') {
+    clearInterval(onlineState.matchTimer);
+    onlineState.matchTimer = null;
+    onlineState.roomCode = res.roomCode;
+    onlineState.playerNum = res.playerNum;
+    onlineState.opponent = res.opponent;
+    onlineEnterGame();
+  }
+}
+
+function onlineCancel() {
+  if (onlineState.matchTimer) { clearInterval(onlineState.matchTimer); onlineState.matchTimer = null; }
+  showPage('modes');
+}
+
+async function joinRoomByCode() {
+  var me = getMyId();
+  if (!me) { alert('请先登录！'); return; }
+  var code = document.getElementById('join-code-input').value.trim().toUpperCase();
+  if (!code || code.length < 4) { alert('请输入有效的房间码'); return; }
+  var res = await onlineApi('online/room/join', 'POST', { id: me.id, nickname: me.nickname, roomCode: code });
+  if (!res.ok) { alert('❌ ' + (res.error || '加入失败')); return; }
+  onlineState.roomCode = res.roomCode;
+  onlineState.playerNum = res.playerNum || 2;
+  onlineState.opponent = res.opponent || { id: '?', nickname: '房主' };
+  onlineState.mode = res.mode || 'pk';
+  onlineState.matchType = 'join';
+  document.getElementById('join-code-input').value = '';
+  onlineEnterGame();
+}
+
+function onlineEnterGame() {
+  var me = getMyId();
+  if (!me) return;
+  var isPK = onlineState.mode === 'pk';
+  // Setup local game
+  onlineState.grid = 20;
+  onlineState.speed = 130;
+  onlineState.speedIdx = 1;
+  onlineState.cell = Math.max(6, Math.floor(Math.min(window.innerWidth * (isPK ? 0.42 : 0.95), window.innerHeight - 240) / onlineState.grid));
+  onlineState.mySnake = [];
+  var mid = Math.floor(onlineState.grid / 2);
+  for (var i = 0; i < 3; i++) onlineState.mySnake.push({ x: mid - i, y: mid });
+  onlineState.myDir = { x: 1, y: 0 };
+  onlineState.myPending = null;
+  onlineState.myScore = 0;
+  onlineState.myAlive = true;
+  onlineState.oppData = null;
+  onlineState.oppLastTs = 0;
+  onlineState.oppSnake = null;
+  onlineState.active = true;
+  // Place food
+  onlinePlaceFood();
+
+  if (isPK) {
+    var cv = document.getElementById('opk-canvas');
+    onlineState.canvas = cv;
+    onlineState.ctx = cv.getContext('2d');
+    cv.width = onlineState.cell * onlineState.grid; cv.height = onlineState.cell * onlineState.grid;
+    cv.style.width = (onlineState.cell * onlineState.grid) + 'px'; cv.style.height = (onlineState.cell * onlineState.grid) + 'px';
+    var myColor = onlineState.playerNum === 1 ? '#4caf50' : '#ff9800';
+    var oppColor = onlineState.playerNum === 1 ? '#ff9800' : '#4caf50';
+    document.getElementById('opk-me-label').style.color = myColor;
+    document.getElementById('opk-me-label').textContent = (myColor === '#4caf50' ? '🟢' : '🟠') + ' 你 (' + me.nickname + ')';
+    document.getElementById('opk-opp-label').style.color = oppColor;
+    document.getElementById('opk-opp-label').textContent = (oppColor === '#4caf50' ? '🟢' : '🟠') + ' ' + (onlineState.opponent ? onlineState.opponent.nickname : '对手');
+    document.getElementById('opk-status').textContent = '⚔️ 在线 PK！';
+    showPage('online-pk');
+  } else {
+    var cv2 = document.getElementById('oduo-canvas');
+    onlineState.canvas = cv2;
+    onlineState.ctx = cv2.getContext('2d');
+    cv2.width = onlineState.cell * onlineState.grid; cv2.height = onlineState.cell * onlineState.grid;
+    cv2.style.width = (onlineState.cell * onlineState.grid) + 'px'; cv2.style.height = (onlineState.cell * onlineState.grid) + 'px';
+    // P1 starts left, P2 starts right
+    if (onlineState.playerNum === 2) {
+      onlineState.mySnake = [];
+      for (var j = 0; j < 3; j++) onlineState.mySnake.push({ x: mid + Math.floor(mid / 2) - j, y: mid });
+    }
+    document.getElementById('oduo-me-disp').textContent = '🟢 你：0';
+    document.getElementById('oduo-opp-disp').textContent = '🟠 ' + (onlineState.opponent ? onlineState.opponent.nickname : '对手') + '：0';
+    document.getElementById('oduo-status').textContent = '🤝 在线合作！';
+    showPage('online-duo');
+  }
+  document.getElementById('opk-me-score').textContent = '0';
+  document.getElementById('opk-opp-score').textContent = '0';
+
+  // Start game loop
+  if (onlineState.gameLoop) clearInterval(onlineState.gameLoop);
+  onlineState.gameLoop = setInterval(onlineTick, onlineState.speed);
+  // Start sync (every 400ms)
+  if (onlineState.syncTimer) clearInterval(onlineState.syncTimer);
+  onlineState.syncTimer = setInterval(onlineSync, 400);
+  // Initial sync
+  setTimeout(onlineSync, 100);
+}
+
+function onlinePlaceFood() {
+  var occ = onlineState.mySnake.slice();
+  if (onlineState.oppSnake) occ = occ.concat(onlineState.oppSnake);
+  var f;
+  do { f = { x: Math.floor(Math.random() * onlineState.grid), y: Math.floor(Math.random() * onlineState.grid) }; }
+  while (occ.some(function(s) { return s.x === f.x && s.y === f.y; }));
+  onlineState.food = f;
+}
+
+function onlineTick() {
+  if (!onlineState.active || !onlineState.myAlive) return;
+  if (onlineState.myPending) { onlineState.myDir = onlineState.myPending; onlineState.myPending = null; }
+  var head = { x: onlineState.mySnake[0].x + onlineState.myDir.x, y: onlineState.mySnake[0].y + onlineState.myDir.y };
+  if (head.x < 0) head.x = onlineState.grid - 1;
+  if (head.x >= onlineState.grid) head.x = 0;
+  if (head.y < 0) head.y = onlineState.grid - 1;
+  if (head.y >= onlineState.grid) head.y = 0;
+  var willEat = (head.x === onlineState.food.x && head.y === onlineState.food.y);
+  var body = willEat ? onlineState.mySnake : onlineState.mySnake.slice(0, -1);
+  if (body.some(function(s) { return s.x === head.x && s.y === head.y; })) {
+    onlineState.myAlive = false;
+    onlineDraw();
+    onlineCheckEnd();
+    return;
+  }
+  onlineState.mySnake.unshift(head);
+  if (willEat) {
+    onlineState.myScore += GOLD_PER_FOOD[onlineState.speedIdx];
+    player.gold += GOLD_PER_FOOD[onlineState.speedIdx];
+    player.apples += 1;
+    player.exp += 5;
+    checkLevelUp();
+    onlinePlaceFood();
+    var scoreEl = document.getElementById(onlineState.mode === 'pk' ? 'opk-me-score' : '');
+    if (onlineState.mode === 'pk') {
+      document.getElementById('opk-me-score').textContent = onlineState.myScore;
+    }
+    onlineUpdateHUD();
+  } else {
+    onlineState.mySnake.pop();
+  }
+  onlineDraw();
+}
+
+function onlineUpdateHUD() {
+  if (onlineState.mode === 'duo') {
+    document.getElementById('oduo-me-disp').textContent = '🟢 你：' + onlineState.myScore;
+    var oppScore = onlineState.oppData ? (onlineState.oppData.score || 0) : 0;
+    document.getElementById('oduo-opp-disp').textContent = '🟠 ' + (onlineState.opponent ? onlineState.opponent.nickname : '对手') + '：' + oppScore;
+    // Coverage
+    var total = onlineState.grid * onlineState.grid;
+    var myLen = onlineState.mySnake.length;
+    var oppLen = onlineState.oppSnake ? onlineState.oppSnake.length : 0;
+    var pct = Math.round((myLen + oppLen) / total * 100);
+    var covEl = document.getElementById('oduo-coverage');
+    if (covEl) covEl.textContent = '覆盖：' + pct + '%';
+    // Check 霸屏
+    if (pct >= 50 && onlineState.active && onlineState.myAlive) {
+      onlineDuoWin(pct);
+    }
+  }
+}
+
+function onlineDraw() {
+  var ctx = onlineState.ctx;
+  var cs = onlineState.cell;
+  var g = onlineState.grid;
+  ctx.fillStyle = '#0a0a1a';
+  ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+  ctx.strokeStyle = '#1a1a2e';
+  for (var i = 0; i <= g; i++) {
+    ctx.beginPath(); ctx.moveTo(i * cs, 0); ctx.lineTo(i * cs, ctx.canvas.height); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, i * cs); ctx.lineTo(ctx.canvas.width, i * cs); ctx.stroke();
+  }
+  // Food
+  ctx.font = cs * 0.7 + 'px serif';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText('🍎', onlineState.food.x * cs + cs / 2, onlineState.food.y * cs + cs / 2);
+  // My snake
+  var myColor = onlineState.playerNum === 1 ? '76,175,80' : '255,152,0';
+  onlineState.mySnake.forEach(function(s, i) {
+    var alpha = onlineState.myAlive ? (1 - (i / onlineState.mySnake.length) * 0.5) : 0.3;
+    ctx.fillStyle = 'rgba(' + myColor + ',' + alpha + ')';
+    ctx.beginPath(); ctx.roundRect(s.x * cs + 1, s.y * cs + 1, cs - 2, cs - 2, 3); ctx.fill();
+  });
+  if (!onlineState.myAlive) {
+    ctx.font = cs + 'px serif';
+    ctx.fillText('💀', onlineState.mySnake[0].x * cs + cs / 2, onlineState.mySnake[0].y * cs + cs / 2);
+  }
+  // Opponent snake (duo mode or PK score panel)
+  if (onlineState.mode === 'duo' && onlineState.oppSnake) {
+    var oppColor = onlineState.playerNum === 1 ? '255,152,0' : '76,175,80';
+    var oppAlive = onlineState.oppData && onlineState.oppData.alive !== false;
+    onlineState.oppSnake.forEach(function(s, i) {
+      var alpha = oppAlive ? (1 - (i / onlineState.oppSnake.length) * 0.5) : 0.2;
+      ctx.fillStyle = 'rgba(' + oppColor + ',' + alpha + ')';
+      ctx.beginPath(); ctx.roundRect(s.x * cs + 1, s.y * cs + 1, cs - 2, cs - 2, 3); ctx.fill();
+    });
+  }
+}
+
+async function onlineSync() {
+  var me = getMyId(); if (!me) return;
+  // Send my state
+  var myState = {
+    score: onlineState.myScore,
+    alive: onlineState.myAlive,
+    length: onlineState.mySnake.length,
+    snake: onlineState.mode === 'duo' ? onlineState.mySnake.slice(-30) : null
+  };
+  onlineApi('online/sync', 'POST', {
+    id: me.id, nickname: me.nickname,
+    roomCode: onlineState.roomCode, playerNum: onlineState.playerNum, state: myState
+  });
+  // Get opponent state
+  var res = await onlineApi('online/sync?id=' + me.id + '&nickname=' + encodeURIComponent(me.nickname) + '&roomCode=' + onlineState.roomCode + '&playerNum=' + onlineState.playerNum, 'GET');
+  if (res.ok && res.state) {
+    if (res.state.left) {
+      // Opponent left
+      if (onlineState.active) {
+        onlineState.active = false;
+        clearInterval(onlineState.gameLoop); clearInterval(onlineState.syncTimer);
+        alert('😞 对手离开了游戏');
+        showPage('modes');
+      }
+      return;
+    }
+    onlineState.oppData = res.state;
+    onlineState.oppLastTs = res.state.ts || Date.now();
+    if (onlineState.mode === 'duo' && res.state.snake) {
+      onlineState.oppSnake = res.state.snake;
+    }
+    // Update PK HUD
+    if (onlineState.mode === 'pk') {
+      document.getElementById('opk-opp-score').textContent = res.state.score || 0;
+      var info = '长度：' + (res.state.length || 3);
+      if (res.state.alive === false) info = '💀 已挂 (' + (res.state.score || 0) + ')';
+      document.getElementById('opk-opp-info').textContent = info;
+    }
+    onlineUpdateHUD();
+    onlineDraw();
+    // Check end
+    onlineCheckEnd();
+  }
+}
+
+function onlineCheckEnd() {
+  if (!onlineState.active) return;
+  // If I'm dead and opp is also dead
+  if (!onlineState.myAlive && onlineState.oppData && onlineState.oppData.alive === false) {
+    onlineEnd();
+    return;
+  }
+  // If opp left (stale data > 10s)
+  if (onlineState.oppLastTs && Date.now() - onlineState.oppLastTs > 10000 && onlineState.oppData) {
+    onlineEnd();
+    return;
+  }
+}
+
+function onlineEnd() {
+  if (!onlineState.active) return;
+  onlineState.active = false;
+  clearInterval(onlineState.gameLoop); clearInterval(onlineState.syncTimer);
+  var me = getMyId(); if (me) {
+    onlineApi('online/leave', 'POST', { id: me.id, nickname: me.nickname, roomCode: onlineState.roomCode, playerNum: onlineState.playerNum });
+  }
+  var oppScore = onlineState.oppData ? (onlineState.oppData.score || 0) : 0;
+  var myScore = onlineState.myScore;
+  var msg;
+  if (onlineState.mode === 'pk') {
+    if (myScore > oppScore) {
+      player.apples += 10; player.gold += myScore; player.exp += 20;
+      msg = '🎉 你赢了！\n⚔️ 你：' + myScore + ' vs 对手：' + oppScore + '\n🏆 +10🍎 +' + myScore + '💰';
+    } else if (oppScore > myScore) {
+      player.gold += 10; player.exp += 5;
+      msg = '💔 你输了…\n⚔️ 你：' + myScore + ' vs 对手：' + oppScore + '\n安慰奖 +10💰';
+    } else {
+      player.gold += myScore; player.exp += 10;
+      msg = '🤝 平局！\n⚔️ 你：' + myScore + ' vs 对手：' + oppScore + '\n+' + myScore + '💰';
+    }
+  } else {
+    player.gold += myScore; player.exp += 10;
+    msg = '🤝 合作结束！\n🟢 你：' + myScore + '💰\n🟠 对手：' + oppScore + '💰';
+  }
+  checkLevelUp(); savePlayer();
+  setTimeout(function() { alert(msg); showPage('home'); }, 300);
+}
+
+function onlineDuoWin(pct) {
+  onlineState.active = false;
+  clearInterval(onlineState.gameLoop); clearInterval(onlineState.syncTimer);
+  var me = getMyId(); if (me) {
+    onlineApi('online/leave', 'POST', { id: me.id, nickname: me.nickname, roomCode: onlineState.roomCode, playerNum: onlineState.playerNum });
+  }
+  var oppScore = onlineState.oppData ? (onlineState.oppData.score || 0) : 0;
+  var totalApples = 50;
+  var myLen = onlineState.mySnake.length;
+  var oppLen = onlineState.oppSnake ? onlineState.oppSnake.length : 3;
+  var myRatio = myLen / (myLen + oppLen);
+  var myApples = Math.round(totalApples * myRatio);
+  player.apples += myApples; player.exp += 30;
+  checkLevelUp(); savePlayer();
+  document.getElementById('oduo-status').textContent = '🏆 霸屏成功！' + pct + '%';
+  setTimeout(function() {
+    alert('🏆 霸屏成功！覆盖率 ' + pct + '%\n\n🟢 你：' + myApples + '🍎\n🟠 对手：' + (totalApples - myApples) + '🍎');
+    showPage('home');
+  }, 300);
+}
+
+function onlineQuit() {
+  onlineState.active = false;
+  if (onlineState.gameLoop) clearInterval(onlineState.gameLoop);
+  if (onlineState.syncTimer) clearInterval(onlineState.syncTimer);
+  var me = getMyId();
+  if (me && onlineState.roomCode) {
+    onlineApi('online/leave', 'POST', { id: me.id, nickname: me.nickname, roomCode: onlineState.roomCode, playerNum: onlineState.playerNum });
+  }
+  showPage('modes');
+}
+
+// Online keyboard
+document.addEventListener('keydown', function(e) {
+  if (!onlineState.active || !onlineState.myAlive) return;
+  var k = e.key.toLowerCase();
+  var dirs = { w: {x:0,y:-1}, s: {x:0,y:1}, a: {x:-1,y:0}, d: {x:1,y:0},
+    arrowup: {x:0,y:-1}, arrowdown: {x:0,y:1}, arrowleft: {x:-1,y:0}, arrowright: {x:1,y:0} };
+  if (dirs[k]) {
+    var nd = dirs[k];
+    if (nd.x !== -onlineState.myDir.x || nd.y !== -onlineState.myDir.y) onlineState.myPending = nd;
+    e.preventDefault();
+  }
+});
+
+// Online touch
+document.addEventListener('touchstart', function(e) {
+  if (!onlineState.active || !onlineState.myAlive) return;
+  var t = e.touches[0];
+  var cx = window.innerWidth / 2, cy = window.innerHeight / 2;
+  var dx = t.clientX - cx, dy = t.clientY - cy;
+  var nd;
+  if (Math.abs(dx) > Math.abs(dy)) nd = dx > 0 ? {x:1,y:0} : {x:-1,y:0};
+  else nd = dy > 0 ? {x:0,y:1} : {x:0,y:-1};
+  if (nd.x !== -onlineState.myDir.x || nd.y !== -onlineState.myDir.y) onlineState.myPending = nd;
+  e.preventDefault();
+}, { passive: false });
+
+// ===== PK MODE (双人对战) =====
+let pk1, pk2, pkLoop, pkActive=false;
+let pkGrid, pkCell, pkSpeed, pkSpeedIdx;
+let pkC1, pkC2, pkCtx1, pkCtx2;
+
+function makePKSnake(cx, cy) {
+  var s = [];
+  for (var i = 0; i < 3; i++) s.push({x: cx - i, y: cy});
+  return s;
+}
+
+function startPK() {
+  var bs = parseInt(document.getElementById('pk-board').value) - 1;
+  var sp = parseInt(document.getElementById('pk-speed').value) - 1;
+  pkGrid = BOARD_SIZES[bs];
+  pkSpeed = SPEEDS[sp];
+  pkSpeedIdx = sp;
+  pkCell = Math.min(Math.floor(Math.min(window.innerWidth * 0.42, window.innerHeight - 240) / pkGrid), 14);
+  pkC1 = document.getElementById('pk-canvas1');
+  pkC2 = document.getElementById('pk-canvas2');
+  pkCtx1 = pkC1.getContext('2d');
+  pkCtx2 = pkC2.getContext('2d');
+  for (var ctx of [pkCtx1, pkCtx2]) {
+    ctx.canvas.width = pkCell * pkGrid;
+    ctx.canvas.height = pkCell * pkGrid;
+    ctx.canvas.style.width = (pkCell * pkGrid) + 'px';
+    ctx.canvas.style.height = (pkCell * pkGrid) + 'px';
+  }
+  var mid = Math.floor(pkGrid / 2);
+  pk1 = { snake: makePKSnake(mid, mid), dir: {x:1,y:0}, pending: null, score: 0, alive: true, name: document.getElementById('pk-p1name').value || '玩家1' };
+  pk2 = { snake: makePKSnake(mid, mid), dir: {x:1,y:0}, pending: null, score: 0, alive: true, name: document.getElementById('pk-p2name').value || '玩家2' };
+  pk1.food = pkPlaceFood(pk1.snake);
+  pk2.food = pkPlaceFood(pk2.snake);
+  document.getElementById('pk-p1label').textContent = '🟢 ' + pk1.name;
+  document.getElementById('pk-p2label').textContent = '🟠 ' + pk2.name;
+  document.getElementById('pk-p1score').textContent = '0';
+  document.getElementById('pk-p2score').textContent = '0';
+  document.getElementById('pk-p1len').textContent = '3';
+  document.getElementById('pk-p2len').textContent = '3';
+  document.getElementById('pk-status').textContent = '⚔️ PK 进行中！';
+  pkActive = true;
+  showPage('pk');
+  if (pkLoop) clearInterval(pkLoop);
+  pkLoop = setInterval(pkTick, pkSpeed);
+  // Show joysticks on touch devices
+  if ('ontouchstart' in window) setTimeout(showPKJoysticks, 300);
+}
+
+function pkPlaceFood(snake) {
+  var f;
+  do { f = {x: Math.floor(Math.random()*pkGrid), y: Math.floor(Math.random()*pkGrid)}; }
+  while (snake.some(s => s.x===f.x && s.y===f.y));
+  return f;
+}
+
+function pkTick() {
+  if (!pkActive) return;
+  if (pk1.alive) pkPlayerTick(pk1, 1);
+  if (pk2.alive) pkPlayerTick(pk2, 2);
+  pkDraw();
+  // Check end condition
+  if (!pk1.alive && !pk2.alive) pkEnd();
+}
+
+function pkPlayerTick(p, num) {
+  if (p.pending) { p.dir = p.pending; p.pending = null; }
+  var head = {x: p.snake[0].x + p.dir.x, y: p.snake[0].y + p.dir.y};
+  if (head.x < 0) head.x = pkGrid-1;
+  if (head.x >= pkGrid) head.x = 0;
+  if (head.y < 0) head.y = pkGrid-1;
+  if (head.y >= pkGrid) head.y = 0;
+  var willEat = (head.x === p.food.x && head.y === p.food.y);
+  var body = willEat ? p.snake : p.snake.slice(0, -1);
+  if (body.some(s => s.x===head.x && s.y===head.y)) {
+    p.alive = false;
+    document.getElementById('pk-status').textContent = '💀 ' + p.name + ' 挂了！等结果…';
+    return;
+  }
+  p.snake.unshift(head);
+  if (willEat) {
+    var gold = GOLD_PER_FOOD[pkSpeedIdx];
+    p.score += gold;
+    p.food = pkPlaceFood(p.snake);
+    document.getElementById('pk-p' + num + 'score').textContent = p.score;
+    document.getElementById('pk-p' + num + 'len').textContent = p.snake.length;
+  } else {
+    p.snake.pop();
+  }
+}
+
+function pkDraw() {
+  pkDrawBoard(pkCtx1, pk1, '#4caf50', p.food);
+  pkDrawBoard(pkCtx2, pk2, '#ff9800', pk.food);
+}
+
+function pkDrawBoard(ctx, p, color, food) {
+  ctx.fillStyle = '#0a0a1a';
+  ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+  // Grid
+  ctx.strokeStyle = '#1a1a2e';
+  for (var i = 0; i <= pkGrid; i++) {
+    ctx.beginPath(); ctx.moveTo(i*pkCell, 0); ctx.lineTo(i*pkCell, ctx.canvas.height); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, i*pkCell); ctx.lineTo(ctx.canvas.width, i*pkCell); ctx.stroke();
+  }
+  // Food
+  ctx.font = pkCell*0.7+'px serif';
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText('🍎', p.food.x*pkCell+pkCell/2, p.food.y*pkCell+pkCell/2);
+  // Snake or skull
+  if (p.alive) {
+    p.snake.forEach((s, i) => {
+      var alpha = 1 - (i/p.snake.length)*0.5;
+      ctx.fillStyle = color.replace(')', ',' + alpha + ')').replace('rgb', 'rgba').replace('#4caf50', 'rgba(76,175,80,'+alpha+')').replace('#ff9800', 'rgba(255,152,0,'+alpha+')');
+      if (color === '#4caf50') ctx.fillStyle = 'rgba(76,175,80,'+alpha+')';
+      else ctx.fillStyle = 'rgba(255,152,0,'+alpha+')';
+      ctx.beginPath();
+      ctx.roundRect(s.x*pkCell+1, s.y*pkCell+1, pkCell-2, pkCell-2, 3); ctx.fill();
+    });
+  } else {
+    // Draw faded snake + skull
+    p.snake.forEach((s, i) => {
+      ctx.fillStyle = 'rgba(80,80,80,0.3)';
+      ctx.beginPath(); ctx.roundRect(s.x*pkCell+1, s.y*pkCell+1, pkCell-2, pkCell-2, 3); ctx.fill();
+    });
+    ctx.font = pkCell+'px serif';
+    ctx.fillText('💀', p.snake[0].x*pkCell+pkCell/2, p.snake[0].y*pkCell+pkCell/2);
+  }
+}
+
+function pkEnd() {
+  pkActive = false;
+  clearInterval(pkLoop);
+  var p1s = pk1.score, p2s = pk2.score;
+  var winner, loser, winMsg;
+  if (p1s > p2s) { winner = pk1; loser = pk2; winMsg = '🎉 ' + pk1.name + ' 赢了！'; }
+  else if (p2s > p1s) { winner = pk2; loser = pk1; winMsg = '🎉 ' + pk2.name + ' 赢了！'; }
+  else { winMsg = '🤝 平局！'; }
+  // Rewards
+  if (winner) {
+    player.apples += 10;
+    player.gold += winner.score;
+    player.exp += 20;
+    player.gold += loser === pk1 ? pk2.score : pk1.score; // both scores
+    winMsg += '\n🏆 赢家奖励：+10🍎 +' + winner.score + '💰';
+    winMsg += '\n💔 输家安慰：+10💰';
+    player.gold += 10; // consolation
+  } else {
+    player.gold += p1s + p2s;
+    player.exp += 10;
+    winMsg += '\n双方各 +' + (p1s+p2s) + '💰';
+  }
+  checkLevelUp();
+  savePlayer();
+  document.getElementById('pk-status').textContent = winMsg.split('\n')[0];
+  setTimeout(() => {
+    alert(winMsg + '\n\n🟢 ' + pk1.name + ': ' + p1s + '\n🟠 ' + pk2.name + ': ' + p2s);
+    showPage('home');
+  }, 200);
+}
+
+function pkQuit() {
+  pkActive = false;
+  clearInterval(pkLoop);
+  hideDuoJoysticks();
+  showPage('modes');
+}
+
+// PK keyboard: P1=WASD, P2=Arrows
+// PK touch: handled by duoTouch (shared joysticks)
+function pkKey(e) {
+  if (!pkActive) return;
+  var k = e.key.toLowerCase();
+  var p1keys = { w:{x:0,y:-1}, s:{x:0,y:1}, a:{x:-1,y:0}, d:{x:1,y:0} };
+  var p2keys = { arrowup:{x:0,y:-1}, arrowdown:{x:0,y:1}, arrowleft:{x:-1,y:0}, arrowright:{x:1,y:0} };
+  if (pk1.alive && p1keys[k]) {
+    var nd = p1keys[k];
+    if (nd.x !== -pk1.dir.x || nd.y !== -pk1.dir.y) pk1.pending = nd;
+    e.preventDefault();
+  }
+  if (pk2.alive && p2keys[k]) {
+    var nd2 = p2keys[k];
+    if (nd2.x !== -pk2.dir.x || nd2.y !== -pk2.dir.y) pk2.pending = nd2;
+    e.preventDefault();
+  }
+}
+
+// PK touch: left half = P1, right half = P2
+// pkTouch removed — now handled by duoTouch with virtual joysticks
+
+// ===== DUO MODE (双人合作) =====
+let duo, duoLoop, duoActive=false;
+let duoGrid, duoCell, duoSpeed, duoSpeedIdx;
+let duoCanvas, duoCtx;
+
+function startDuo() {
+  var bs = parseInt(document.getElementById('duo-board').value) - 1;
+  var sp = parseInt(document.getElementById('duo-speed').value) - 1;
+  duoGrid = BOARD_SIZES[bs];
+  duoSpeed = SPEEDS[sp];
+  duoSpeedIdx = sp;
+  duoCanvas = document.getElementById('duo-canvas');
+  duoCtx = duoCanvas.getContext('2d');
+  var maxPx = Math.min(window.innerWidth - 20, window.innerHeight - 200);
+  duoCell = Math.max(6, Math.floor(maxPx / duoGrid));
+  duoCanvas.width = duoCell * duoGrid;
+  duoCanvas.height = duoCell * duoGrid;
+  duoCanvas.style.width = (duoCell * duoGrid) + 'px';
+  duoCanvas.style.height = (duoCell * duoGrid) + 'px';
+  var mid = Math.floor(duoGrid / 2);
+  duo = {
+    s1: { snake: [], dir: {x:1,y:0}, pending: null, score: 0, alive: true, name: document.getElementById('duo-p1name').value || 'P1' },
+    s2: { snake: [], dir: {x:1,y:0}, pending: null, score: 0, alive: true, name: document.getElementById('duo-p2name').value || 'P2' },
+    food: null
+  };
+  // P1 starts left-center, P2 starts right-center
+  for (var i = 0; i < 3; i++) {
+    duo.s1.snake.push({x: Math.floor(mid/2) - i, y: mid});
+    duo.s2.snake.push({x: mid + Math.floor(mid/2) - i, y: mid});
+  }
+  duo.food = duoPlaceFood();
+  document.getElementById('duo-p1name-disp').textContent = duo.s1.name;
+  document.getElementById('duo-p2name-disp').textContent = duo.s2.name;
+  document.getElementById('duo-p1score').textContent = '0';
+  document.getElementById('duo-p2score').textContent = '0';
+  document.getElementById('duo-status').textContent = '🤝 合作进行中！';
+  duoActive = true;
+  showPage('duo');
+  if (duoLoop) clearInterval(duoLoop);
+  duoLoop = setInterval(duoTick, duoSpeed);
+  // Show joysticks on touch devices
+  if ('ontouchstart' in window) setTimeout(showDuoJoysticks, 300);
+}
+
+function duoPlaceFood() {
+  var occupied = duo.s1.snake.concat(duo.s2.snake);
+  var f;
+  do { f = {x: Math.floor(Math.random()*duoGrid), y: Math.floor(Math.random()*duoGrid)}; }
+  while (occupied.some(s => s.x===f.x && s.y===f.y));
+  return f;
+}
+
+function duoTick() {
+  if (!duoActive) return;
+  if (duo.s1.alive) duoSnakeTick(duo.s1, 's1');
+  if (duo.s2.alive) duoSnakeTick(duo.s2, 's2');
+  duoDraw();
+  // Coverage
+  var total = duoGrid * duoGrid;
+  var covered = duo.s1.snake.length + duo.s2.snake.length;
+  var pct = Math.round(covered / total * 100);
+  var covEl = document.getElementById('duo-coverage');
+  if (covEl) covEl.textContent = pct + '%';
+  // 霸屏 check: 50%+ coverage
+  if (pct >= 50 && duo.s1.alive && duo.s2.alive) {
+    duoWin(pct);
+    return;
+  }
+  if (!duo.s1.alive && !duo.s2.alive) duoEnd();
+}
+
+function duoSnakeTick(s, key) {
+  if (s.pending) { s.dir = s.pending; s.pending = null; }
+  var head = {x: s.snake[0].x + s.dir.x, y: s.snake[0].y + s.dir.y};
+  // Wall wrap
+  if (head.x < 0) head.x = duoGrid-1;
+  if (head.x >= duoGrid) head.x = 0;
+  if (head.y < 0) head.y = duoGrid-1;
+  if (head.y >= duoGrid) head.y = 0;
+  // Self collision = DEATH
+  var willEat = (head.x === duo.food.x && head.y === duo.food.y);
+  var ownBody = willEat ? s.snake : s.snake.slice(0, -1);
+  if (ownBody.some(b => b.x===head.x && b.y===head.y)) {
+    s.alive = false;
+    document.getElementById('duo-status').textContent = '💀 ' + s.name + ' 撞到自己了！';
+    return;
+  }
+  // Collision with OTHER snake = SAFE (pass through)
+  s.snake.unshift(head);
+  if (willEat) {
+    var gold = GOLD_PER_FOOD[duoSpeedIdx];
+    s.score += gold;
+    duo.food = duoPlaceFood();
+    document.getElementById(key === 's1' ? 'duo-p1score' : 'duo-p2score').textContent = s.score;
+  } else {
+    s.snake.pop();
+  }
+}
+
+function duoDraw() {
+  duoCtx.fillStyle = '#0a0a1a';
+  duoCtx.fillRect(0, 0, duoCanvas.width, duoCanvas.height);
+  // Grid
+  duoCtx.strokeStyle = '#1a1a2e';
+  for (var i = 0; i <= duoGrid; i++) {
+    duoCtx.beginPath(); duoCtx.moveTo(i*duoCell, 0); duoCtx.lineTo(i*duoCell, duoCanvas.height); duoCtx.stroke();
+    duoCtx.beginPath(); duoCtx.moveTo(0, i*duoCell); duoCtx.lineTo(duoCanvas.width, i*duoCell); duoCtx.stroke();
+  }
+  // Food
+  duoCtx.font = duoCell*0.7+'px serif';
+  duoCtx.textAlign='center'; duoCtx.textBaseline='middle';
+  duoCtx.fillText('🍎', duo.food.x*duoCell+duoCell/2, duo.food.y*duoCell+duoCell/2);
+  // P1 green
+  duoDrawSnake(duo.s1, 'rgba(76,175,80,', duoCtx);
+  // P2 orange
+  duoDrawSnake(duo.s2, 'rgba(255,152,0,', duoCtx);
+}
+
+function duoDrawSnake(s, colorPrefix, ctx) {
+  s.snake.forEach((seg, i) => {
+    var alpha = s.alive ? (1 - (i/s.snake.length)*0.5) : 0.2;
+    ctx.fillStyle = colorPrefix + alpha + ')';
+    ctx.beginPath();
+    ctx.roundRect(seg.x*duoCell+1, seg.y*duoCell+1, duoCell-2, duoCell-2, 3); ctx.fill();
+  });
+  if (!s.alive) {
+    ctx.font = duoCell+'px serif';
+    ctx.fillText('💀', s.snake[0].x*duoCell+duoCell/2, s.snake[0].y*duoCell+duoCell/2);
+  }
+}
+
+function duoWin(pct) {
+  duoActive = false;
+  clearInterval(duoLoop);
+  var totalApples = 50;
+  var s1Pct = duo.s1.snake.length / (duo.s1.snake.length + duo.s2.snake.length);
+  var p1Get = Math.round(totalApples * s1Pct);
+  var p2Get = totalApples - p1Get;
+  player.apples += p1Get; // current player gets P1 share
+  player.exp += 30;
+  checkLevelUp();
+  savePlayer();
+  document.getElementById('duo-status').textContent = '🏆 霸屏成功！' + pct + '%';
+  setTimeout(() => {
+    alert('🏆 霸屏成功！覆盖率 ' + pct + '%\n\n🟢 ' + duo.s1.name + '：' + p1Get + '🍎\n🟠 ' + duo.s2.name + '：' + p2Get + '🍎');
+    showPage('home');
+  }, 200);
+}
+
+function duoEnd() {
+  duoActive = false;
+  clearInterval(duoLoop);
+  player.gold += duo.s1.score + duo.s2.score;
+  player.exp += 10;
+  checkLevelUp();
+  savePlayer();
+  var msg = '游戏结束！\n';
+  msg += '🟢 ' + duo.s1.name + '：' + duo.s1.score + '💰\n';
+  msg += '🟠 ' + duo.s2.name + '：' + duo.s2.score + '💰\n';
+  msg += '每人拿走自己的积分';
+  document.getElementById('duo-status').textContent = '💀 双方都挂了';
+  setTimeout(() => { alert(msg); showPage('home'); }, 200);
+}
+
+function duoQuit() {
+  duoActive = false;
+  clearInterval(duoLoop);
+  hideDuoJoysticks();
+  showPage('modes');
+}
+
+// Duo keyboard: P1=WASD, P2=Arrows
+function duoKey(e) {
+  if (!duoActive) return;
+  var k = e.key.toLowerCase();
+  var p1keys = { w:{x:0,y:-1}, s:{x:0,y:1}, a:{x:-1,y:0}, d:{x:1,y:0} };
+  var p2keys = { arrowup:{x:0,y:-1}, arrowdown:{x:0,y:1}, arrowleft:{x:-1,y:0}, arrowright:{x:1,y:0} };
+  if (duo.s1.alive && p1keys[k]) {
+    var nd = p1keys[k];
+    if (nd.x !== -duo.s1.dir.x || nd.y !== -duo.s1.dir.y) duo.s1.pending = nd;
+    e.preventDefault();
+  }
+  if (duo.s2.alive && p2keys[k]) {
+    var nd2 = p2keys[k];
+    if (nd2.x !== -duo.s2.dir.x || nd2.y !== -duo.s2.dir.y) duo.s2.pending = nd2;
+    e.preventDefault();
+  }
+}
+
+// Duo touch: left half = P1, right half = P2 — with virtual joysticks
+var duoJoysticks = { j1: { active: false, cx: 0, cy: 0, knob: null, base: null }, j2: { active: false, cx: 0, cy: 0, knob: null, base: null } };
+
+function showDuoJoysticks() {
+  hideDuoJoysticks();
+  duoJoysticks.j1 = createJoystick('tpg-j1', 'left');
+  duoJoysticks.j2 = createJoystick('tpg-j2', 'right');
+}
+function showPKJoysticks() {
+  hideDuoJoysticks();
+  duoJoysticks.j1 = createJoystick('tpg-j1', 'left');
+  duoJoysticks.j2 = createJoystick('tpg-j2', 'right');
+}
+function hideDuoJoysticks() {
+  ['tpg-j1','tpg-j2','tpg-j1-base','tpg-j2-base','tpg-j1-knob','tpg-j2-knob'].forEach(function(id){
+    var el=document.getElementById(id); if(el) el.remove();
+  });
+  duoJoysticks.j1.active=false; duoJoysticks.j2.active=false;
+}
+function createJoystick(id, side) {
+  var pos = side === 'left' ? { x: 70, y: window.innerHeight - 90 } : { x: window.innerWidth - 70, y: window.innerHeight - 90 };
+  var base = document.createElement('div');
+  base.id = id + '-base';
+  base.style.cssText = 'position:fixed;width:100px;height:100px;border-radius:50%;border:2px solid rgba(255,255,255,.2);background:rgba(0,0,0,.3);z-index:9997;left:'+(pos.x-50)+'px;top:'+(pos.y-50)+'px;touch-action:none;';
+  var knob = document.createElement('div');
+  knob.id = id + '-knob';
+  knob.style.cssText = 'position:fixed;width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.4);z-index:9998;left:'+(pos.x-22)+'px;top:'+(pos.y-22)+'px;transition:transform .1s;pointer-events:none;';
+  document.body.appendChild(base);
+  document.body.appendChild(knob);
+  var state = { active: false, cx: pos.x, cy: pos.y, knob: knob, base: base, touchId: null };
+  return state;
+}
+
+function duoTouch(e) {
+  if (!duoActive && !pkActive) return;
+  for (var t of e.touches) {
+    var isLeft = t.clientX < window.innerWidth / 2;
+    var jk = isLeft ? duoJoysticks.j1 : duoJoysticks.j2;
+    if (!jk || !jk.base) continue;
+    // Check if touch is near joystick
+    var distToBase = Math.hypot(t.clientX - jk.cx, t.clientY - jk.cy);
+    if (distToBase < 80 || jk.touchId === t.identifier) {
+      jk.touchId = t.identifier;
+      jk.active = true;
+      var dx = t.clientX - jk.cx;
+      var dy = t.clientY - jk.cy;
+      // Move knob (clamped)
+      var maxR = 35;
+      var angle = Math.atan2(dy, dx);
+      var r = Math.min(Math.hypot(dx, dy), maxR);
+      jk.knob.style.left = (jk.cx + Math.cos(angle) * r - 22) + 'px';
+      jk.knob.style.top = (jk.cy + Math.sin(angle) * r - 22) + 'px';
+      // Determine direction
+      if (r > 12) {
+        var nd;
+        if (Math.abs(dx) > Math.abs(dy)) nd = dx > 0 ? {x:1,y:0} : {x:-1,y:0};
+        else nd = dy > 0 ? {x:0,y:1} : {x:0,y:-1};
+        // Apply to the right snake
+        if (duoActive) {
+          var s = isLeft ? duo.s1 : duo.s2;
+          if (s.alive && (nd.x !== -s.dir.x || nd.y !== -s.dir.y)) s.pending = nd;
+        } else if (pkActive) {
+          var p = isLeft ? pk1 : pk2;
+          if (p.alive && (nd.x !== -p.dir.x || nd.y !== -p.dir.y)) p.pending = nd;
+        }
+      }
+    }
+  }
+  e.preventDefault();
+}
+
+function resetJoystickKnob(jk) {
+  if (!jk || !jk.knob) return;
+  jk.knob.style.left = (jk.cx - 22) + 'px';
+  jk.knob.style.top = (jk.cy - 22) + 'px';
+  jk.active = false; jk.touchId = null;
+}
+
+document.addEventListener('touchend', function(e) {
+  if (pkActive || duoActive) {
+    // Reset knobs for lifted touches
+    [duoJoysticks.j1, duoJoysticks.j2].forEach(function(jk){
+      if(jk && jk.touchId !== null){
+        var stillActive = false;
+        for(var t of e.touches){ if(t.identifier === jk.touchId){ stillActive = true; break; } }
+        if(!stillActive) resetJoystickKnob(jk);
+      }
+    });
+  }
+}, { passive: false });
+
+document.addEventListener('touchcancel', function(e) {
+  if (pkActive || duoActive) {
+    [duoJoysticks.j1, duoJoysticks.j2].forEach(function(jk){ if(jk) resetJoystickKnob(jk); });
+  }
+}, { passive: false });
+
+// Route keyboard/touch to the right mode
+document.addEventListener('keydown', function(e) {
+  if (pkActive) pkKey(e);
+  else if (duoActive) duoKey(e);
+}, { passive: false });
+
+document.addEventListener('touchstart', function(e) {
+  if (pkActive) duoTouch(e);
+  else if (duoActive) duoTouch(e);
+}, { passive: false });
+
+document.addEventListener('touchmove', function(e) {
+  if (pkActive) duoTouch(e);
+  else if (duoActive) duoTouch(e);
+}, { passive: false });
+
+// ===== PRACTICE MODE =====
+let pSnake, pFood, pDir, pPendingDir, pLoop, pActive=false;
+let pGrid, pCell, pSpeed, pSpeedIdx;
+let pDeaths=0, pApplesEarned=0, pDeathTimes=[];
+let pTimerInterval=null, pTimeLeft=60;
+let pCanvas, pCtx;
+
+function startPractice(){
+  // Use same board/speed as classic defaults
+  pGrid = 20;
+  pSpeed = 130;
+  pSpeedIdx = 1;
+  pCanvas = document.getElementById('practice-canvas');
+  pCtx = pCanvas.getContext('2d');
+  const maxW = window.innerWidth - 40;
+  const maxH = window.innerHeight - 200;
+  const maxPx = Math.min(maxW, maxH);
+  pCell = Math.max(6, Math.floor(maxPx / pGrid));
+  pCanvas.width = pCell * pGrid;
+  pCanvas.height = pCell * pGrid;
+  pCanvas.style.width = (pCell * pGrid) + 'px';
+  pCanvas.style.height = (pCell * pGrid) + 'px';
+  resetPracticeSnake();
+  pDeaths = 0;
+  pApplesEarned = 0;
+  pDeathTimes = [];
+  pTimeLeft = 60;
+  pActive = true;
+  document.getElementById('prac-deaths').textContent='0';
+  document.getElementById('prac-timer').textContent='60';
+  document.getElementById('prac-apples').textContent='0';
+  showPage('practice');
+  if(pLoop) clearInterval(pLoop);
+  pLoop = setInterval(practiceTick, pSpeed);
+  // Countdown timer
+  if(pTimerInterval) clearInterval(pTimerInterval);
+  pTimerInterval = setInterval(()=>{
+    if(!pActive) return;
+    pTimeLeft--;
+    // Clean death timestamps older than 60s ago (sliding window)
+    const cutoff = Date.now() - 60000;
+    pDeathTimes = pDeathTimes.filter(t=>t>cutoff);
+    // Update deaths display (sliding window count)
+    document.getElementById('prac-deaths').textContent=pDeathTimes.length;
+    // Update apples earned (live)
+    updatePracticeApples();
+    document.getElementById('prac-timer').textContent=pTimeLeft;
+    if(pTimeLeft<=0){
+      endPractice();
+    }
+  }, 1000);
+}
+
+function resetPracticeSnake(){
+  pSnake = [{x:Math.floor(pGrid/2),y:Math.floor(pGrid/2)}];
+  for(let i=1;i<3;i++) pSnake.push({x:pSnake[0].x-i,y:pSnake[0].y});
+  pDir = {x:1,y:0};
+  pPendingDir = null;
+  pPlaceFood();
+}
+
+function pPlaceFood(){
+  do{
+    pFood = {x:Math.floor(Math.random()*pGrid), y:Math.floor(Math.random()*pGrid)};
+  }while(pSnake.some(s=>s.x===pFood.x&&s.y===pFood.y));
+}
+
+function practiceTick(){
+  if(!pActive) return;
+  if(pPendingDir){ pDir = pPendingDir; pPendingDir = null; }
+  const head = {x:pSnake[0].x+pDir.x, y:pSnake[0].y+pDir.y};
+  // Wall wrap
+  if(head.x<0) head.x=pGrid-1;
+  if(head.x>=pGrid) head.x=0;
+  if(head.y<0) head.y=pGrid-1;
+  if(head.y>=pGrid) head.y=0;
+  const willEat = (head.x===pFood.x&&head.y===pFood.y);
+  const bodyToCheck = willEat ? pSnake : pSnake.slice(0,-1);
+  // Practice mode: collision = death count + reset, NOT gameOver
+  if(bodyToCheck.some(s=>s.x===head.x&&s.y===head.y)){
+    pDeaths++;
+    pDeathTimes.push(Date.now());
+    // Keep only last 60s
+    const cutoff = Date.now() - 60000;
+    pDeathTimes = pDeathTimes.filter(t=>t>cutoff);
+    document.getElementById('prac-deaths').textContent = pDeathTimes.length;
+    updatePracticeApples();
+    // Flash effect + reset snake
+    pCtx.fillStyle='rgba(255,80,80,.4)';
+    pCtx.fillRect(0,0,pCanvas.width,pCanvas.height);
+    setTimeout(()=>{ if(pActive) drawPractice(); }, 150);
+    resetPracticeSnake();
+    return;
+  }
+  pSnake.unshift(head);
+  if(head.x===pFood.x&&head.y===pFood.y){
+    pPlaceFood();
+  }else{
+    pSnake.pop();
+  }
+  drawPractice();
+}
+
+function getPracticeThreshold(){
+  const lv = player.level || 1;
+  if(lv<=3) return 5;
+  if(lv<=10) return 3;
+  return 0; // L10+ no practice
+}
+
+function updatePracticeApples(){
+  const threshold = getPracticeThreshold();
+  if(threshold<=0){ pApplesEarned=0; return; }
+  // Current deaths in last 60s
+  const cutoff = Date.now() - 60000;
+  const recentDeaths = pDeathTimes.filter(t=>t>cutoff).length;
+ // Apples = threshold - deaths (clamped ≥ 0), shown live as projected
+  pApplesEarned = Math.max(0, threshold - recentDeaths);
+  document.getElementById('prac-apples').textContent = pApplesEarned;
+}
+
+function drawPractice(){
+  pCtx.fillStyle='#0a0a1a';
+  pCtx.fillRect(0,0,pCanvas.width,pCanvas.height);
+  // Grid
+  pCtx.strokeStyle='#1a1a2e';
+  for(let i=0;i<=pGrid;i++){
+    pCtx.beginPath();pCtx.moveTo(i*pCell,0);pCtx.lineTo(i*pCell,pCanvas.height);pCtx.stroke();
+    pCtx.beginPath();pCtx.moveTo(0,i*pCell);pCtx.lineTo(pCanvas.width,i*pCell);pCtx.stroke();
+  }
+  // Food
+  pCtx.font = pCell*0.7+'px serif';
+  pCtx.textAlign='center';pCtx.textBaseline='middle';
+  pCtx.fillText('🍎', pFood.x*pCell+pCell/2, pFood.y*pCell+pCell/2);
+  // Snake
+  pSnake.forEach((s,i)=>{
+    const alpha = 1-(i/pSnake.length)*0.5;
+    pCtx.fillStyle = `rgba(76,175,80,${alpha})`;
+    pCtx.beginPath();
+    pCtx.roundRect(s.x*pCell+1, s.y*pCell+1, pCell-2, pCell-2, 4);
+    pCtx.fill();
+    if(i===0){
+      pCtx.font=(pCell*0.5)+'px serif';
+      pCtx.fillStyle='#fff';
+      const ex=pDir.x*3, ey=pDir.y*3;
+      pCtx.beginPath();
+      pCtx.arc(s.x*pCell+pCell*0.35+ex, s.y*pCell+pCell*0.35+ey, 2, 0, Math.PI*2);
+      pCtx.arc(s.x*pCell+pCell*0.65+ex, s.y*pCell+pCell*0.35+ey, 2, 0, Math.PI*2);
+      pCtx.fill();
+    }
+  });
+}
+
+function endPractice(){
+  pActive = false;
+  if(pLoop) clearInterval(pLoop);
+  if(pTimerInterval) clearInterval(pTimerInterval);
+  // Final apple calculation
+  updatePracticeApples();
+  // Award apples to player
+  if(pApplesEarned>0){
+    player.apples += pApplesEarned;
+    savePlayer();
+    refreshHome();
+  }
+  const threshold = getPracticeThreshold();
+  showPage('home');
+  setTimeout(()=>{
+    alert(`🎓 练习结束！\n💀 本分钟死亡：${pDeathTimes.length} 次\n🎯 阈值：${threshold} 次/分钟\n🍎 获得：${pApplesEarned} 个苹果！`);
+  }, 100);
+}
+
+function exitPractice(){
+  pActive = false;
+  if(pLoop) clearInterval(pLoop);
+  if(pTimerInterval) clearInterval(pTimerInterval);
+  // Award partial apples
+  updatePracticeApples();
+  if(pApplesEarned>0){
+    player.apples += pApplesEarned;
+    savePlayer();
+    refreshHome();
+  }
+  showPage('home');
+}
+
+// Controls
+document.addEventListener('keydown', e=>{
+  // Practice mode controls
+  if(pActive){
+    const pmap = {ArrowUp:{x:0,y:-1},ArrowDown:{x:0,y:1},ArrowLeft:{x:-1,y:0},ArrowRight:{x:1,y:0},
+      w:{x:0,y:-1},s:{x:0,y:1},a:{x:-1,y:0},d:{x:1,y:0}};
+    const pd = pmap[e.key];
+    if(pd && !(pd.x===-pDir.x && pd.y===-pDir.y)){
+      pPendingDir = pd;
+      e.preventDefault();
+    }
+    return;
+  }
+  if(!gameActive) return;
+  const map = {ArrowUp:{x:0,y:-1},ArrowDown:{x:0,y:1},ArrowLeft:{x:-1,y:0},ArrowRight:{x:1,y:0},
+    w:{x:0,y:-1},s:{x:0,y:1},a:{x:-1,y:0},d:{x:1,y:0}};
+  const d = map[e.key];
+  if(d && !(d.x===-direction.x && d.y===-direction.y)){
+    pendingDir = d;
+    e.preventDefault();
+  }
+});
+
+// Touch swipe controls (non-joystick fallback)
+let touchStart = null;
+document.addEventListener('touchstart', e=>{
+  if(currentPage!=='game' && currentPage!=='practice') return;
+  if(e.target.closest('.joystick-zone')) return;
+  touchStart = {x:e.touches[0].clientX, y:e.touches[0].clientY};
+});
+document.addEventListener('touchend', e=>{
+  if(!touchStart) return;
+  if(currentPage!=='game' && currentPage!=='practice') { touchStart=null; return; }
+  const dx = e.changedTouches[0].clientX - touchStart.x;
+  const dy = e.changedTouches[0].clientY - touchStart.y;
+  if(Math.abs(dx)<20 && Math.abs(dy)<20){ touchStart=null; return; }
+  let d;
+  if(Math.abs(dx)>Math.abs(dy)) d = dx>0?{x:1,y:0}:{x:-1,y:0};
+  else d = dy>0?{x:0,y:1}:{x:0,y:-1};
+  if(currentPage==='practice'){
+    if(pActive && !(d.x===-pDir.x && d.y===-pDir.y)) pPendingDir = d;
+  }else{
+    if(!(d.x===-direction.x && d.y===-direction.y)) pendingDir = d;
+  }
+  touchStart = null;
+});
+
+// ===== JOYSTICK =====
+const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+const joystickZone = document.getElementById('joystick-zone');
+const joystickBase = document.getElementById('joystick-base');
+const joystickKnob = document.getElementById('joystick-knob');
+let joystickActive = false;
+let joystickCenter = {x:0,y:0};
+const JOYSTICK_RADIUS = 35;
+
+if(isTouchDevice){
+  // Joystick starts hidden, only shows on game page via showPage()
+  joystickBase.addEventListener('touchstart', e=>{
+    e.preventDefault();
+    joystickActive = true;
+    const rect = joystickBase.getBoundingClientRect();
+    joystickCenter = {x:rect.left+rect.width/2, y:rect.top+rect.height/2};
+    handleJoystickMove(e.touches[0]);
+  });
+  document.addEventListener('touchmove', e=>{
+    if(!joystickActive) return;
+    e.preventDefault();
+    handleJoystickMove(e.touches[0]);
+  }, {passive:false});
+  document.addEventListener('touchend', e=>{
+    if(!joystickActive) return;
+    joystickActive = false;
+    joystickKnob.style.transform = 'translate(-50%,-50%)';
+  });
+}
+
+function handleJoystickMove(touch){
+  const dx = touch.clientX - joystickCenter.x;
+  const dy = touch.clientY - joystickCenter.y;
+  const dist = Math.sqrt(dx*dx+dy*dy);
+  const clampedDist = Math.min(dist, JOYSTICK_RADIUS);
+  const angle = Math.atan2(dy, dx);
+  const nx = Math.cos(angle)*clampedDist;
+  const ny = Math.sin(angle)*clampedDist;
+  joystickKnob.style.transform = `translate(calc(-50% + ${nx}px), calc(-50% + ${ny}px))`;
+  if(dist > 15 && (gameActive || pActive)){
+    let d;
+    if(Math.abs(dx)>Math.abs(dy)) d = dx>0?{x:1,y:0}:{x:-1,y:0};
+    else d = dy>0?{x:0,y:1}:{x:0,y:-1};
+    if(gameActive){
+      if(!(d.x===-direction.x && d.y===-direction.y)) pendingDir = d;
+    } else if(pActive){
+      if(!(d.x===-pDir.x && d.y===-pDir.y)) pPendingDir = d;
+    }
+  }
+}
+
+// Close modals on overlay click
+document.querySelectorAll('.modal-overlay').forEach(el=>{
+  el.addEventListener('click', e=>{
+    if(e.target===el) el.classList.remove('active');
+  });
+});
+
+// ===== INIT =====
+loadPlayer();
+loadSettings();
+refreshHome();
+
+// ===== AUTO FULLSCREEN =====
+function tryFullscreen(){
+  const el = document.documentElement;
+  const rfs = el.requestFullscreen || el.webkitRequestFullscreen || el.msRequestFullscreen;
+  if(rfs){
+    rfs.call(el).catch(()=>{});
+  }
+}
+// Auto fullscreen on first user interaction
+let fullscreenDone = false;
+document.addEventListener('click', ()=>{
+  if(!fullscreenDone){fullscreenDone=true; tryFullscreen();}
+}, {once:true});
+document.addEventListener('touchstart', ()=>{
+  if(!fullscreenDone){fullscreenDone=true; tryFullscreen();}
+}, {once:true});
+</script>
+<script src="tutorial.js"></script>
+<script src="friends.js"></script>
+<script>
+tpgFriends && tpgFriends.setGame && tpgFriends.setGame('snake');
+</script>
+<script>
+// 🐾 新手教程 第一步：贪吃蛇
+(function(){
+  if(isNewPlayer() && !tutorialCheck('snake','step1')){
+    setTimeout(function(){
+      var card = document.querySelector('#page-home .col-rc .mode-card');
+      if(!card) return;
+      showTutorialStep(card, '🐍', '点击经典模式吃苹果！', function(){
+        tutorialDone('snake','step1');
+      });
+    }, 600);
+  }
+})();
+// 🐾 新手教程 第二步：游戏内操作说明
+(function(){
+  if(!tutorialCheck('snake','step2')){
+    var origStart = window.startGame;
+    window.startGame = function(){
+      origStart && origStart.apply(this, arguments);
+      setTimeout(function(){
+        showTutorialHowTo('snake');
+      }, 400);
+    };
+  }
+})();
+</script>
+</body>
+</html>
