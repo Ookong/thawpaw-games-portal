@@ -329,7 +329,7 @@ tr:hover td{background:var(--card2)}
     </div>
   </div>
   <div class="login-hint">© 2026 Thawpaw Games · 管理员入口 · <span id="build-time" style="opacity:.7">加载中…</span></div>
-<script>var BUILD_TIME="20260808-1514";var el=document.getElementById("build-time");if(el)el.textContent="v"+BUILD_TIME;var el2=document.getElementById("build-time-dash");if(el2)el2.textContent="v"+BUILD_TIME;</script>
+<script>var BUILD_TIME="20260808-1532";var el=document.getElementById("build-time");if(el)el.textContent="v"+BUILD_TIME;var el2=document.getElementById("build-time-dash");if(el2)el2.textContent="v"+BUILD_TIME;</script>
 </div>
 
 <!-- ===== DASHBOARD ===== -->
@@ -472,7 +472,6 @@ tr:hover td{background:var(--card2)}
       <!-- Sub-tabs -->
       <div class="sub-tabs">
         <button class="sub-tab active" data-subtab="history" onclick="switchChatSubTab('history')">📜 聊天记录</button>
-        <button class="sub-tab" data-subtab="send" onclick="switchChatSubTab('send')">✉️ 发送消息</button>
         <button class="sub-tab" data-subtab="members" onclick="switchChatSubTab('members')">👥 成员管理</button>
       </div>
 
@@ -490,36 +489,24 @@ tr:hover td{background:var(--card2)}
             <button id="chat-refresh-btn" onclick="loadChatHistory(chatHistoryPage)" class="refresh-btn" title="刷新" style="padding:4px 12px;border:1px solid var(--border);border-radius:6px;background:var(--card);color:var(--text);cursor:pointer;transition:transform .3s"><span class="icon-spin"></span></button>
           </div>
         </div>
-        <div id="chat-history-list" style="padding:.5rem 1rem;max-height:500px;overflow-y:auto">
+        <!-- Quick send box -->
+        <div style="padding:.75rem 1rem;border-bottom:1px solid var(--border);background:var(--card2)">
+          <div style="display:flex;gap:.5rem;align-items:flex-end">
+            <select id="chat-send-channel" style="padding:6px 10px;border:1px solid var(--border);border-radius:6px;background:var(--card);color:var(--text);font-size:.85rem;flex-shrink:0">
+              <option value="all">🌐 全员</option>
+            </select>
+            <textarea id="chat-send-content" rows="1" placeholder="发条消息..." style="flex:1;padding:8px 12px;border:1px solid var(--border);border-radius:6px;background:var(--card);color:var(--text);font-size:.9rem;resize:none;font-family:inherit;min-height:38px;max-height:120px"></textarea>
+            <button id="chat-send-btn" onclick="sendChatMessageFromUI()" style="padding:8px 20px;border:none;border-radius:6px;background:var(--accent);color:#fff;font-weight:600;cursor:pointer;flex-shrink:0">发送</button>
+          </div>
+          <span id="chat-send-status" style="font-size:.78rem;color:var(--dim);display:block;margin-top:4px;height:1.1em"></span>
+        </div>
+        <div id="chat-history-list" style="padding:.5rem 1rem;max-height:450px;overflow-y:auto">
           <div class="empty-state"><div class="empty-icon">📜</div>点击刷新加载</div>
         </div>
         <div id="chat-history-pager" style="display:flex;justify-content:center;gap:1rem;align-items:center;padding:.5rem 1rem;border-top:1px solid var(--border)">
           <button id="chat-prev-btn" onclick="loadChatHistory(chatHistoryPage-1)" style="padding:4px 16px;border:1px solid var(--border);border-radius:6px;background:var(--card);color:var(--text);cursor:pointer" disabled>← 上一页</button>
           <span id="chat-page-info" style="font-size:.85rem;color:var(--dim)">-</span>
           <button id="chat-next-btn" onclick="loadChatHistory(chatHistoryPage+1)" style="padding:4px 16px;border:1px solid var(--border);border-radius:6px;background:var(--card);color:var(--text);cursor:pointer" disabled>下一页 →</button>
-        </div>
-      </div>
-      </div>
-
-      <!-- Sub-panel: Send Message -->
-      <div class="sub-panel" id="chat-sub-send">
-      <div class="table-card" style="margin-bottom:1.5rem">
-        <div class="table-header"><h3>✉️ 发送消息</h3></div>
-        <div style="padding:1rem">
-          <div style="margin-bottom:.75rem">
-            <label style="display:block;font-size:.8rem;color:var(--text2);margin-bottom:6px;font-weight:600">频道</label>
-            <select id="chat-send-channel" style="width:100%;max-width:300px;padding:8px 12px;border:1px solid var(--border);border-radius:6px;background:var(--card);color:var(--text)">
-              <option value="all">🌐 全员 (@all)</option>
-            </select>
-          </div>
-          <div style="margin-bottom:.75rem">
-            <label style="display:block;font-size:.8rem;color:var(--text2);margin-bottom:6px;font-weight:600">消息内容</label>
-            <textarea id="chat-send-content" rows="4" placeholder="输入消息内容...（支持 @昵称 提及）" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:6px;background:var(--card);color:var(--text);font-size:.9rem;resize:vertical;font-family:inherit"></textarea>
-          </div>
-          <div style="display:flex;gap:.5rem;align-items:center">
-            <button id="chat-send-btn" onclick="sendChatMessageFromUI()" style="padding:8px 24px;border:none;border-radius:6px;background:var(--accent);color:#fff;font-weight:600;cursor:pointer">发送</button>
-            <span id="chat-send-status" style="font-size:.8rem;color:var(--dim)"></span>
-          </div>
         </div>
       </div>
       </div>
@@ -1209,8 +1196,9 @@ function sendChatMessageFromUI(){
       body: JSON.stringify(bodyObj)
     }).then(function(r){ return r.json(); }).then(function(data){
       if(data.ok){
-        statusEl.textContent = '✅ 发送成功 (seq=' + data.server_seq + ')';
+        statusEl.textContent = '✅ 发送成功';
         document.getElementById('chat-send-content').value = '';
+        loadChatHistory(1);
       } else if(data.error && (data.error.indexOf('token') >= 0 || data.error.indexOf('auth') >= 0 || data.error.indexOf('Auth') >= 0)){
         localStorage.removeItem('chatroomToken_' + session.id);
         statusEl.textContent = '⚠️ Token 已失效，请再点一次发送';
