@@ -1166,6 +1166,24 @@ function populateSendChannelDropdown(members){
 }
 
 // Send message from admin UI
+function ensureChatroomToken(statusEl){
+  return new Promise(function(resolve, reject){
+    var cached = localStorage.getItem('chatroomToken_' + session.id);
+    if(cached){ resolve(cached); return; }
+    if(statusEl) statusEl.textContent = '🔑 正在获取聊天室 Token...';
+    apiPost('verify', { id: session.id, nickname: session.nickname }).then(function(res){
+      if(res.ok && res.chatroom_token){
+        localStorage.setItem('chatroomToken_' + session.id, res.chatroom_token);
+        resolve(res.chatroom_token);
+      } else if(res.ok && !res.chatroom_token){
+        reject(new Error('该账号未注册为聊天室成员'));
+      } else {
+        reject(new Error(res.error || '验证失败'));
+      }
+    }).catch(function(){ reject(new Error('网络请求失败')); });
+  });
+}
+
 function sendChatMessageFromUI(){
   var content = document.getElementById('chat-send-content').value.trim();
   var channel = document.getElementById('chat-send-channel').value;
@@ -1175,31 +1193,35 @@ function sendChatMessageFromUI(){
   if(content.length > 2000){ statusEl.textContent = '⚠️ 消息超过 2000 字'; return; }
   sendBtn.disabled = true;
   statusEl.textContent = '发送中...';
-  // Use the chat API with the logged-in session's credentials
-  // We need a chatroom token — check if session has one stored
-  var chatToken = localStorage.getItem('chatroomToken_' + session.id);
-  if(!chatToken){
-    statusEl.textContent = '⚠️ 需要聊天室 Token。请在成员管理页面获取 Token 并保存。';
-    sendBtn.disabled = false;
-    return;
-  }
-  fetch(getBackendBase() + '/chat/messages', {
-    method: 'POST',
-    headers: {
-      'Authorization': 'Bearer ' + chatToken,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ channel: channel, content: content })
-  }).then(function(r){ return r.json(); }).then(function(data){
-    if(data.ok){
-      statusEl.textContent = '✅ 发送成功 (seq=' + data.server_seq + ')';
-      document.getElementById('chat-send-content').value = '';
-    } else {
-      statusEl.textContent = '⚠️ 发送失败: ' + (data.error || '未知错误');
-    }
-    sendBtn.disabled = false;
+  ensureChatroomToken(statusEl).then(function(chatToken){
+    return fetch(getBackendBase() + '/chat/messages', {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + chatToken,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ channel: channel, content: content })
+    }).then(function(r){ return r.json(); }).then(function(data){
+      if(data.ok){
+        statusEl.textContent = '✅ 发送成功 (seq=' + data.server_seq + ')';
+        document.getElementById('chat-send-content').value = '';
+      } else if(data.error && (data.error.indexOf('token') >= 0 || data.error.indexOf('auth') >= 0 || data.error.indexOf('Auth') >= 0)){
+        localStorage.removeItem('chatroomToken_' + session.id);
+        statusEl.textContent = '⚠️ Token 已失效，请再点一次发送';
+      } else {
+        statusEl.textContent = '⚠️ 发送失败: ' + (data.error || '未知错误');
+      }
+      sendBtn.disabled = false;
+    });
   }).catch(function(err){
-    statusEl.textContent = '⚠️ 网络错误';
+    var msg = err && err.message ? err.message : '';
+    if(msg.indexOf('聊天室成员') >= 0){
+      statusEl.textContent = '⚠️ 此账号未注册为聊天室成员，无法发送消息';
+    } else if(msg.indexOf('网络') >= 0){
+      statusEl.textContent = '⚠️ 网络错误，请检查连接';
+    } else {
+      statusEl.textContent = '⚠️ ' + (msg || '未知错误');
+    }
     sendBtn.disabled = false;
   });
 }
