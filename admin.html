@@ -329,7 +329,7 @@ tr:hover td{background:var(--card2)}
     </div>
   </div>
   <div class="login-hint">© 2026 Thawpaw Games · 管理员入口 · <span id="build-time" style="opacity:.7">加载中…</span></div>
-<script>var BUILD_TIME="20260813-1346";var el=document.getElementById("build-time");if(el)el.textContent="v"+BUILD_TIME;var el2=document.getElementById("build-time-dash");if(el2)el2.textContent="v"+BUILD_TIME;</script>
+<script>var BUILD_TIME="20260815-1702";var el=document.getElementById("build-time");if(el)el.textContent="v"+BUILD_TIME;var el2=document.getElementById("build-time-dash");if(el2)el2.textContent="v"+BUILD_TIME;</script>
 </div>
 
 <!-- ===== DASHBOARD ===== -->
@@ -473,6 +473,7 @@ tr:hover td{background:var(--card2)}
       <div class="sub-tabs">
         <button class="sub-tab active" data-subtab="history" onclick="switchChatSubTab('history')">📜 聊天记录</button>
         <button class="sub-tab" data-subtab="members" onclick="switchChatSubTab('members')">👥 成员管理</button>
+        <button class="sub-tab" data-subtab="stale" onclick="switchChatSubTab('stale')">📊 巡检</button>
       </div>
 
       <!-- Sub-panel: History -->
@@ -531,6 +532,31 @@ tr:hover td{background:var(--card2)}
         </div>
         <div style="font-size:.78rem;color:var(--dim);margin-top:.5rem">成员 ID 必须是 8 位数字，与 TPG 玩家体系共用。添加后生成 API Token（只显示一次）</div>
       </div>
+      </div>
+
+      <!-- Sub-panel: Stale Messages Monitor -->
+      <div class="sub-panel" id="chat-sub-stale">
+        <div class="table-card" style="margin-bottom:1.5rem">
+          <div class="table-header" style="display:flex;justify-content:space-between;align-items:center">
+            <h3>📊 未回复消息巡检</h3>
+            <div style="display:flex;gap:.5rem;align-items:center">
+              <select id="stale-minutes" style="padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--card);color:var(--text)">
+                <option value="15">过去 15 分钟</option>
+                <option value="30">过去 30 分钟</option>
+                <option value="60" selected>过去 1 小时</option>
+                <option value="180">过去 3 小时</option>
+                <option value="1440">过去 24 小时</option>
+              </select>
+              <button id="stale-refresh-btn" onclick="loadStaleMessages()" class="refresh-btn" style="padding:4px 12px;border:1px solid var(--border);border-radius:6px;background:var(--card);color:var(--text);cursor:pointer;transition:transform .3s"><span class="icon-spin"></span>刷新</button>
+            </div>
+          </div>
+          <div id="stale-messages" style="padding:1rem">
+            <div class="empty-state"><div class="empty-icon">📊</div>点击刷新查看未回复的 @ 提及消息</div>
+          </div>
+          <div style="padding:.5rem 1rem;border-top:1px solid var(--border);font-size:.75rem;color:var(--dim)">
+            端点：<code>GET /chat/stale-messages?minutes=&lt;n&gt;</code> · v1.0 O(N) 单次扫描 · 需 admin 会话
+          </div>
+        </div>
       </div>
 
     </div>
@@ -845,6 +871,13 @@ function switchChatSubTab(subName){
   if(subName === 'members' && session){
     if(!document.getElementById('chatroom-members').innerHTML.trim() || document.getElementById('chatroom-members').querySelector('.skeleton') || document.getElementById('chatroom-members').querySelector('.empty-icon')){
       loadChatroomMembers();
+    }
+  }
+  // Lazy-load stale messages when first switching to stale sub-tab
+  if(subName === 'stale' && session){
+    const staleDiv = document.getElementById('stale-messages');
+    if(staleDiv && (staleDiv.querySelector('.empty-icon') || staleDiv.querySelector('.skeleton'))){
+      loadStaleMessages();
     }
   }
 }
@@ -1332,6 +1365,41 @@ function loadChatHistory(page){
 }
 
 // ── Chatroom member management ──
+function loadStaleMessages(){
+  const container = document.getElementById('stale-messages');
+  const refreshBtn = document.getElementById('stale-refresh-btn');
+  if(!container) return;
+  if(refreshBtn) refreshBtn.disabled = true;
+  showSkeleton(container, 3);
+  const minutes = parseInt(document.getElementById('stale-minutes').value || '60');
+  apiGet('chat/stale-messages', { minutes: minutes }).then(res => {
+    if(refreshBtn) refreshBtn.disabled = false;
+    if(!res || !res.ok){
+      container.innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div>' + (res && res.error ? res.error : '加载失败') + '</div>';
+      return;
+    }
+    const stale = res.stale || [];
+    if(stale.length === 0){
+      container.innerHTML = '<div class="empty-state"><div class="empty-icon">✅</div>过去 ' + minutes + ' 分钟内没有未回复的 @ 提及</div>';
+      return;
+    }
+    let html = '<div style="margin-bottom:.75rem;font-size:.85rem;color:var(--text2)">发现 <strong>' + stale.length + '</strong> 条未回复消息（窗口：' + minutes + ' 分钟）：</div>';
+    html += '<div style="display:flex;flex-direction:column;gap:.5rem">';
+    for(const s of stale){
+      const targets = (s.mentioned_members || []).map(t => t === 'all' ? '@all' : '@' + t).join(' ');
+      html += '<div style="padding:.75rem;border:1px solid var(--border);border-radius:8px;background:var(--card2)">';
+      html += '<div style="display:flex;justify-content:space-between;margin-bottom:.4rem;font-size:.78rem;color:var(--text2)">';
+      html += '<span><strong>' + escapeHtml(s.sender_name || s.sender) + '</strong> · ' + s.minutes_ago + ' 分钟前</span>';
+      html += '<span style="color:var(--accent)">' + escapeHtml(targets) + '</span>';
+      html += '</div>';
+      html += '<div style="font-size:.9rem;color:var(--text);line-height:1.4">' + escapeHtml(s.content) + '</div>';
+      html += '</div>';
+    }
+    html += '</div>';
+    container.innerHTML = html;
+  });
+}
+
 function loadChatroomMembers(){
   showSkeleton(document.getElementById('chatroom-members'), 4);
   apiGet('chatroom/listMembers', { id: session.id, nickname: session.nickname }).then(res => {
