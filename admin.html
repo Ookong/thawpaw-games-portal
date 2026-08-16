@@ -329,7 +329,7 @@ tr:hover td{background:var(--card2)}
     </div>
   </div>
   <div class="login-hint">© 2026 Thawpaw Games · 管理员入口 · <span id="build-time" style="opacity:.7">加载中…</span></div>
-<script>var BUILD_TIME="20260815-1702";var el=document.getElementById("build-time");if(el)el.textContent="v"+BUILD_TIME;var el2=document.getElementById("build-time-dash");if(el2)el2.textContent="v"+BUILD_TIME;</script>
+<script>var BUILD_TIME="20260816-0650";var el=document.getElementById("build-time");if(el)el.textContent="v"+BUILD_TIME;var el2=document.getElementById("build-time-dash");if(el2)el2.textContent="v"+BUILD_TIME;</script>
 </div>
 
 <!-- ===== DASHBOARD ===== -->
@@ -1372,10 +1372,20 @@ function loadStaleMessages(){
   if(refreshBtn) refreshBtn.disabled = true;
   showSkeleton(container, 3);
   const minutes = parseInt(document.getElementById('stale-minutes').value || '60');
-  apiGet('chat/stale-messages', { minutes: minutes }).then(res => {
+  // v1.1: /chat/* 需要 Bearer token（apiGet 不带 Authorization，会 401 missing Authorization header）
+  ensureChatroomToken(null).then(function(chatToken){
+    return fetch(getBackendBase() + '/chat/stale-messages?minutes=' + minutes, {
+      headers: { 'Authorization': 'Bearer ' + chatToken }
+    }).then(function(r){ return r.json(); });
+  }).then(res => {
     if(refreshBtn) refreshBtn.disabled = false;
     if(!res || !res.ok){
-      container.innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div>' + (res && res.error ? res.error : '加载失败') + '</div>';
+      var errMsg = res && res.error ? res.error : '加载失败';
+      if(res && res.error && /token|auth|Auth/i.test(res.error)){
+        localStorage.removeItem('chatroomToken_' + session.id);
+        errMsg = 'Token 已失效，请再点一次刷新';
+      }
+      container.innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div>' + errMsg + '</div>';
       return;
     }
     const stale = res.stale || [];
