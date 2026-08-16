@@ -329,7 +329,7 @@ tr:hover td{background:var(--card2)}
     </div>
   </div>
   <div class="login-hint">© 2026 Thawpaw Games · 管理员入口 · <span id="build-time" style="opacity:.7">加载中…</span></div>
-<script>var BUILD_TIME="20260816-0823";var el=document.getElementById("build-time");if(el)el.textContent="v"+BUILD_TIME;var el2=document.getElementById("build-time-dash");if(el2)el2.textContent="v"+BUILD_TIME;</script>
+<script>var BUILD_TIME="20260816-0906";var el=document.getElementById("build-time");if(el)el.textContent="v"+BUILD_TIME;var el2=document.getElementById("build-time-dash");if(el2)el2.textContent="v"+BUILD_TIME;</script>
 </div>
 
 <!-- ===== DASHBOARD ===== -->
@@ -496,7 +496,7 @@ tr:hover td{background:var(--card2)}
             <select id="chat-send-channel" style="padding:6px 10px;border:1px solid var(--border);border-radius:6px;background:var(--card);color:var(--text);font-size:.85rem;flex-shrink:0">
               <option value="all">🌐 全员</option>
             </select>
-            <textarea id="chat-send-content" rows="1" placeholder="发条消息..." style="flex:1;padding:8px 12px;border:1px solid var(--border);border-radius:6px;background:var(--card);color:var(--text);font-size:.9rem;resize:none;font-family:inherit;min-height:38px;max-height:120px"></textarea>
+            <textarea id="chat-send-content" rows="1" placeholder="发条消息... (Enter 发送 / Shift+Enter 换行)" onkeydown="if(event.key==='Enter'&&!event.shiftKey&&!event.isComposing){event.preventDefault();sendChatMessageFromUI();}" style="flex:1;padding:8px 12px;border:1px solid var(--border);border-radius:6px;background:var(--card);color:var(--text);font-size:.9rem;resize:none;font-family:inherit;min-height:38px;max-height:120px"></textarea>
             <button id="chat-send-btn" onclick="sendChatMessageFromUI()" style="padding:8px 20px;border:none;border-radius:6px;background:var(--accent);color:#fff;font-weight:600;cursor:pointer;flex-shrink:0">发送</button>
           </div>
           <span id="chat-send-status" style="font-size:.78rem;color:var(--dim);display:block;margin-top:4px;height:1.1em"></span>
@@ -540,7 +540,7 @@ tr:hover td{background:var(--card2)}
           <div class="table-header" style="display:flex;justify-content:space-between;align-items:center">
             <h3>📊 未回复消息巡检</h3>
             <div style="display:flex;gap:.5rem;align-items:center">
-              <select id="stale-minutes" style="padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--card);color:var(--text)">
+              <select id="stale-minutes" onchange="loadStaleMessages()" style="padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--card);color:var(--text)">
                 <option value="15">过去 15 分钟</option>
                 <option value="30">过去 30 分钟</option>
                 <option value="60" selected>过去 1 小时</option>
