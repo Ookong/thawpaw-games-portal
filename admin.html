@@ -329,7 +329,7 @@ tr:hover td{background:var(--card2)}
     </div>
   </div>
   <div class="login-hint">© 2026 Thawpaw Games · 管理员入口 · <span id="build-time" style="opacity:.7">加载中…</span></div>
-<script>var BUILD_TIME="20260816-0650";var el=document.getElementById("build-time");if(el)el.textContent="v"+BUILD_TIME;var el2=document.getElementById("build-time-dash");if(el2)el2.textContent="v"+BUILD_TIME;</script>
+<script>var BUILD_TIME="20260816-0823";var el=document.getElementById("build-time");if(el)el.textContent="v"+BUILD_TIME;var el2=document.getElementById("build-time-dash");if(el2)el2.textContent="v"+BUILD_TIME;</script>
 </div>
 
 <!-- ===== DASHBOARD ===== -->
@@ -545,7 +545,9 @@ tr:hover td{background:var(--card2)}
                 <option value="30">过去 30 分钟</option>
                 <option value="60" selected>过去 1 小时</option>
                 <option value="180">过去 3 小时</option>
+                <option value="720">过去 12 小时</option>
                 <option value="1440">过去 24 小时</option>
+                <option value="4320">过去 72 小时</option>
               </select>
               <button id="stale-refresh-btn" onclick="loadStaleMessages()" class="refresh-btn" style="padding:4px 12px;border:1px solid var(--border);border-radius:6px;background:var(--card);color:var(--text);cursor:pointer;transition:transform .3s"><span class="icon-spin"></span>刷新</button>
             </div>
@@ -554,7 +556,7 @@ tr:hover td{background:var(--card2)}
             <div class="empty-state"><div class="empty-icon">📊</div>点击刷新查看未回复的 @ 提及消息</div>
           </div>
           <div style="padding:.5rem 1rem;border-top:1px solid var(--border);font-size:.75rem;color:var(--dim)">
-            端点：<code>GET /chat/stale-messages?minutes=&lt;n&gt;</code> · v1.0 O(N) 单次扫描 · 需 admin 会话
+            端点：<code>GET /chat/stale-messages?minutes=&lt;n&gt;</code> · v1.3 回看窗口（最大 72 小时） · 需 admin 会话
           </div>
         </div>
       </div>
