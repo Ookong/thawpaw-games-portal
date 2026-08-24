@@ -329,7 +329,7 @@ tr:hover td{background:var(--card2)}
     </div>
   </div>
   <div class="login-hint">© 2026 Thawpaw Games · 管理员入口 · <span id="build-time" style="opacity:.7">加载中…</span></div>
-<script>var BUILD_TIME="20260817-1713";var el=document.getElementById("build-time");if(el)el.textContent="v"+BUILD_TIME;var el2=document.getElementById("build-time-dash");if(el2)el2.textContent="v"+BUILD_TIME;</script>
+<script>var BUILD_TIME="20260824-1032";var el=document.getElementById("build-time");if(el)el.textContent="v"+BUILD_TIME;var el2=document.getElementById("build-time-dash");if(el2)el2.textContent="v"+BUILD_TIME;</script>
 </div>
 
 <!-- ===== DASHBOARD ===== -->
@@ -1786,8 +1786,8 @@ function escapeHtml(s){return String(s||'').replace(/[<>&"]/g,function(c){return
       <label style="display:block;font-size:.78rem;color:var(--text2);font-weight:600;margin-bottom:6px">收件人 ID</label>
       <input type="text" id="mail-to" placeholder="8 位玩家 ID" maxlength="8" style="width:100%;padding:10px 12px;border:2px solid var(--border2);border-radius:8px;font-size:14px;margin-bottom:1rem">
     </div>
-    <label style="display:block;font-size:.78rem;color:var(--text2);font-weight:600;margin-bottom:6px">标题</label>
-    <input type="text" id="mail-subject" placeholder="邮件标题" maxlength="200" style="width:100%;padding:10px 12px;border:2px solid var(--border2);border-radius:8px;font-size:14px;margin-bottom:1rem">
+    <label style="display:block;font-size:.78rem;color:var(--text2);font-weight:600;margin-bottom:6px">标题（可不填）</label>
+    <input type="text" id="mail-subject" placeholder="邮件标题（可留空）" maxlength="200" style="width:100%;padding:10px 12px;border:2px solid var(--border2);border-radius:8px;font-size:14px;margin-bottom:1rem">
     <label style="display:block;font-size:.78rem;color:var(--text2);font-weight:600;margin-bottom:6px">内容</label>
     <textarea id="mail-content" placeholder="邮件内容..." maxlength="5000" style="width:100%;padding:10px 12px;border:2px solid var(--border2);border-radius:8px;font-size:14px;min-height:100px;resize:vertical;margin-bottom:1rem"></textarea>
     <div style="display:flex;gap:.5rem;justify-content:flex-end">
@@ -1847,7 +1847,7 @@ function sendMail(){
   var subj=document.getElementById('mail-subject').value.trim();
   var cont=document.getElementById('mail-content').value.trim();
   var to=document.getElementById('mail-to').value.trim();
-  if(!subj||!cont){alert('标题和内容不能为空');return;}
+  if(!cont){alert('内容不能为空');return;}
   if(!isBC&&!/^\d{8}$/.test(to)){alert('收件人 ID 必须是 8 位数字');return;}
   var p={id:session.id,nickname:session.nickname,subject:subj,content:cont,broadcast:isBC};
   if(!isBC)p.toPlayerId=to;
@@ -1933,8 +1933,8 @@ function deleteMail(mid){
       <span style="cursor:pointer;font-size:20px;color:var(--text2)" onclick="closeMsgModal()">✕</span>
     </div>
     <div id="msg-player-info" style="margin-bottom:12px;padding:10px;background:var(--card2);border-radius:8px;font-size:13px"></div>
-    <label style="display:block;font-size:.78rem;color:var(--text2);margin-bottom:4px;font-weight:600">标题</label>
-    <input id="msg-subject" type="text" maxlength="100" placeholder="邮件标题" style="width:100%;padding:8px 10px;border:2px solid var(--border);border-radius:8px;margin-bottom:10px;font-size:14px;background:var(--card2);color:var(--text);outline:none">
+    <label style="display:block;font-size:.78rem;color:var(--text2);margin-bottom:4px;font-weight:600">标题（可不填）</label>
+    <input id="msg-subject" type="text" maxlength="100" placeholder="邮件标题（可留空）" style="width:100%;padding:8px 10px;border:2px solid var(--border);border-radius:8px;margin-bottom:10px;font-size:14px;background:var(--card2);color:var(--text);outline:none">
     <label style="display:block;font-size:.78rem;color:var(--text2);margin-bottom:4px;font-weight:600">内容</label>
     <textarea id="msg-content" maxlength="2000" placeholder="邮件内容…" rows="4" style="width:100%;padding:8px 10px;border:2px solid var(--border);border-radius:8px;margin-bottom:16px;font-size:14px;background:var(--card2);color:var(--text);outline:none;resize:vertical"></textarea>
     <button onclick="confirmSendMsg()" style="width:100%;padding:10px;border:none;border-radius:8px;background:var(--accent);color:#fff;font-size:15px;font-weight:600;cursor:pointer">✉️ 发送</button>
@@ -2139,7 +2139,7 @@ function confirmSendMsg(){
   if(!msgTarget) return;
   var subj = document.getElementById('msg-subject').value.trim();
   var cont = document.getElementById('msg-content').value.trim();
-  if(!subj || !cont){ alert('标题和内容不能为空'); return; }
+  if(!cont){ alert('内容不能为空'); return; }
   apiPost('mail/send', {
     id: session.id, nickname: session.nickname,
     toPlayerId: msgTarget.id,
