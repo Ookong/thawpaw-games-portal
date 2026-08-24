@@ -329,7 +329,7 @@ tr:hover td{background:var(--card2)}
     </div>
   </div>
   <div class="login-hint">© 2026 Thawpaw Games · 管理员入口 · <span id="build-time" style="opacity:.7">加载中…</span></div>
-<script>var BUILD_TIME="20260824-1117";var el=document.getElementById("build-time");if(el)el.textContent="v"+BUILD_TIME;var el2=document.getElementById("build-time-dash");if(el2)el2.textContent="v"+BUILD_TIME;</script>
+<script>var BUILD_TIME="20260824-1124";var el=document.getElementById("build-time");if(el)el.textContent="v"+BUILD_TIME;var el2=document.getElementById("build-time-dash");if(el2)el2.textContent="v"+BUILD_TIME;</script>
 </div>
 
 <!-- ===== DASHBOARD ===== -->
@@ -370,10 +370,10 @@ tr:hover td{background:var(--card2)}
           <div class="stat-value" id="ov-reg">—</div>
           <div class="stat-sub" style="color:var(--accent)">🔍 点击查看访客列表</div>
         </div>
-        <div class="stat-card">
+        <div class="stat-card" style="cursor:pointer;transition:border-color .2s" onclick="openVisitorList('all')">
           <div class="stat-label">浏览人数</div>
           <div class="stat-value" id="ov-uv">—</div>
-          <div class="stat-sub">进来玩过的人数（含未登录）</div>
+          <div class="stat-sub" style="color:var(--accent)">🔍 点击查看浏览记录</div>
         </div>
       </div>
 
@@ -1954,14 +1954,32 @@ function deleteMail(mid){
 <script>
 // ── Visitor List ──
 var visitorAllPlayers = [];
+var visitorMode = 'registered';
 var giftTarget = null; // { id, nickname }
 var msgTarget = null;
 
-function openVisitorList(){
+function openVisitorList(mode){
   var ov = document.getElementById('visitor-list-overlay');
   ov.style.display = 'flex';
+  visitorMode = (mode === 'all') ? 'all' : 'registered';
+  document.querySelector('#visitor-list-overlay h3').textContent = (visitorMode === 'all') ? '👁️ 浏览记录（含游客）' : '👥 访客列表';
   document.getElementById('visitor-list-body').innerHTML = '<div style="text-align:center;color:var(--dim);padding:20px">⏳ 加载中…</div>';
   document.getElementById('visitor-search-input').value = '';
+  if(visitorMode === 'all'){
+    apiGet('visitorsAll', { id: session.id, nickname: session.nickname }).then(function(res){
+      if(!res.ok){
+        document.getElementById('visitor-list-body').innerHTML = '<div style="color:#ff7a99;padding:12px">❌ '+(res.error||'加载失败')+'</div>';
+        return;
+      }
+      visitorAllPlayers = (res.visitors || []).map(function(v){
+        return { id: v.id, nickname: v.nickname, role: v.registered ? v.role : 'guest', lastSeen: v.lastSeen, pv: v.pv };
+      });
+      renderVisitorList(visitorAllPlayers);
+    }).catch(function(){
+      document.getElementById('visitor-list-body').innerHTML = '<div style="color:#ff7a99;padding:12px">❌ 网络错误</div>';
+    });
+    return;
+  }
   apiGet('visitors', { id: session.id, nickname: session.nickname }).then(function(res){
     if(!res.ok){
       document.getElementById('visitor-list-body').innerHTML = '<div style="color:#ff7a99;padding:12px">❌ '+(res.error||'加载失败')+'</div>';
@@ -1976,6 +1994,34 @@ function openVisitorList(){
 
 function closeVisitorList(){
   document.getElementById('visitor-list-overlay').style.display = 'none';
+}
+
+function renderAllVisitors(players){
+  var el = document.getElementById('visitor-list-body');
+  var regN = 0;
+  var html = '';
+  for(var i=0; i<players.length; i++){
+    var p = players[i];
+    if(p.role !== 'guest') regN++;
+    var badge = p.role === 'guest'
+      ? '<span style="background:rgba(156,163,175,.2);color:#9ca3af;padding:1px 6px;border-radius:8px;font-size:10px">游客</span>'
+      : (p.role==='super' ? '<span style="background:#ffd700;color:#000;padding:1px 6px;border-radius:8px;font-size:10px;font-weight:700">超级</span>' :
+         p.role==='admin' ? '<span style="background:var(--accent);color:#fff;padding:1px 6px;border-radius:8px;font-size:10px">管理</span>' :
+         '<span style="background:rgba(108,99,255,.15);color:#9d97ff;padding:1px 6px;border-radius:8px;font-size:10px">已注册</span>');
+    var seen = p.lastSeen ? new Date(p.lastSeen).toLocaleString('zh-CN',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}) : '—';
+    html += '<div style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-bottom:1px solid var(--border)">' +
+      '<span style="width:28px;height:28px;border-radius:50%;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0">' + (p.role === 'guest' ? '👤' : '🎮') + '</span>' +
+      '<div style="flex:1;min-width:0">' +
+        '<div style="display:flex;align-items:center;gap:6px"><span style="font-weight:600;font-size:14px">' + escapeHtml(p.nickname) + '</span>' + badge + '</div>' +
+        '<div style="font-size:11px;color:var(--dim);font-family:monospace">' + escapeHtml(p.id) + '</div>' +
+      '</div>' +
+      '<div style="text-align:right;flex-shrink:0">' +
+        '<div style="font-size:12px;color:var(--text2)">最近 ' + seen + '</div>' +
+        '<div style="font-size:11px;color:var(--dim)">浏览 ' + (p.pv||0) + ' 次</div>' +
+      '</div>' +
+    '</div>';
+  }
+  el.innerHTML = '<div style="color:var(--dim);font-size:12px;margin-bottom:8px">共 ' + players.length + ' 人来过（' + regN + ' 位已注册 · ' + (players.length - regN) + ' 位游客）</div>' + html;
 }
 
 function filterVisitors(){
@@ -1993,6 +2039,7 @@ function renderVisitorList(players){
     el.innerHTML = '<div style="text-align:center;color:var(--dim);padding:20px">没有找到玩家</div>';
     return;
   }
+  if(visitorMode === 'all'){ renderAllVisitors(players); return; }
   var canDelete = isSuperAdmin;
   var isAdmin = session.role === 'super' || session.role === 'admin';
   var html = '<div style="color:var(--dim);font-size:12px;margin-bottom:8px">共 ' + players.length + ' 位访客</div>';
