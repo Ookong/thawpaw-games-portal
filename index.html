@@ -109,6 +109,17 @@ canvas#stars{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z
 .card-footer{display:flex;align-items:center;gap:.5rem;margin-top:.65rem;font-size:.72rem}
 .tag{background:rgba(108,99,255,.15);color:#9d97ff;padding:.2rem .65rem;border-radius:99px;font-weight:600;text-transform:uppercase;letter-spacing:.04em}
 .diff{color:var(--dim)}
+/* ── 游客评分栏 ── */
+.rate-box{margin-left:auto;display:flex;align-items:center;gap:6px;font-size:.75rem}
+.rate-avg{color:var(--gold);font-weight:700;white-space:nowrap}
+.rate-avg .r-num{font-size:.95rem}
+.rate-btn{background:rgba(255,204,68,.12);border:1px solid rgba(255,204,68,.35);color:var(--gold);border-radius:99px;padding:.15rem .6rem;font-size:.7rem;cursor:pointer;font-family:inherit;white-space:nowrap;transition:background .2s}
+.rate-btn:hover{background:rgba(255,204,68,.25)}
+.rate-btn.rated{background:rgba(76,175,80,.15);border-color:rgba(76,175,80,.4);color:#7ada81}
+.rate-score-row{display:flex;gap:4px;flex-wrap:wrap;margin:14px 0 6px}
+.rate-score{width:34px;height:34px;border-radius:8px;border:1px solid var(--border);background:var(--card2);color:var(--text);font-size:.85rem;font-weight:700;cursor:pointer;transition:all .15s;font-family:inherit}
+.rate-score:hover{border-color:var(--gold);color:var(--gold);transform:translateY(-2px)}
+.rate-hint{font-size:.75rem;color:var(--text2);text-align:center;margin-top:8px}
 
 /* ── Footer ── */
 footer{position:relative;z-index:1;text-align:center;padding:2rem;color:var(--dim);font-size:.78rem;border-top:1px solid var(--border)}
@@ -327,13 +338,24 @@ body.no-user footer{display:none}
 </div>
 
 <footer>Made with ❄️ by IcePaw &amp; ThawPaw · <span id="build-time" style="opacity:.7">加载中…</span></footer>
-<script>var BUILD_TIME="20260824-1100";var el=document.getElementById("build-time");if(el)el.textContent="v"+BUILD_TIME;</script>
+<script>var BUILD_TIME="20260824-1117";var el=document.getElementById("build-time");if(el)el.textContent="v"+BUILD_TIME;</script>
 
 <!-- ===== FEEDBACK FLOATING BUTTON ===== -->
 <button class="feedback-btn" id="feedback-btn" onclick="openFeedback()" title="反馈">
   💬
   <span class="pulse"></span>
 </button>
+
+<!-- ===== RATE MODAL ===== -->
+<div id="rate-modal" class="modal-overlay">
+  <div class="modal" style="max-width:360px">
+    <div class="modal-close" onclick="closeRate()">×</div>
+    <h3 style="margin-bottom:6px">⭐ 给游戏打分</h3>
+    <div style="font-size:.85rem;color:var(--silver);margin-bottom:10px" id="rate-game-name"></div>
+    <div class="rate-score-row" id="rate-score-row"></div>
+    <div class="rate-hint" id="rate-hint">1 = 不好玩，10 = 超级好玩</div>
+  </div>
+</div>
 
 <!-- ===== FEEDBACK MODAL ===== -->
 <div id="feedback-modal" class="modal-overlay">
@@ -1007,11 +1029,97 @@ let manifest=FALLBACK_MANIFEST;
         <p>${g.description}</p>
         <div class="card-footer">
           <span class="tag">${g.id==='dungeon'?'Roguelike':g.id==='snake'?'Arcade':g.id==='sword-master'?'Action':'RPG'}</span>
+          <span class="rate-box">
+            <span class="rate-avg" id="rate-avg-${g.id}"></span>
+            <button class="rate-btn${getMyRating(g.id)?' rated':''}" id="rate-btn-${g.id}" onclick="event.preventDefault();event.stopPropagation();openRate('${g.id}','${String(g.name).replace(/'/g,"&#39;")}')">${getMyRating(g.id)?'我打了 '+getMyRating(g.id)+' 分':'评分'}</button>
+          </span>
         </div>
       </div>`;
     grid.appendChild(card);
   }
+  fetchRatings();
 })();
+
+// ===== 游客评分 =====
+const PAGE_BY_GAME = { 'moonstone-quest':'moonstone', 'sword-master':'sword', 'dungeon':'dungeon', 'snake':'snake' };
+const RATE_LS_KEY = 'thawpawRatings';
+
+function getMyRating(gameId){
+  try{ return JSON.parse(localStorage.getItem(RATE_LS_KEY) || '{}')[gameId] || 0; }catch(e){ return 0; }
+}
+function setMyRating(gameId, score){
+  try{
+    const all = JSON.parse(localStorage.getItem(RATE_LS_KEY) || '{}');
+    all[gameId] = score;
+    localStorage.setItem(RATE_LS_KEY, JSON.stringify(all));
+  }catch(e){}
+}
+
+let _rateGameId = null;
+function openRate(gameId, gameName){
+  _rateGameId = gameId;
+  document.getElementById('rate-game-name').textContent = gameName;
+  const row = document.getElementById('rate-score-row');
+  row.innerHTML = '';
+  for(let s = 1; s <= 10; s++){
+    const b = document.createElement('button');
+    b.className = 'rate-score';
+    b.textContent = s;
+    if(s === getMyRating(gameId)) b.style.borderColor = 'var(--gold)', b.style.color = 'var(--gold)';
+    b.onclick = () => submitRating(gameId, s);
+    row.appendChild(b);
+  }
+  document.getElementById('rate-hint').textContent = '1 = 不好玩，10 = 超级好玩';
+  document.getElementById('rate-modal').classList.add('active');
+}
+function closeRate(){
+  document.getElementById('rate-modal').classList.remove('active');
+  _rateGameId = null;
+}
+function submitRating(gameId, score){
+  const page = PAGE_BY_GAME[gameId];
+  if(!page) return;
+  let cfBase = 'https://tpg-hq.thawflow.com';
+  try { const u = localStorage.getItem('tpgCfBackendUrl'); if(u) cfBase = u.replace(/\/+$/, ''); } catch(e){}
+  const pid = (function(){ try{ return localStorage.getItem('thawpawActiveId') || localStorage.getItem('thawpawPlayerId') || 'anonymous'; }catch(e){ return 'anonymous'; } })();
+  document.getElementById('rate-hint').textContent = '提交中…';
+  fetch(cfBase + '/rate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    mode: 'cors',
+    body: JSON.stringify({ id: pid, page, score })
+  }).then(r => r.json()).then(res => {
+    if(!res || !res.ok) throw new Error(res && res.error);
+    setMyRating(gameId, score);
+    applyRatingToCard(gameId, res.avg, res.count, score);
+    document.getElementById('rate-hint').textContent = '✅ 打分成功！谢谢～';
+    setTimeout(closeRate, 800);
+  }).catch(() => {
+    document.getElementById('rate-hint').textContent = '❌ 网络错误，稍后再试';
+  });
+}
+function applyRatingToCard(gameId, avg, count, myScore){
+  const avgEl = document.getElementById('rate-avg-' + gameId);
+  if(avgEl && avg != null) avgEl.innerHTML = '⭐ <span class="r-num">' + avg.toFixed ? avg.toFixed(1) : avg + '</span>' + (count ? ' <span style="opacity:.6;font-size:.65rem">(' + count + '人)</span>' : '');
+  const btn = document.getElementById('rate-btn-' + gameId);
+  if(btn){
+    if(myScore){ btn.textContent = '我打了 ' + myScore + ' 分'; btn.classList.add('rated'); }
+    else { btn.textContent = '评分'; btn.classList.remove('rated'); }
+  }
+}
+function fetchRatings(){
+  let cfBase = 'https://tpg-hq.thawflow.com';
+  try { const u = localStorage.getItem('tpgCfBackendUrl'); if(u) cfBase = u.replace(/\/+$/, ''); } catch(e){}
+  fetch(cfBase + '/ratings').then(r => r.json()).then(res => {
+    if(!res || !res.ok) return;
+    const M = (manifest && manifest.games) ? manifest.games : [];
+    for(const g of M){
+      const page = PAGE_BY_GAME[g.id];
+      const r = page && res.ratings[page];
+      if(r) applyRatingToCard(g.id, r.avg, r.count, getMyRating(g.id));
+    }
+  }).catch(() => {});
+}
 
 // ===== FEEDBACK =====
 const FB_STORAGE_KEY = 'thawpawFeedback';
@@ -1340,6 +1448,8 @@ try{refreshMailboxVisibility()}catch(e){console.warn('[init-late] mailbox skippe
 
 <!-- 🐾 Thawpaw Games 浏览追踪 (GAS not configured = silent no-op) -->
 <script src="track.js" defer></script>
+<!-- 🫧 欢迎气泡 -->
+<script src="welcome.js"></script>
 <!-- 👥 好友系统 -->
 <script src="friends.js"></script>
 </body>
