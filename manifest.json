@@ -10,14 +10,6 @@
       "color": "#4488ff"
     },
     {
-      "id": "dungeon",
-      "name": "Dungeon Explore",
-      "file": "dungeon.html",
-      "icon": "dungeon",
-      "description": "Crawl through endless dungeons! Slay monsters, collect gold, go deeper!",
-      "color": "#aa44ff"
-    },
-    {
       "id": "snake",
       "name": "Snake Game",
       "file": "snake.html",

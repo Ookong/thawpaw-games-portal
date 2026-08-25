@@ -2500,6 +2500,7 @@ function resizeCanvas(){
   const wrap=document.getElementById('canvasWrap');
   if(!wrap) return;
   const cw=wrap.clientWidth, ch=wrap.clientHeight;
+  if(cw<10||ch<10) return; // 退出全屏过渡期/页面隐藏时 wrap 尺寸为 0，跳过以免画布被缩成 0×0
   var tc=document.getElementById('touchControls');
   const cssW=MAP_W*TILE, cssH=MAP_H*TILE;
   const scale=Math.min(cw/cssW,ch/cssH);
@@ -2870,6 +2871,20 @@ let fullscreenDone=false;
 document.addEventListener('click',()=>{if(!fullscreenDone){fullscreenDone=true;tryFullscreen();}},{once:true});
 document.addEventListener('touchstart',()=>{if(!fullscreenDone){fullscreenDone=true;tryFullscreen();}},{once:true});
 
+// ===== 退出全屏修复 =====
+// Safari/WebKit 退出全屏后常见两问题：①整页白屏直到滚动/点击 ②画布尺寸停留在过渡期的错误值
+// 退出后强制回顶 + 强制重排 + 重新计算画布尺寸
+function handleFullscreenExit(){
+  if(document.fullscreenElement||document.webkitFullscreenElement) return;
+  setTimeout(function(){
+    window.scrollTo(0,0);
+    void document.body.offsetHeight; // 强制 reflow，唤醒 WebKit 合成器
+    if(typeof resizeCanvas==='function') resizeCanvas();
+  },150);
+}
+document.addEventListener('fullscreenchange',handleFullscreenExit);
+document.addEventListener('webkitfullscreenchange',handleFullscreenExit);
+
 // Update home UI on load
 refreshHomeUI();
 console.log('🐾 猫武士大冒险 loaded');
@@ -2896,6 +2911,7 @@ function enterDuoMode(roomCode){
     }catch(e){}
   }
 })();
+</script>
 <script src="track.js?v=2" defer></script>
 </body>
 </html>

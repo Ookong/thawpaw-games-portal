@@ -228,7 +228,6 @@
       var progressParts = [];
       if (f.progress) {
         if (f.progress.snake) progressParts.push('🐍Lv' + f.progress.snake.level);
-        if (f.progress.dungeon) progressParts.push('🕵️F' + f.progress.dungeon.floor);
         if (f.progress.moonstone) progressParts.push('🔮' + f.progress.moonstone.moonstones);
       }
       var isOnline = f.savedAt && (Date.now() - new Date(f.savedAt).getTime() < 120000);
@@ -289,7 +288,7 @@
   function invite(friendId, friendName) {
     var p = getPlayer();
     if (!p) return;
-    var gameNames = { snake: '贪吃蛇', moonstone: '猫武士大冒险', dungeon: '小小探险家' };
+    var gameNames = { snake: '贪吃蛇', moonstone: '猫武士大冒险' };
     // Create an online room, then send invite
     api('online/room/create', 'POST', { id: p.id, nickname: p.nickname, mode: currentGame === 'snake' ? 'pk' : 'duo' }).then(function(res) {
       if (!res.ok) { alert('❌ 创建房间失败'); return; }
@@ -343,7 +342,7 @@
   function showInviteNotification(inv) {
     var existing = document.getElementById('tpg-invite-notif');
     if (existing) existing.remove();
-    var gameNames = { snake: '🐍 贪吃蛇', moonstone: '🐱 猫武士大冒险', dungeon: '🕵️ 小小探险家' };
+    var gameNames = { snake: '🐍 贪吃蛇', moonstone: '🐱 猫武士大冒险' };
     var notif = document.createElement('div');
     notif.id = 'tpg-invite-notif';
     notif.style.cssText = 'position:fixed;top:16px;right:16px;background:#1e1e2e;border:1.5px solid #48c6ef;border-radius:12px;padding:14px 18px;z-index:10000;box-shadow:0 8px 32px rgba(72,198,239,.3);max-width:300px;animation:tpgPop .3s ease;';
@@ -363,7 +362,7 @@
     var notif = document.getElementById('tpg-invite-notif');
     if (notif) notif.remove();
     // Navigate to the game and enter duo mode
-    var gamePaths = { snake: 'games/snake.html', moonstone: 'games/moonstone-quest.html', dungeon: 'games/dungeon.html' };
+    var gamePaths = { snake: 'games/snake.html', moonstone: 'games/moonstone-quest.html' };
     var path = gamePaths[game];
     if (path && !window.location.pathname.includes(path.split('/')[1])) {
       localStorage.setItem('tpg_pending_invite', JSON.stringify({ roomCode: roomCode, game: game }));

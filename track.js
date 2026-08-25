@@ -14,7 +14,7 @@
 (function () {
   var CF_BACKEND_KEY = 'tpgCfBackendUrl';
   var DEFAULT_CF_URL = 'https://tpg-hq.thawflow.com';
-  var GAME_PAGES = { snake: 1, moonstone: 1, dungeon: 1, sword: 1 };
+  var GAME_PAGES = { snake: 1, moonstone: 1, sword: 1 };
   var HEARTBEAT_MS = 30000;
 
   function getBackendBase() {
@@ -58,7 +58,6 @@
     if (path.endsWith('/') || path.endsWith('/index.html')) return 'portal';
     if (path.indexOf('snake') >= 0) return 'snake';
     if (path.indexOf('moonstone') >= 0) return 'moonstone';
-    if (path.indexOf('dungeon') >= 0) return 'dungeon';
     if (path.indexOf('starclan') >= 0) return 'starclan';
     if (path.indexOf('warrior') >= 0) return 'warrior';
     if (path.indexOf('sword') >= 0) return 'sword';

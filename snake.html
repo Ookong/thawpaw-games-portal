@@ -1043,8 +1043,9 @@ function savePlayer(){
 }
 
 // Auto-fit: re-size canvas on window resize (classic mode)
-window.addEventListener('resize', function(){
+function fitCanvas() {
   if (typeof canvas !== 'undefined' && canvas && typeof cellSize !== 'undefined' && typeof gridSize !== 'undefined' && gameActive) {
+    if (window.innerWidth < 50 || window.innerHeight < 50) return; // 退出全屏过渡期尺寸异常，跳过
     var maxW = window.innerWidth - 40;
     var maxH = window.innerHeight - 180;
     var maxPx = Math.min(maxW, maxH);
@@ -1057,7 +1058,8 @@ window.addEventListener('resize', function(){
       canvas.style.height = (cellSize * gridSize) + 'px';
     }
   }
-});
+}
+window.addEventListener('resize', fitCanvas);
 
 // ===== PAGES =====
 let currentPage = 'home';
@@ -2766,6 +2768,19 @@ document.addEventListener('click', ()=>{
 document.addEventListener('touchstart', ()=>{
   if(!fullscreenDone){fullscreenDone=true; tryFullscreen();}
 }, {once:true});
+
+// ===== 退出全屏修复 =====
+// Safari/WebKit 退出全屏后常见两问题：①整页白屏直到滚动/点击 ②画布尺寸停留在过渡期的错误值
+function handleFullscreenExit(){
+  if(document.fullscreenElement||document.webkitFullscreenElement) return;
+  setTimeout(function(){
+    window.scrollTo(0,0);
+    void document.body.offsetHeight; // 强制 reflow，唤醒 WebKit 合成器
+    if(typeof fitCanvas==='function') fitCanvas();
+  },150);
+}
+document.addEventListener('fullscreenchange',handleFullscreenExit);
+document.addEventListener('webkitfullscreenchange',handleFullscreenExit);
 </script>
 <script src="friends.js"></script>
 <script>

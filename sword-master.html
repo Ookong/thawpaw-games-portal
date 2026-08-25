@@ -10,6 +10,7 @@
 <meta property="og:type" content="website" />
 <link rel="canonical" href="https://games.thawflow.com/games/sword-master.html" />
 <title>少年剑客闯江湖 - ThawPaw Games</title>
+<script src="cloud-sync.js?v=1"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 html,body{width:100%;height:100%;overflow:hidden;}
@@ -3068,7 +3069,7 @@ function smEquipArmor(key){
 }
 function smGetKey(){const id=localStorage.getItem('thawpawActiveId')||'default';return 'sword_master_save_'+id;}
 function smLoadSave(){try{const d=JSON.parse(localStorage.getItem(smGetKey()));if(!d)d={};return{coins:d.coins||0,seals:d.seals||0,petCoins:d.petCoins||0,highestLevel:d.highestLevel||1,ownedArmors:d.ownedArmors||{},equippedArmor:d.equippedArmor||null,speedLevel:d.speedLevel||0,atkLevel:d.atkLevel||0,hpLevel:d.hpLevel||0,petNests:d.petNests||[null,null,null],petBag:d.petBag||{food:[],toy:[],care:[],egg:[]}};}catch(e){return{coins:0,seals:0,petCoins:0,highestLevel:1,ownedArmors:{},equippedArmor:null,speedLevel:0,atkLevel:0,hpLevel:0,petNests:[null,null,null],petBag:{food:[],toy:[],care:[],egg:[]}};}}
-function smSaveSave(){localStorage.setItem(smGetKey(),JSON.stringify(smSave));}
+function smSaveSave(){localStorage.setItem(smGetKey(),JSON.stringify(smSave));try{if(window.cloudSync&&cloudSync.isEnabled())cloudSync.autoSave();}catch(e){}}
 
 // ===== 速度强化 =====
 var SM_SPEED_COSTS=[3,5,10,15,23]; // Lv1~5 花费的宝印
@@ -3243,6 +3244,44 @@ function smUpgradeHp(){
   smUpdateHome();
 }
 let smSave=smLoadSave();
+
+// ===== ☁️ 云存档同步（宠物等进度跨设备保留）=====
+function smSaveIsEmpty(){
+  var s=smSave;
+  var bagEmpty=!s.petBag||['food','toy','care','egg'].every(function(k){return !(s.petBag[k]&&s.petBag[k].length);});
+  var nestsEmpty=!(s.petNests&&s.petNests.some(function(n){return n;}));
+  return nestsEmpty&&bagEmpty&&s.highestLevel<=1&&(!s.coins)&&(!s.seals)&&(!s.petCoins)&&(!Object.keys(s.ownedArmors||{}).length);
+}
+function smCloudSyncInit(){
+  if(!window.cloudSync)return;
+  var id=null,nick=null;
+  try{id=localStorage.getItem('thawpawActiveId');}catch(e){}
+  if(!id)return;
+  try{var ps=JSON.parse(localStorage.getItem('thawpawPlayers')||'{}');if(ps[id]&&ps[id].nickname)nick=ps[id].nickname;}catch(e){}
+  if(!nick)return; // 拿不到注册昵称就不启动云同步（后端要求昵称匹配）
+  cloudSync.init(id,nick);
+  if(smSaveIsEmpty()){
+    // 本地空档（新设备/清数据）：从云端恢复宠物和进度
+    cloudSync.load(id,nick).then(function(r){
+      if(r.ok&&r.data&&r.data.sword_master){
+        var d=r.data.sword_master;
+        var hasPets=(d.petNests&&d.petNests.some(function(n){return n;}));
+        var hasProgress=(d.highestLevel&&d.highestLevel>1)||d.coins>0||d.seals>0||d.petCoins>0;
+        if(hasPets||hasProgress){
+          cloudSync.restoreAll(r.data);
+          try{console.log('☁️ 云存档已恢复，刷新中');}catch(e){}
+          location.reload();
+        }
+      }else if(!r.ok&&r.error){
+        console.warn('☁️ 云存档读取失败:',r.error);
+      }
+    });
+  }else{
+    // 本地有进度：立即推一次云端（防丢），后续 smSaveSave 自动续传
+    cloudSync.autoSave();
+  }
+}
+smCloudSyncInit();
 // ===== 宠物窝系统 =====
 var smPetNestPending=-1; // 正在等待选蛋的窝索引
 var PET_HATCH_TIME=3*24*60*60*1000; // 3天孵化（毫秒）
