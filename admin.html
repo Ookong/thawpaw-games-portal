@@ -140,6 +140,10 @@ body{
   transition:all .2s;
 }
 .logout-btn:hover{border-color:var(--red);color:var(--red)}
+.settings-wrap{position:relative}
+.settings-menu{display:none;position:absolute;right:0;top:calc(100% + 6px);min-width:170px;background:var(--card);border:1px solid var(--border);border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.35);overflow:hidden;z-index:60}
+.settings-item{padding:11px 16px;font-size:.85rem;color:var(--text);cursor:pointer;white-space:nowrap;transition:background .15s}
+.settings-item:hover{background:var(--card2);color:var(--accent)}
 
 /* Content */
 .content{max-width:1100px;margin:0 auto;padding:1.5rem 2rem 3rem}
@@ -339,7 +343,7 @@ tr:hover td{background:var(--card2)}
     </div>
   </div>
   <div class="login-hint">© 2026 Thawpaw Games · 管理员入口 · <span id="build-time" style="opacity:.7">加载中…</span></div>
-<script>var BUILD_TIME="20260829-0725";var el=document.getElementById("build-time");if(el)el.textContent="v"+BUILD_TIME;var el2=document.getElementById("build-time-dash");if(el2)el2.textContent="v"+BUILD_TIME;</script>
+<script>var BUILD_TIME="20260829-1651";var el=document.getElementById("build-time");if(el)el.textContent="v"+BUILD_TIME;var el2=document.getElementById("build-time-dash");if(el2)el2.textContent="v"+BUILD_TIME;</script>
 </div>
 
 <!-- ===== DASHBOARD ===== -->
@@ -350,7 +354,13 @@ tr:hover td{background:var(--card2)}
     <div class="top-logo">🐾 TPG 总部 <small>Thawpaw Games HQ</small> <span id="build-time-dash" style="opacity:.5;font-size:.7rem">v?</span></div>
     <div class="top-spacer"></div>
     <div class="user-badge" id="user-badge"></div>
-    <button class="logout-btn" onclick="openProjectSettings()" title="切换后端项目">⚙️</button>
+    <div class="settings-wrap">
+      <button class="logout-btn" onclick="toggleSettingsMenu(event)" title="设置">⚙️</button>
+      <div class="settings-menu" id="settings-menu">
+        <div class="settings-item" onclick="openProjectSettings();toggleSettingsMenu()">⚙️ 后端 URL 切换</div>
+        <div class="settings-item" id="admin-tab" style="display:none" onclick="switchTab('admins');toggleSettingsMenu()">👥 管理员管理</div>
+      </div>
+    </div>
     <button class="logout-btn" onclick="hqLogout()">退出</button>
   </div>
 
@@ -366,8 +376,6 @@ tr:hover td{background:var(--card2)}
     <div class="tabs">
       <button class="tab active" data-tab="overview" onclick="switchTab('overview')">📊 概览</button>
       <button class="tab" data-tab="activity" onclick="switchTab('activity')">📢 HQ 动态</button>
-      <button class="tab" data-tab="feedback" onclick="switchTab('feedback')">💬 反馈</button>
-      <button class="tab" data-tab="admins" onclick="switchTab('admins')" id="admin-tab">👥 管理员</button>
       <button class="tab" data-tab="mailbox" onclick="switchTab('mailbox')" id="mailbox-tab">✉️ 信箱</button>
       <button class="tab" data-tab="chatroom" onclick="switchTab('chatroom')" id="chatroom-tab">💬 聊天室</button>
       <a class="tab" href="learning.html" target="_blank" title="一套材料，两位学员" style="text-decoration:none">🏖️ 沙坑训练场</a>
@@ -385,6 +393,16 @@ tr:hover td{background:var(--card2)}
           <div class="stat-label">浏览人数</div>
           <div class="stat-value" id="ov-uv">—</div>
           <div class="stat-sub" style="color:var(--accent)">🔍 点击查看浏览记录</div>
+        </div>
+      </div>
+
+      <div class="table-card" style="grid-column:1/-1">
+        <div class="table-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+          <h3>🏖️ 沙坑训练场 · 学习出勤</h3>
+          <span style="font-size:.78rem;color:var(--dim)">进入次数 / 学习时长 / 最近活跃 · 未登录游客不计入</span>
+        </div>
+        <div id="sandbox-stats-body" style="padding:.4rem 1rem 1rem">
+          <div class="empty-state"><div class="empty-icon">🏖️</div>加载中…</div>
         </div>
       </div>
 
@@ -427,6 +445,9 @@ tr:hover td{background:var(--card2)}
         </div>
         <div id="activity-list" style="padding:1rem;max-height:600px;overflow-y:auto">
           <div class="empty-state"><div class="empty-icon">📭</div>加载中...</div>
+        </div>
+        <div style="padding:12px 1rem;border-top:1px solid var(--border);text-align:center">
+          <button onclick="switchTab('feedback')" style="background:var(--card2);border:1px solid var(--border);color:var(--accent);padding:9px 26px;border-radius:9px;cursor:pointer;font-size:.85rem;font-weight:600;transition:border-color .2s">💬 查看玩家反馈 →</button>
         </div>
       </div>
     </div>
@@ -653,6 +674,15 @@ document.addEventListener('DOMContentLoaded', function(){
 });
 
 // ── Backend URL config ──
+function toggleSettingsMenu(ev){
+  if(ev && ev.stopPropagation) ev.stopPropagation();
+  const m = document.getElementById('settings-menu');
+  if(m) m.style.display = (m.style.display === 'block') ? 'none' : 'block';
+}
+document.addEventListener('click', function(){
+  const m = document.getElementById('settings-menu');
+  if(m) m.style.display = 'none';
+});
 function openProjectSettings(){
   const cur = document.getElementById('cf-current');
   if(cur) cur.textContent = backendUrl;
@@ -885,7 +915,8 @@ function hqLogout(){
 function switchTab(name){
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-  document.querySelector('.tab[data-tab="'+name+'"]').classList.add('active');
+  const tb = document.querySelector('.tab[data-tab="'+name+'"]');
+  if(tb) tb.classList.add('active'); // 管理员/反馈已收进菜单，无高亮 tab 不报错
   document.getElementById('panel-' + name).classList.add('active');
   // Auto-load when switching to chatroom tab
   if(name === 'chatroom' && session){
@@ -924,11 +955,41 @@ function fmtPlayTime(sec){
   if(h > 0) return h + ' 时 ' + m + ' 分';
   return m + ' 分 ' + (sec%60) + ' 秒';
 }
+function fmtLastSeen(iso){
+  if(!iso) return '—';
+  const d = new Date(iso), now = new Date();
+  const hm = String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+  if(d.toDateString() === now.toDateString()) return '今天 ' + hm;
+  if(new Date(now.getTime() - 86400000).toDateString() === d.toDateString()) return '昨天 ' + hm;
+  return (d.getMonth()+1) + '-' + String(d.getDate()).padStart(2,'0') + ' ' + hm;
+}
 function loadStats(){
   apiGet('stats').then(res => {
     if(!res || !res.ok) return;
     document.getElementById('ov-reg').textContent = res.total.registered != null ? res.total.registered : '—';
     document.getElementById('ov-uv').textContent = res.total.uv != null ? res.total.uv : '—';
+
+    // 沙坑训练场出勤（Tree 2026-08-29 需求：谁也不许贪玩 😼）
+    const sb = document.getElementById('sandbox-stats-body');
+    if(sb){
+      const learners = (res.sandbox && res.sandbox.learners) ? res.sandbox.learners : [];
+      if(!learners.length){
+        sb.innerHTML = '<div class="empty-state"><div class="empty-icon">🏖️</div>还没有学员进过沙坑</div>';
+      } else {
+        let html = '<div style="font-size:.8rem;color:var(--dim);padding:6px 4px">累计学习打开 ' + (res.sandbox.totalOpens || 0) + ' 次 · ' + learners.length + ' 位学员</div>';
+        learners.forEach(function(l){
+          html += '<div style="display:flex;align-items:center;gap:12px;padding:11px 4px;border-bottom:1px solid var(--border);flex-wrap:wrap">'
+            + '<span style="font-weight:700">' + escapeHtml(l.nickname || l.id) + '</span>'
+            + '<span class="mono" style="font-size:.72rem;color:var(--dim)">' + escapeHtml(l.id) + '</span>'
+            + '<span style="flex:1"></span>'
+            + '<span style="font-size:.85rem">📖 ' + (l.opens || 0) + ' 次</span>'
+            + '<span style="font-size:.85rem">⏱ ' + fmtPlayTime(l.timeSec || 0) + '</span>'
+            + '<span style="font-size:.8rem;color:var(--dim)">最近 ' + fmtLastSeen(l.lastAt) + '</span>'
+            + '</div>';
+        });
+        sb.innerHTML = html;
+      }
+    }
 
     // 游戏排行榜大表
     const tbody = document.getElementById('game-rank-body');
