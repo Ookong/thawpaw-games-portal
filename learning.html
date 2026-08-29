@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>🏖️ 沙坑训练场 · ThawPaw Games HQ</title>
 <link rel="icon" href="assets/favicon.ico">
-<script>var BUILD_TIME="20260829-0429"</script>
+<script>var BUILD_TIME="20260829-0722"</script>
 <style>
 :root{--bg:#0f1420;--card:#171e2e;--card2:#1e2740;--border:#2a3550;--text:#e8ecf4;--text2:#8b96ad;--accent:#5b9dff;--accent2:#7c6cff;--ok:#3ecf8e;--warn:#ffb454}
 *{margin:0;padding:0;box-sizing:border-box}
@@ -26,6 +26,9 @@ h1{font-size:1.6rem}
 .wk .id{font-weight:700;font-size:.9rem;min-width:40px}
 .wk .t{font-size:.85rem;color:var(--text2);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .wk .dot{width:8px;height:8px;border-radius:50%;background:var(--border)}
+.syll{display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:10px;cursor:pointer;margin-bottom:10px;border:1px solid transparent;color:var(--text2);font-size:.88rem;transition:all .15s}
+.syll:hover{background:var(--card2)}
+.syll.active{background:var(--card2);border-color:var(--accent);color:var(--text)}
 .wk.done .dot{background:var(--ok)}
 .wk.current .dot{background:var(--warn);box-shadow:0 0 8px var(--warn)}
 .content{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px}
@@ -61,14 +64,14 @@ footer{text-align:center;color:var(--text2);font-size:.75rem;margin-top:30px}
 <div class="wrap">
   <header>
     <h1>🏖️ 沙坑训练场</h1>
-    <span class="sub">ThawPaw Games HQ · 家庭 12 周双轨课程（苗苗 🐱 游戏创作轨 / Tree 🌳 数据分析轨）</span>
+    <span class="sub">ThawPaw Games HQ · 家庭 12 周课程 · 一套材料，两位学员（苗苗 🐱 × Tree 🌳）</span>
   </header>
   <div class="notice">
     <b>怎么用：</b>每周左边选周 → 逐课阅读 → 学完勾选（进度自动保存在本机）→ 作业写到电脑上的 <b>~/learning-homework/</b> 目录，检查人会批改并回复 <b>.review.md</b>。
     每周日晚如意发布下周内容。卡住随时喊 IcePaw / 如意 ❄️✨
   </div>
   <div class="layout">
-    <aside class="weeks"><h3>🗓 课程周</h3><div id="weeks"><div class="spin"></div></div></aside>
+    <aside class="weeks"><h3>🗓 课程周</h3><div class="syll" id="syll-link" onclick="loadSyllabus()">📑 课程总大纲</div><div id="weeks"><div class="spin"></div></div></aside>
     <main class="content" id="content"><div class="spin"></div></main>
   </div>
   <footer>ThawPaw Games HQ · learning v1 · <span id="bt"></span></footer>
@@ -120,8 +123,26 @@ function weekDone(id){
   const w=localStorage.getItem('learning-week-'+id);
   return w==='1';
 }
+async function loadSyllabus(){
+  curWeek=null;renderWeeks();
+  const sl=$('#syll-link');if(sl)sl.classList.add('active');
+  $('#content').innerHTML='<div class="spin"></div>';
+  const bases=[API,'https://tpg-hq.icepaw.workers.dev'];
+  for(const b of bases){
+    try{
+      const j=await fetchJSON(b+'/learning/syllabus',10000);
+      if(j&&j.ok!==false&&j.syllabus){
+        $('#content').innerHTML='<div class="wk-title">📑 课程总大纲</div><div class="wk-meta">12 周 · 一套材料，两位学员</div><div class="md">'+(window.marked?marked.parse(j.syllabus):j.syllabus)+'</div>';
+        return;
+      }
+      if(j&&j.ok!==false)break;
+    }catch(e){}
+  }
+  $('#content').innerHTML='<div class="empty"><div class="big">📑</div><b>大纲还在路上</b><br><br>课程总大纲还没发布到线上。<br><button onclick="loadSyllabus()" style="margin-top:12px;padding:8px 22px;border-radius:9px;border:1px solid var(--accent);background:var(--card2);color:var(--accent);cursor:pointer">🔄 重试</button></div>';
+}
 async function loadWeek(id){
   curWeek=id;
+  const sl=$('#syll-link');if(sl)sl.classList.remove('active');
   $('#content').innerHTML='<div class="spin"></div>';
   renderWeeks();
   const bases=[API,'https://tpg-hq.icepaw.workers.dev'];

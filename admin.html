@@ -300,6 +300,12 @@ tr:hover td{background:var(--card2)}
 .empty-state{text-align:center;padding:3rem;color:var(--dim)}
 .empty-state .empty-icon{font-size:3rem;margin-bottom:.5rem}
 
+/* HQ 动态 filter chips + 沙坑常驻横幅（2026-08-29） */
+.hq-chip{padding:4px 12px;border-radius:999px;border:1px solid var(--border);background:var(--card);color:var(--dim);cursor:pointer;font-size:.8rem;transition:all .15s}
+.hq-chip.active{background:var(--accent);border-color:var(--accent);color:#fff}
+.sandbox-banner{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:1rem;padding:.8rem 1.2rem;border-radius:var(--radius);background:linear-gradient(90deg,#9fd6ff 0%,#4a8fd4 45%,#152a52 100%);color:#fff;font-weight:600;font-size:.92rem;text-decoration:none;white-space:nowrap;overflow:hidden;text-shadow:0 1px 2px rgba(10,25,50,.45);border:1px solid rgba(255,255,255,.25);transition:box-shadow .25s,filter .25s}
+.sandbox-banner:hover{filter:brightness(1.12);box-shadow:0 0 18px rgba(120,190,255,.55)}
+
 /* Responsive */
 @media(max-width:640px){
   .content{padding:1rem}
@@ -333,7 +339,7 @@ tr:hover td{background:var(--card2)}
     </div>
   </div>
   <div class="login-hint">© 2026 Thawpaw Games · 管理员入口 · <span id="build-time" style="opacity:.7">加载中…</span></div>
-<script>var BUILD_TIME="20260829-0429";var el=document.getElementById("build-time");if(el)el.textContent="v"+BUILD_TIME;var el2=document.getElementById("build-time-dash");if(el2)el2.textContent="v"+BUILD_TIME;</script>
+<script>var BUILD_TIME="20260829-0722";var el=document.getElementById("build-time");if(el)el.textContent="v"+BUILD_TIME;var el2=document.getElementById("build-time-dash");if(el2)el2.textContent="v"+BUILD_TIME;</script>
 </div>
 
 <!-- ===== DASHBOARD ===== -->
@@ -359,12 +365,12 @@ tr:hover td{background:var(--card2)}
     <!-- Tabs -->
     <div class="tabs">
       <button class="tab active" data-tab="overview" onclick="switchTab('overview')">📊 概览</button>
-      <button class="tab" data-tab="activity" onclick="switchTab('activity')">📢 游戏动态</button>
+      <button class="tab" data-tab="activity" onclick="switchTab('activity')">📢 HQ 动态</button>
       <button class="tab" data-tab="feedback" onclick="switchTab('feedback')">💬 反馈</button>
       <button class="tab" data-tab="admins" onclick="switchTab('admins')" id="admin-tab">👥 管理员</button>
       <button class="tab" data-tab="mailbox" onclick="switchTab('mailbox')" id="mailbox-tab">✉️ 信箱</button>
       <button class="tab" data-tab="chatroom" onclick="switchTab('chatroom')" id="chatroom-tab">💬 聊天室</button>
-      <a class="tab" href="learning.html" target="_blank" title="家庭双轨课程" style="text-decoration:none">🏖️ 沙坑训练场</a>
+      <a class="tab" href="learning.html" target="_blank" title="一套材料，两位学员" style="text-decoration:none">🏖️ 沙坑训练场</a>
     </div>
 
     <!-- ===== Overview Tab ===== -->
@@ -409,8 +415,14 @@ tr:hover td{background:var(--card2)}
     <!-- ===== Activity Tab ===== -->
     <div class="panel" id="panel-activity">
       <div class="table-card">
-        <div class="table-header" style="display:flex;justify-content:space-between;align-items:center">
-          <h3>📢 游戏动态</h3>
+        <div class="table-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+          <h3>📢 HQ 动态</h3>
+          <div id="hq-act-filters" style="display:flex;gap:6px;flex-wrap:wrap">
+            <button class="hq-chip active" data-src="all" onclick="filterActivity('all')">全部</button>
+            <button class="hq-chip" data-src="games" onclick="filterActivity('games')">🎮 游戏</button>
+            <button class="hq-chip" data-src="chatroom" onclick="filterActivity('chatroom')">💬 聊天室</button>
+            <button class="hq-chip" data-src="sandbox" onclick="filterActivity('sandbox')">🏖️ 沙坑</button>
+          </div>
           <button onclick="loadActivity()" id="activity-refresh-btn" class="refresh-btn" style="background:var(--accent);color:#fff;transition:transform .3s"><span class="icon-spin"></span> 刷新</button>
         </div>
         <div id="activity-list" style="padding:1rem;max-height:600px;overflow-y:auto">
@@ -483,6 +495,8 @@ tr:hover td{background:var(--card2)}
 
     <!-- ===== Chatroom Tab ===== -->
     <div class="panel" id="panel-chatroom">
+      <!-- 沙坑训练场常驻横幅（2026-08-29 11:46 Tree 拍板：冰蓝渐变+❄️+hover 微光） -->
+      <a class="sandbox-banner" href="learning.html" target="_blank">❄️ 沙坑练习场 · 新课+练习直达 →</a>
       <!-- Sub-tabs -->
       <div class="sub-tabs">
         <button class="sub-tab active" data-subtab="history" onclick="switchChatSubTab('history')">📜 聊天记录</button>
@@ -941,8 +955,47 @@ function loadStats(){
   });
 }
 
-// ── Activity Feed ──
+// ── HQ 动态 Feed（2026-08-29 升级：游戏/聊天室/沙坑三板块，changelog 式）──
 var _activityLoading = false;
+var _activityData = [];
+var _activityFilter = 'all';
+var _SRC_META = {
+  games:    { icon:'🎮', label:'游戏',   bg:'#eafbe7', fg:'#2b8a3e' },
+  chatroom: { icon:'💬', label:'聊天室', bg:'#eaf3ff', fg:'#1c6fd6' },
+  sandbox:  { icon:'🏖️', label:'沙坑',   bg:'#fff4e6', fg:'#e8590c' }
+};
+function filterActivity(src){
+  _activityFilter = src;
+  var chips = document.querySelectorAll('#hq-act-filters .hq-chip');
+  for(var i=0;i<chips.length;i++) chips[i].classList.toggle('active', chips[i].getAttribute('data-src')===src);
+  renderActivity();
+}
+function renderActivity(){
+  var el = document.getElementById('activity-list');
+  if(!el) return;
+  var list = _activityData.filter(function(a){ return _activityFilter==='all' || (a.source||'games')===_activityFilter; });
+  if(list.length === 0){
+    el.innerHTML = '<div class="empty-state"><div class="empty-icon">📢</div>' + (_activityFilter==='all' ? '暂无动态' : '该板块暂无动态') + '</div>';
+    return;
+  }
+  el.innerHTML = list.map(a => {
+    const time = a.time ? new Date(a.time).toLocaleString('zh-CN') : '';
+    const src = _SRC_META[a.source || 'games'] || null;
+    const srcBadge = src ? '<span class="fb-cat" style="background:' + src.bg + ';color:' + src.fg + '">' + src.icon + ' ' + src.label + '</span>' : '';
+    const roleBadge = a.playerId === 'system' ? '<span class="fb-cat" style="background:#f8f9fa;color:#868e96">系统</span>' : '';
+    return '<div class="feedback-item" style="display:flex;gap:10px;align-items:flex-start">' +
+      '<div style="font-size:22px;flex-shrink:0">' + (a.icon || '📢') + '</div>' +
+      '<div style="flex:1">' +
+        '<div class="fb-content" style="font-size:.9rem">' + escapeHtml(a.message) + '</div>' +
+        '<div class="fb-header" style="margin-top:4px">' +
+          '<span class="mono">' + escapeHtml(a.playerId) + ' ' + escapeHtml(a.nickname) + '</span>' +
+          srcBadge + roleBadge +
+          '<span style="margin-left:auto">' + time + '</span>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
 function loadActivity(){
   if(_activityLoading) return;
   _activityLoading = true;
@@ -953,25 +1006,8 @@ function loadActivity(){
   if(!el) return;
   showSkeleton(el, 3);
   apiGet('activity', { id: session.id, nickname: session.nickname, limit: 50 }).then(res => {
-    if(!res || !res.ok || !res.activities || res.activities.length === 0){
-      el.innerHTML = '<div class="empty-state"><div class="empty-icon">📢</div>暂无动态</div>';
-      return;
-    }
-    el.innerHTML = res.activities.map(a => {
-      const time = a.time ? new Date(a.time).toLocaleString('zh-CN') : '';
-      const roleBadge = a.playerId === 'system' ? '<span class="fb-cat" style="background:#fff4e6;color:#e8590c">系统</span>' : '';
-      return '<div class="feedback-item" style="display:flex;gap:10px;align-items:flex-start">' +
-        '<div style="font-size:22px;flex-shrink:0">' + (a.icon || '📢') + '</div>' +
-        '<div style="flex:1">' +
-          '<div class="fb-content" style="font-size:.9rem">' + escapeHtml(a.message) + '</div>' +
-          '<div class="fb-header" style="margin-top:4px">' +
-            '<span class="mono">' + escapeHtml(a.playerId) + ' ' + escapeHtml(a.nickname) + '</span>' +
-            roleBadge +
-            '<span style="margin-left:auto">' + time + '</span>' +
-          '</div>' +
-        '</div>' +
-      '</div>';
-    }).join('');
+    _activityData = (res && res.ok && Array.isArray(res.activities)) ? res.activities : [];
+    renderActivity();
   }).catch(err => {
     showErrorRetry(el, '网络错误', function(){ loadActivity(); });
   }).finally(function(){
