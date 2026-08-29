@@ -65,6 +65,9 @@ canvas#stars{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z
 .hero{position:relative;z-index:1;text-align:center;padding:3.5rem 1.5rem 2rem}
 .hero h1{font-size:2.6rem;font-weight:800;letter-spacing:-.03em;background:linear-gradient(135deg,#6c63ff 0%,#48c6ef 50%,#f857a6 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:.5rem}
 .hero p{color:var(--silver);font-size:1.1rem;max-width:500px;margin:0 auto}
+/* ── 沙坑入口（Tree 2026-08-30：从 All Games 摘出，顶部独立入口，冰蓝同款审美）── */
+.sandbox-banner{display:flex;align-items:center;justify-content:center;gap:8px;position:relative;z-index:1;max-width:680px;margin:0 auto 1.8rem;padding:.85rem 1.2rem;border-radius:12px;background:linear-gradient(90deg,#9fd6ff 0%,#4a8fd4 45%,#152a52 100%);color:#fff;font-weight:700;font-size:.95rem;text-decoration:none;white-space:nowrap;overflow:hidden;text-shadow:0 1px 2px rgba(10,25,50,.45);border:1px solid rgba(255,255,255,.25);transition:box-shadow .25s,filter .25s}
+.sandbox-banner:hover{filter:brightness(1.12);box-shadow:0 0 18px rgba(120,190,255,.55)}
 
 /* ── Profile Page ── */
 .page{display:none}
@@ -131,6 +134,7 @@ footer{position:relative;z-index:1;text-align:center;padding:2rem;color:var(--di
   .hero h1{font-size:1.8rem}
   .container{padding:0 1rem 2rem}
   .games-grid{grid-template-columns:1fr;gap:1rem}
+  .sandbox-banner{font-size:.8rem;padding:.75rem .9rem}
 }
 @media(min-width:769px) and (max-width:1024px){
   .games-grid{grid-template-columns:repeat(2,1fr)}
@@ -308,21 +312,10 @@ body.no-user footer{display:none}
     <h1>Thawpaw Games</h1>
     <p>Warrior Cats adventures await. Pick a game and begin your quest.</p>
   </div>
+  <a class="sandbox-banner" href="https://learning.thawflow.com/" target="_blank">❄️ 沙坑训练场 · 12 周家庭课程 · 新课+练习直达 →</a>
   <div class="container">
     <div class="section-title">All Games</div>
-    <div class="games-grid" id="grid">
-      <a class="game-card" href="https://learning.thawflow.com/" target="_blank">
-        <div class="thumb">
-          <div class="thumb-bg" style="background:linear-gradient(135deg,#f7b267,#f4845f)"></div>
-          <div style="position:relative;z-index:1;font-size:56px;line-height:1">🏖️</div>
-        </div>
-        <div class="card-body">
-          <h2>沙坑训练场</h2>
-          <p>12 周家庭双轨课程 · 苗苗 🐱 游戏创作轨 / Tree 🌳 数据分析轨</p>
-          <div class="card-footer"><span class="tag">课程</span></div>
-        </div>
-      </a>
-    </div>
+    <div class="games-grid" id="grid"></div>
   </div>
 </div>
 
@@ -350,7 +343,7 @@ body.no-user footer{display:none}
 </div>
 
 <footer>Made with ❄️ by IcePaw &amp; ThawPaw · <span id="build-time" style="opacity:.7">加载中…</span></footer>
-<script>var BUILD_TIME="20260829-1853";var el=document.getElementById("build-time");if(el)el.textContent="v"+BUILD_TIME;</script>
+<script>var BUILD_TIME="20260829-1911";var el=document.getElementById("build-time");if(el)el.textContent="v"+BUILD_TIME;</script>
 
 <!-- ===== FEEDBACK FLOATING BUTTON ===== -->
 <button class="feedback-btn" id="feedback-btn" onclick="openFeedback()" title="反馈">
