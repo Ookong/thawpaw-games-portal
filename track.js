@@ -34,6 +34,11 @@
         id = localStorage.getItem('thawpawPlayerId');
       }
       if (!id) {
+        // 跨站携带：从 games.thawflow.com 的跳转链接 ?tpg= 参数接收玩家 ID（沙坑独立站用）
+        var m = window.location.search.match(/[?&]tpg=(\d{6,12})/);
+        if (m) { id = m[1]; localStorage.setItem('thawpawPlayerId', id); }
+      }
+      if (!id) {
         // 没有活动 ID，生成一个（不应该发生在新版 portal 里）
         id = String(Math.floor(10000000 + Math.random() * 90000000));
         localStorage.setItem('thawpawPlayerId', id);
@@ -54,6 +59,8 @@
   }
 
   function getPageName() {
+    // 沙坑独立站（learning.thawflow.com）——域名优先，根路径 '/' 会被误判成 portal
+    if (window.location.hostname.indexOf('learning') === 0) return 'learning';
     var path = window.location.pathname;
     if (path.endsWith('/') || path.endsWith('/index.html')) return 'portal';
     if (path.indexOf('snake') >= 0) return 'snake';

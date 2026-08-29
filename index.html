@@ -350,7 +350,7 @@ body.no-user footer{display:none}
 </div>
 
 <footer>Made with ❄️ by IcePaw &amp; ThawPaw · <span id="build-time" style="opacity:.7">加载中…</span></footer>
-<script>var BUILD_TIME="20260829-1849";var el=document.getElementById("build-time");if(el)el.textContent="v"+BUILD_TIME;</script>
+<script>var BUILD_TIME="20260829-1853";var el=document.getElementById("build-time");if(el)el.textContent="v"+BUILD_TIME;</script>
 
 <!-- ===== FEEDBACK FLOATING BUTTON ===== -->
 <button class="feedback-btn" id="feedback-btn" onclick="openFeedback()" title="反馈">
@@ -870,6 +870,16 @@ function onLogout(){
 
 // 登录页输入框：只允许数字，回车提交
 document.addEventListener('DOMContentLoaded', ()=>{
+  // 沙坑独立站链接携带玩家 ID（?tpg=）——跨域 localStorage 隔离，出勤统计靠它识别学员
+  (function(){
+    try {
+      const pid = localStorage.getItem('thawpawActiveId') || localStorage.getItem('thawpawPlayerId');
+      if(!pid) return;
+      document.querySelectorAll('a[href*="learning.thawflow.com"]').forEach(a=>{
+        try { const u = new URL(a.href); u.searchParams.set('tpg', pid); a.href = u.toString(); } catch(e){}
+      });
+    } catch(e) {}
+  })();
   const idInput = document.getElementById('login-id-input');
   if(idInput){
     idInput.addEventListener('input', e=>{
