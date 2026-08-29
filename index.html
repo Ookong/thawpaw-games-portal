@@ -285,7 +285,8 @@ body.no-user footer{display:none}
       <div class="login-nickname-step" id="login-nickname-step">
         <label for="login-nickname-input">给新账号起个名字吧：</label>
         <input type="text" id="login-nickname-input" class="login-nickname-input" placeholder="昵称（最多 12 字）" maxlength="12">
-        <button class="login-btn login-btn-primary" style="margin-top:10px" onclick="confirmCreateNew()">✨ 创建账号</button>
+        <button class="login-btn login-btn-primary" style="margin-top:10px" id="login-create-btn" onclick="confirmCreateNew()">✨ 创建账号</button>
+        <button class="login-btn login-btn-primary" style="margin-top:10px;display:none" id="login-verify-btn" onclick="verifyLoginExisting()">✅ 验证并登录</button>
         <button class="login-btn login-btn-ghost" onclick="cancelCreateNew()">取消</button>
       </div>
 
@@ -343,7 +344,7 @@ body.no-user footer{display:none}
 </div>
 
 <footer>Made with ❄️ by IcePaw &amp; ThawPaw · <span id="build-time" style="opacity:.7">加载中…</span></footer>
-<script>var BUILD_TIME="20260829-1911";var el=document.getElementById("build-time");if(el)el.textContent="v"+BUILD_TIME;</script>
+<script>var BUILD_TIME="20260829-1914";var el=document.getElementById("build-time");if(el)el.textContent="v"+BUILD_TIME;</script>
 
 <!-- ===== FEEDBACK FLOATING BUTTON ===== -->
 <button class="feedback-btn" id="feedback-btn" onclick="openFeedback()" title="反馈">
@@ -698,8 +699,15 @@ function hideLoginConfirm(){
   document.getElementById('login-confirm').classList.remove('show');
   pendingLoginId = null;
 }
-function showLoginNicknameStep(){
+function showLoginNicknameStep(mode){
   document.getElementById('login-nickname-step').classList.add('show');
+  // mode: 'verify' = 云端老账号验证身份 · 'create' = 新账号注册——按钮不能混用（8/30 Tree 报的 bug：老用户验证时按钮写着「创建账号」）
+  const vbtn = document.getElementById('login-verify-btn');
+  const cbtn = document.getElementById('login-create-btn');
+  if(vbtn && cbtn){
+    vbtn.style.display = (mode === 'verify') ? '' : 'none';
+    cbtn.style.display = (mode === 'verify') ? 'none' : '';
+  }
   setTimeout(()=>document.getElementById('login-nickname-input').focus(), 100);
 }
 function hideLoginNickname(){
@@ -736,19 +744,20 @@ async function onLoginSubmit(){
       hideLoginError();
       const label = document.querySelector('#login-nickname-step label');
       if(res.found){
-        // 云端有此 ID → 需要输入昵称验证
+        // 云端有此 ID → 老账号验证身份（验证并登录，不是创建）
         label.textContent = '请输入该 ID 的昵称以验证身份：';
+        showLoginNicknameStep('verify');
       } else {
         // 云端也没有 → 注册新账号
         label.textContent = '给新账号起个名字吧：';
+        showLoginNicknameStep('create');
       }
-      showLoginNicknameStep();
     } catch(e){
       idEl.disabled = false;
       hideLoginError();
       // 网络错误 → 回退到本地模式
       document.querySelector('#login-nickname-step label').textContent = '给新账号起个名字吧：';
-      showLoginNicknameStep();
+      showLoginNicknameStep('create');
     }
   }
 }
@@ -845,6 +854,38 @@ async function confirmCreateNew(){
   finishLogin();
   // 后台同步存档
   saveToCloud();
+}
+async function verifyLoginExisting(){
+  // 老账号验证模式：昵称匹配云端 → 拉存档并登录（8/30 修复：此前老用户只能看到「创建账号」按钮）
+  const nickname = document.getElementById('login-nickname-input').value.trim();
+  if(!nickname){
+    showLoginError('请输入昵称');
+    return;
+  }
+  if(!pendingLoginId) return;
+  const id = pendingLoginId;
+  const cleanNick = nickname.slice(0, 12);
+  showLoginError('🔍 正在验证…');
+  const ver = await cfApi('/verify', { id, nickname: cleanNick });
+  hideLoginError();
+  if(!ver.ok){
+    showLoginError('❌ 昵称不匹配——请输入该 ID 注册时使用的昵称');
+    return;
+  }
+  // 验证通过 → 拉取云端存档
+  const ld = await cfApi('/load', { id, nickname: cleanNick });
+  if(ld.ok && ld.data) applySaves(ld.data);
+  // 写入本地并登录（与 confirmCreateNew 后半段同路径）
+  const players = getPlayers();
+  players[id] = players[id] || {
+    nickname: cleanNick, avatar: '🐾', bio: '',
+    firstSeen: Date.now(), lastSeen: Date.now(),
+  };
+  savePlayers(players);
+  setActiveId(id);
+  hideLoginNickname();
+  pendingLoginId = null;
+  finishLogin();
 }
 function cancelCreateNew(){
   pendingLoginId = null;
