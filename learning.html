@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>📚 编程学习 · ThawPaw Games HQ</title>
+<title>🏖️ 沙坑训练场 · ThawPaw Games HQ</title>
 <link rel="icon" href="assets/favicon.ico">
-<script>var BUILD_TIME="DEV"</script>
+<script>var BUILD_TIME="20260829-0429"</script>
 <style>
 :root{--bg:#0f1420;--card:#171e2e;--card2:#1e2740;--border:#2a3550;--text:#e8ecf4;--text2:#8b96ad;--accent:#5b9dff;--accent2:#7c6cff;--ok:#3ecf8e;--warn:#ffb454}
 *{margin:0;padding:0;box-sizing:border-box}
@@ -60,7 +60,7 @@ footer{text-align:center;color:var(--text2);font-size:.75rem;margin-top:30px}
 <body>
 <div class="wrap">
   <header>
-    <h1>📚 编程学习</h1>
+    <h1>🏖️ 沙坑训练场</h1>
     <span class="sub">ThawPaw Games HQ · 家庭 12 周双轨课程（苗苗 🐱 游戏创作轨 / Tree 🌳 数据分析轨）</span>
   </header>
   <div class="notice">
@@ -81,13 +81,22 @@ const PROG_KEY='learning-progress';
 let prog={};try{prog=JSON.parse(localStorage.getItem(PROG_KEY)||'{}')}catch(e){}
 let weeksData=[],curWeek=null;
 
+async function fetchJSON(url,timeout){
+  const ctl=new AbortController();const t=setTimeout(()=>ctl.abort(),timeout||10000);
+  try{const r=await fetch(url,{signal:ctl.signal});return await r.json();}finally{clearTimeout(t);}
+}
 async function loadIndex(){
-  try{
-    const r=await fetch(API+'/learning/weeks',{headers:{'User-Agent':'curl/8.7.1'}});
-    const j=await r.json();
-    weeksData=(j.index&&j.index.weeks)||[];
-  }catch(e){weeksData=[]}
+  // 双域名：thawflow 主，workers.dev 备（移动网络可达性不同）；10s 超时防挂起转圈
+  const bases=[API,'https://tpg-hq.icepaw.workers.dev'];
+  let lastErr=null;
+  for(const b of bases){
+    try{const j=await fetchJSON(b+'/learning/weeks',10000);weeksData=(j.index&&j.index.weeks)||[];if(j.ok!==false){lastErr=null;break}}catch(e){lastErr=e;weeksData=[]}
+  }
   renderWeeks();
+  if(lastErr){
+    $('#content').innerHTML='<div class="empty"><div class="big">📡</div><b>课程加载失败</b><br><br>网络不通或太慢（手机流量下常见）。<br><button onclick="loadIndex()" style="margin-top:12px;padding:8px 22px;border-radius:9px;border:1px solid var(--accent);background:var(--card2);color:var(--accent);cursor:pointer">🔄 重试</button></div>';
+    return;
+  }
   if(!weeksData.length){
     $('#content').innerHTML='<div class="empty"><div class="big">🌱</div><b>第一周课程还在路上</b><br><br>如意正在上传 W01 内容（今晚就绪）。<br>先去把 VS Code 打开热热身——你的第一个程序 clan.py 还等着跑第 6 次呢 🐾</div>';
     return;
@@ -115,14 +124,14 @@ async function loadWeek(id){
   curWeek=id;
   $('#content').innerHTML='<div class="spin"></div>';
   renderWeeks();
-  try{
-    const r=await fetch(API+'/learning/week/'+id,{headers:{'User-Agent':'curl/8.7.1'}});
-    if(!r.ok){throw new Error('HTTP '+r.status)}
-    const j=await r.json();
-    renderWeek(j.week);
-  }catch(e){
-    $('#content').innerHTML='<div class="empty"><div class="big">📡</div>拉取 '+id+' 失败：'+e.message+'<br><br><button onclick="loadWeek(\''+id+'\')" style="margin-top:12px;padding:8px 20px;border-radius:10px;border:1px solid var(--accent);background:var(--card2);color:var(--accent);cursor:pointer">重试</button></div>';
+  const bases=[API,'https://tpg-hq.icepaw.workers.dev'];
+  for(const b of bases){
+    try{
+      const j=await fetchJSON(b+'/learning/week/'+encodeURIComponent(id),10000);
+      if(j&&j.ok!==false&&j.week){renderWeek(j.week);return}
+    }catch(e){}
   }
+  $('#content').innerHTML='<div class="empty"><div class="big">📡</div>拉取 '+id+' 失败（两个域名都超时/不通，手机流量下常见）<br><br><button onclick="loadWeek(\''+id+'\')" style="margin-top:12px;padding:8px 20px;border-radius:10px;border:1px solid var(--accent);background:var(--card2);color:var(--accent);cursor:pointer">重试</button></div>';
 }
 function renderWeek(w){
   const lessons=w.lessons||[];
@@ -134,7 +143,7 @@ function renderWeek(w){
     if(!checked)allDone=false;
     html+='<div class="lesson'+(checked?' done':'')+'">'
       +'<div class="lesson-head"><input type="checkbox" data-k="'+key+'"'+(checked?' checked':'')+'><span class="lt">'+(L.title||L.id)+'</span></div>'
-      +'<div class="md">'+(window.marked?marked.parse(L.markdown||'内容待补'):（L.markdown||'内容待补'))+'</div></div>';
+      +'<div class="md">'+(window.marked?marked.parse(L.markdown||'内容待补'):(L.markdown||'内容待补'))+'</div></div>';
   }
   html+='<div class="hw">🐾 <b>本周作业</b>：在你的电脑 <code>~/learning-homework/</code> 下建 <code>'+w.week_id+'/</code> 目录，作业命名 <code>'+w.week_id+'-d1.py</code>（周-天）。做完 commit，检查人批改后会出现 <code>*.review.md</code>。<br>· 苗苗 → IcePaw 检查 · Tree → 如意检查</div>';
   $('#content').innerHTML=html;
