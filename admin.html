@@ -166,7 +166,7 @@ body{
 .panel{display:none}
 .panel.active{display:block}
 
-/* Chat reply button (2026-08-29 猴哥需求) */
+/* Chat reply button (2026-08-29 Tree 需求) */
 .chat-reply-btn{border:none;background:transparent;color:var(--dim);cursor:pointer;font-size:.72rem;padding:2px 8px;border-radius:4px;transition:color .2s,background .2s;flex-shrink:0}
 .chat-reply-btn:hover{color:var(--accent);background:var(--accent)20}
 
@@ -532,7 +532,7 @@ tr:hover td{background:var(--card2)}
 
       <!-- Sandbox training banner · 2026-08-29 定名「沙坑训练场」（原 Python 课堂, 2026-08-28 如意×冰爪） -->
       <div style="margin-bottom:1rem;padding:.7rem 1.2rem;border:1px solid var(--accent);border-left:4px solid var(--accent);border-radius:var(--radius);background:var(--card2);font-size:.88rem;line-height:1.5">
-        🏖️ <strong>每日 14:00-14:30 · 沙坑示范课（如意×冰爪）</strong> — 当周课程示范 + 跟做小练习：猴哥×苗苗的进度和卡点都在这碰，做完当天给反馈。路过随时插话 🐾
+        🏖️ <strong>每日 14:00-14:30 · 沙坑示范课（如意×冰爪）</strong> — 当周课程示范 + 跟做小练习：Tree×ThawPaw 的进度和卡点都在这碰，做完当天给反馈。路过随时插话 🐾
       </div>
 
       <!-- Sub-panel: History -->
@@ -1512,7 +1512,7 @@ function loadChatHistory(page){
   });
 }
 
-// ── Chat reply button (2026-08-29 猴哥需求) ──
+// ── Chat reply button (2026-08-29 Tree 需求) ──
 function replyToMessage(senderId, senderName){
   var sel = document.getElementById('chat-send-channel');
   var target = 'dm:' + senderId;
