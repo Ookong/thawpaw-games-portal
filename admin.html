@@ -6,6 +6,11 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+<meta name="theme-color" content="#152a52">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="聊天室">
 <title>TPG 总部 · Thawpaw Games HQ</title>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -676,6 +681,28 @@ document.addEventListener('DOMContentLoaded', function(){
   document.getElementById('nick-input').addEventListener('keydown', e => {
     if(e.key === 'Enter') confirmNick();
   });
+
+  // ── PWA: 启动参数 + Service Worker ──
+  // 启动参数 ?app=chatroom → 直接激活聊天室 tab（跳过概览）2026-08-31
+  (function(){
+    const params = new URLSearchParams(window.location.search);
+    const app = params.get('app');
+
+    // 注册 service worker（PWA 必做）
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(err => console.warn('SW register failed:', err));
+    }
+
+    // 启动参数 → 自动激活 chatroom tab（等 dashboard + switchTab 函数都 ready）
+    if (app === 'chatroom') {
+      setTimeout(function(){
+        if (typeof switchTab === 'function' && document.getElementById('panel-chatroom')) {
+          switchTab('chatroom');
+          console.log('[PWA] app=chatroom → switchTab');
+        }
+      }, 100);
+    }
+  })();
 });
 
 // ── Backend URL config ──
